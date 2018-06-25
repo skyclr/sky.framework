@@ -1,0 +1,4 @@
+/**
+ * Main init
+ */
+sky.init();
