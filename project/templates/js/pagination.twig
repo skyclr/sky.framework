@@ -1,0 +1,26 @@
+{% verbatim %}
+
+<!-- Base pagination -->
+<script type="text/template" id="pagination">
+	<div class="pagination">
+		<a class="arrow left disabled" href="#" sky-event="click: pagination.previous"></a>
+		<div class="pages">
+			<div class="pagesSlider"></div>
+		</div>
+		<a class="arrow right" href="#" sky-event="click: pagination.next"></a>
+	</div>
+</script>
+
+<!-- Pagination scroll -->
+<script type="text/template" id="pagination-scroll">
+	<div class="scrollLine" sky-event="click: pagination.scrollTo" >
+		<div class="runner"  sky-event="mousedown: pagination.grab"></div>
+	</div>
+</script>
+
+<!-- Pagination page -->
+<script type="text/template" id="pagination-page">
+	<a href="#" sky-event="click: pagination.setPage({{ page }})" page="{{ page }}" {% if page == current %}class="active"{% endif %}>{{ page }}</a>
+</script>
+
+{% endverbatim %}

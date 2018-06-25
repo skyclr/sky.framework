@@ -1,0 +1,107 @@
+{% import "shared/elements.twig" as elements %}
+{% import "shared/tips.twig" as tips %}
+<!doctype html>
+<html lang="ru-RU">
+<head>
+
+	<!-- Set title and meta -->
+	<meta charset="UTF-8">
+	<meta name="description" content="" />
+	<meta name="keywords" content="" />
+	<title>{{ preferences.site.name }}{% if page.title %} : {{ page.title }}{% endif %}</title>
+
+	<!-- Styles -->
+	<link rel="shortcut icon" type="image/png" href="{{ 'icons/favicon.ico'|url('img') }}"/>
+	<link rel="stylesheet" type="text/css" href="{{ 'styles.css'|url('css') }}"/>
+
+	{% if (pathElements|join("-") ~ ".css")|url('css')|fileExists('html') %}
+		<link rel="stylesheet" type="text/css" href="{{ (pathElements|join("-") ~ ".css")|url('css') }}"/>
+	{% endif %}
+
+	<!-- Core JS raw include -->
+	<script type="text/javascript">{{ (preferences.locations.html ~ "/jvs/core/core.js")|includeRawFullPath }}</script>
+
+	<!-- Library -->
+	<script type="text/javascript" src="{{ 'library.js'|url('jvs') }}" async></script>
+
+	<!-- Project specific -->
+	<script type="text/javascript" src="{{ 'project.js'|url('jvs') }}" async></script>
+
+	<!-- Mobile -->
+	<meta name="viewport" content="initial-scale=0.7, user-scalable=1" />
+	<meta name = "format-detection" content = "telephone=no" />
+
+</head>
+<body class="hidden {% block bodyClass %}layout{% endblock %}">
+
+<!-- Main content block -->
+<div id="pageContentHolder">
+
+	<!-- Content holder -->
+	{% block content %}
+
+		<div class="mainPageHolder">
+
+			<!-- Header -->
+			<header>
+                {% include "shared/header.twig" %}
+			</header>
+
+			<!-- Output page information -->
+			{% for message in resultMessages %}
+				{{ elements.resultMessage(message) }}
+			{% endfor %}
+
+			<!-- Page main content -->
+			{{ page.content|raw }}
+
+		</div>
+	{% endblock %}
+
+</div>
+
+<!-- Globals -->
+<script type="text/javascript">
+
+	sky.onReady(function({ templates }) {
+
+		/* Save data to page */
+		jQuery.extend(window.page.data, {
+
+			/* List of included templates */
+			templates: {{ jsTemplates|raw }},
+
+			/* Paths */
+			url : "{{ (base ~ realPath)|escape("js") }}",
+			base: "{{ base|escape("js") }}",
+
+			/* Currently logged user info */
+			me: { id: {{ me.id|else("false") }} }
+		});
+
+		/* Extend templates globals */
+		$.extend(templates.globals, {
+			base: window.page.data.base,
+			me  : window.page.data.me
+		});
+
+		if(window.page.history)
+			window.page.history.base = window.page.data.base;
+
+		/* Add touch class for touch devices */
+        if(window.ontouchstart !== undefined || navigator["maxTouchPoints"])
+            document.body.className += " touch";
+
+    });
+
+</script>
+{% if ('pages/' ~ pathElements|join("-") ~ ".js")|url('jvs')|fileExists('html') %}
+	<script type="text/javascript" src="{{ ('pages/' ~ pathElements|join("-") ~ ".js")|url('jvs') }}" async></script>
+{% endif %}
+
+<!-- JS templates -->
+{% for jsTemplate in page.jsTemplates %}
+	{% include "js/" ~ jsTemplate.realPath ~ "." ~ preferences.templates.jsTemplates.extension %}
+{% endfor %}
+</body>
+</html>

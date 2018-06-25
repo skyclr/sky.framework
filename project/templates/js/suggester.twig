@@ -1,0 +1,16 @@
+{% verbatim %}
+
+<!-- Suggester  -->
+<script type="text/template" id="suggester">
+	<div class="suggester">
+		{% for i, item in items %}
+			{% if item.html %}
+				<div data-index="{{i}}" class="item {{ item.cls }}">{{ item.html }}</div>
+			{% else %}
+				<div data-index="{{i}}" class="item">{{ item }}</div>
+			{% endif %}
+		{% endfor %}
+	</div>
+</script>
+
+{% endverbatim %}

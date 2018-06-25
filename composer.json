@@ -1,0 +1,12 @@
+{
+  "name": "sky/framework",
+  "description": "Empty framework project",
+  "minimum-stability": "dev",
+  "license": "GPL",
+  "authors": [
+    {
+      "name": "Andrew Matveev",
+      "email": "skyclr@gmail.com"
+    }
+  ]
+}

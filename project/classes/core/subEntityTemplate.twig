@@ -1,0 +1,71 @@
+<?php
+
+use sky\ArrayFilter;
+use sky\FilterRule;
+use sky\sky;
+use sky\systemErrorException;
+use sky\userErrorException;
+
+class {{ entity_name|raw }} extends baseEntity {
+
+	{{ fields|raw }}
+
+	/**
+	 * @var string
+	 * Entity table name */
+	public static $tableName = '{{ table_name|raw }}';
+
+	/**
+	 * Set data fields according to user data
+	 * @param ArrayFilter $data Validator based on user data
+	 * @param bool        $dataFromMeta
+	 * @return $this
+	 */
+	public function setData($data, $dataFromMeta = false) {
+
+		# Set fields
+		{{ data_fill|raw }}
+		return $this;
+
+	}
+
+	/**
+	 * Saves current user data
+	 * @throws systemErrorException
+	 * @return $this
+	 */
+	public function save() {
+
+		# Prepare query
+		$query = sky::$db->make(self::$tableName)->set(array(
+			{{ save_fields|raw }}
+		));
+
+		# Save main data if none
+		if(!$this->id)
+			$this->id = $query->insert();
+		else
+			$query->where($this->id)->update();
+
+		# Return
+		return $this;
+
+	}
+
+	/**
+	 * Returns array representation of current entity
+	 * @return array
+	 */
+	public function toArray() {
+
+		# Array representation
+		$data = array(
+			{{ array_fields|raw }}
+		);
+
+		# Return
+		return $data;
+
+	}
+
+}

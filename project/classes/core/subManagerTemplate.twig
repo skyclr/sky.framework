@@ -1,0 +1,32 @@
+<?php
+
+use sky\FilterRule;
+use sky\VarFilter;
+
+class {{ entity_name|raw }}s extends baseManager {
+
+	protected $elementClass = "{{ entity_name|raw }}";
+
+	/**
+	 * Adds condition to query, can't be called directly
+	 * @param string    $name  Condition name
+	 * @param VarFilter $value Condition value
+	 */
+	protected function userFilterInner($name, VarFilter $value) {
+
+	}
+
+	/**
+	 * Adds condition to query, can't be called directly
+	 * @param string    $name  Condition name
+	 * @param VarFilter $value Condition value
+	 */
+	protected function notUserFilterInner($name, VarFilter $value) {
+
+		# User id search
+		if($name == "id" && $id = $value->typeFilter(FilterRule::TYPE_INTEGER)->valueOr(null))
+			$this->query->where("id", $id);
+
+	}
+
+}

@@ -1,0 +1,18 @@
+<body style="background: #f0f0f0; margin: 0; padding: 30px 25px; font-family: helvetica, trebuchet ms, sans-serif;">
+    <div id="holder" style="width: 90%;max-width:700px;box-shadow:0 1px 3px #aaa;margin:50px auto;background:white;">
+        <div id="header" style="margin: 0; padding: 15px 25px; height: 48px; border-bottom: 1px solid #ddd; font-weight: bold;">
+            <img src="cid:logo" alt="" style="float: left; height: 48px;">
+            <div style="padding: 15px 0;float: right;font-size: 17px;">
+                {% block header %}{% endblock %}
+            </div>
+        </div>
+        <div id="content" style="padding: 15px 25px; line-height: 150%;font-size: 14px">
+            {% block content %}{% endblock %}
+            <div style="margin-top: 10px; color: #888;">
+                Данное сообщение сформировано автоматически, пожалуйста, не отвечайте на него.
+            </div>
+        </div>
+        <div id="footer" style=" padding: 15px 25px; margin: 0; background: #eee; color: #777; font-size: 12px;">
+            {{ preferences.site.signature }}
+        </div></div>
+</body>

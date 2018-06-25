@@ -1,0 +1,13 @@
+{
+  "name": "society_dependencies",
+  "version": "0.0.1",
+  "dependencies": {
+    "gulp": "*",
+    "gulp-less": "*",
+    "gulp-concat": "*"
+  },
+  "devDependencies": {
+    "gulp": "^3.8.5",
+    "gulp-minify": "^3.0.2"
+  }
+}
