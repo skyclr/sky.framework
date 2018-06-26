@@ -166,9 +166,9 @@ class email {
 
 				# Get file location
 				if($notify)
-					$loc = sky::location("mailNotify") . date(\sky\DateTime::DATE_TIME) . '_' . utils::getRandomString(10) . '.mail';
+					$loc = sky::location("mailNotify") . date(\sky\DateTime::DATE_TIME) . '_' . \sky\utilities::getRandomString(10) . '.mail';
 				else
-					$loc = sky::location("mail") . date(\sky\DateTime::DATE_TIME) . '_' . utils::getRandomString(10) . '.mail';
+					$loc = sky::location("mail") . date(\sky\DateTime::DATE_TIME) . '_' . \sky\utilities::getRandomString(10) . '.mail';
 
 				# Store mail file witch should be send by cron
 				\sky\fs\file::make($loc)

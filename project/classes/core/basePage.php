@@ -63,9 +63,9 @@ abstract class basePage {
 
 	/**
 	 * Renders page content
-	 * @param bool|array $parameters Template params
+	 * @param array $parameters Template params
 	 */
-	protected function renderContent($parameters = false) {
+	protected function renderContent($parameters = []) {
 		$this->content = $this->render($parameters);
 	}
 

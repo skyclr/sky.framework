@@ -1,5 +1,9 @@
 {% extends "/shared/basePage.twig" %}
 
 {% block content %}
-	<h1>Framework works perfectly!</h1>
+	<h1>
+		Sky framework works perfectly! Good job! <br>
+		<span data-tip-hover="test">Database: {{ preferences.database.use ? "Yes" : "No" }}</span><br>
+		<span>Auth: {{ preferences.authentication.use ? "Yes" : "No" }}</span>
+	</h1>
 {% endblock %}

@@ -31,34 +31,34 @@ class twig extends Twig_Extension {
 		if(!sky::$twig)
 			throw new systemErrorException("Try to init Twig without using it");
 
-
-		sky::$twig->getExtension('core')->setNumberFormat(0, '.', " ");
+		/** @noinspection PhpUndefinedMethodInspection */
+		sky::$twig->getExtension('Twig_Extension_Core')->setNumberFormat(0, '.', " ");
 
 		# Add filter
-		sky::$twig->addFilter(new Twig_SimpleFilter("addClass", array("twig", "filterClass"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("selected", array("twig", "filterSelected"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("checked", array("twig", "filterChecked"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("disabled", array("twig", "filterDisabled"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("else", array("twig", "filterElse"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("onTrue", array("twig", "filterOnTrue"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("isString", array("twig", "filterIsString"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("url", array("twig", "filterUrl"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("json", array("twig", "filterJson"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("includeRaw", array("twig", "includeRaw"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("includeRawFullPath", array("twig", "includeRawFullPath"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("makeSelectColumns", array("twig", "makeSelectColumns"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("fileExists", array("twig", "fileExists"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("ptPath", array("twig", "ptPath"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("anyIn", array("twig", "anyIn"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("allIn", array("twig", "allIn"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("countIn", array("twig", "countIn"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("truncate", array("twig", "truncate"), array('is_safe' => array('html'))));
-		sky::$twig->addFilter(new Twig_SimpleFilter("richText", array("twig", "richText"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("addClass", array("twig", "filterClass"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("selected", array("twig", "filterSelected"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("checked", array("twig", "filterChecked"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("disabled", array("twig", "filterDisabled"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("else", array("twig", "filterElse"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("onTrue", array("twig", "filterOnTrue"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("isString", array("twig", "filterIsString"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("url", array("twig", "filterUrl"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("json", array("twig", "filterJson"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("includeRaw", array("twig", "includeRaw"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("includeRawFullPath", array("twig", "includeRawFullPath"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("makeSelectColumns", array("twig", "makeSelectColumns"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("fileExists", array("twig", "fileExists"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("ptPath", array("twig", "ptPath"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("anyIn", array("twig", "anyIn"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("allIn", array("twig", "allIn"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("countIn", array("twig", "countIn"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("truncate", array("twig", "truncate"), array('is_safe' => array('html'))));
+		sky::$twig->addFilter(new Twig_Filter("richText", array("twig", "richText"), array('is_safe' => array('html'))));
 
 
 		# Current page checker
-		sky::$twig->addFunction(new Twig_SimpleFunction("pageIs", array("twig", "pageIs")));
-		sky::$twig->addFunction(new Twig_SimpleFunction("sectionIs", array("twig", "sectionIs")));
+		sky::$twig->addFunction(new Twig_Function("pageIs", array("twig", "pageIs")));
+		sky::$twig->addFunction(new Twig_Function("sectionIs", array("twig", "sectionIs")));
 
 
 		# Make globals

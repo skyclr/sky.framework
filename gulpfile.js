@@ -1,8 +1,8 @@
-var gulp 	= require('gulp');
-var less 	= require('gulp-less');
-var concat 	= require('gulp-concat');
-var minify 	= require('gulp-minify');
-var path 	= require('path');
+let gulp 	= require('gulp');
+let less 	= require('gulp-less');
+let concat 	= require('gulp-concat');
+let minify 	= require('gulp-minify');
+// let path 	= require('path');
 
 /**
  * Less compiling task
@@ -20,25 +20,16 @@ gulp.task('less', function () {
 /**
  * JS task to perform concatination
  */
-gulp.task('js', function () {
+gulp.task('jsLib', function () {
 	let location  = "./html/jvs/";
 	gulp.src([
-		'external/jquery.js',
-		'external/twig.js',
-		'external/moment.js',
-		// 'external/jquery.ui.js',
-		// 'external/js.cookie.min.js',
-		// 'external/highcharts.js',
-		// 'external/highcharts-trendline.js',
-		// 'external/twig.min.js',
-		// "external/jquery-serialize.js",
-		// 'external/extends.js',
-		'core/main.js',
-		'core/exceptions.js',
-		'core/services.js',
-		'modules/*',
-		'services/*',
-		'core/init.js'
+		'vendor/jquery.js',
+		'vendor/twig.js',
+		'vendor/moment.js',
+		'library/main.js',
+		'library/exceptions.js',
+		'library/services.js',
+		'library/init.js'
 	], { cwd: location })
 		.pipe(concat('library.js'))
 		// .pipe(minify({
@@ -50,27 +41,17 @@ gulp.task('js', function () {
 		.pipe(gulp.dest(location));
 });
 
-
 /**
  * JS task to perform concatination
  */
-gulp.task('jsProject', function () {
-	var location  = "./html/jvs/";
+gulp.task('jvs', function () {
+	let location  = "./html/jvs/";
 	gulp.src([
-		// 'services/notifications.js',
-		// 'services/inputsIO.js',
-		// 'services/calendar.js',
-		// 'services/dataOperator.js',
-		// 'services/pagination.js',
-		// 'services/suggester.js',
-		// 'services/loadingScreen.js',
-		// 'services/pageLoader.js',
-		// 'services/gallery.js',
-		// 'services/shop.js',
-		// 'services/pagination.js',
-		// 'actions/*',
-		// 'directives/*',
-		'core/projectInit.js'
+		'services/*',
+		'library/servicesInit.js',
+		'actions/*',
+		'directives/*',
+		'library/projectInit.js'
 	], { cwd: location })
 		.pipe(concat('project.js'))
 		.pipe(gulp.dest(location));

@@ -4,9 +4,10 @@
 date_default_timezone_set('Europe/Moscow');
 ini_set("max_execution_time", 15);
 mb_internal_encoding("utf-8");
+ini_set("session.gc_maxlifetime", 86400);
 
 # Include preferences
-require realpath(dirname(__FILE__)."/../../preferences/main.php");
+require __DIR__ . "/../../project/preferences/main.php";
 global $preferences;
 
 # Set errors
@@ -19,27 +20,25 @@ if(!empty($dev)) {
 set_include_path(dirname(__FILE__));
 
 # Classes
-require_once "exceptions.php";
-require_once "sky.php";
-
-require_once $preferences["locations"]["library"] . "auth/authentication.php";
-require_once $preferences["locations"]["library"] . "database/database2.php"; 
-require_once $preferences["locations"]["library"] . "utils/datetime.php"; 
-require_once $preferences["locations"]["library"] . "fileSystem/file.php"; 
-require_once $preferences["locations"]["library"] . "fileSystem/directory.php";
-require_once $preferences["locations"]["library"] . "fileSystem/upload.php";
-require_once $preferences["locations"]["library"] . "fileSystem/uploadedFile.php";
-require_once $preferences["locations"]["library"] . "fileSystem/file.php";
-require_once $preferences["locations"]["library"] . "utils/info.php";
-require_once $preferences["locations"]["library"] . "images/image.php"; 
-require_once $preferences["locations"]["library"] . "network/network.php"; 
-require_once $preferences["locations"]["library"] . "network/request.php"; 
-require_once $preferences["locations"]["library"] . "utils/utilities.php"; 
-require_once $preferences["locations"]["library"] . "utils/validator.php"; 
-require_once $preferences["locations"]["library"] . "utils/vars.php";
-
-require_once $preferences["locations"]["library"] . "utils/Filter/VarFilter.php";
-require_once $preferences["locations"]["library"] . "utils/Filter/ArrayFilter.php";
-require_once $preferences["locations"]["library"] . "utils/Filter/FilterRule.php";
+require_once __DIR__ . "/exceptions.php";
+require_once __DIR__ . "/sky.php";
+require_once __DIR__ . "/../auth/authentication.php";
+require_once __DIR__ . "/../database/database2.php";
+require_once __DIR__ . "/../utils/datetime.php"; 
+require_once __DIR__ . "/../fileSystem/file.php"; 
+require_once __DIR__ . "/../fileSystem/directory.php";
+require_once __DIR__ . "/../fileSystem/upload.php";
+require_once __DIR__ . "/../fileSystem/uploadedFile.php";
+require_once __DIR__ . "/../fileSystem/file.php";
+require_once __DIR__ . "/../utils/info.php";
+require_once __DIR__ . "/../images/image.php"; 
+require_once __DIR__ . "/../network/network.php"; 
+require_once __DIR__ . "/../network/request.php"; 
+require_once __DIR__ . "/../utils/utilities.php"; 
+require_once __DIR__ . "/../utils/validator.php"; 
+require_once __DIR__ . "/../utils/vars.php";
+require_once __DIR__ . "/../utils/Filter/VarFilter.php";
+require_once __DIR__ . "/../utils/Filter/ArrayFilter.php";
+require_once __DIR__ . "/../utils/Filter/FilterRule.php";
 
 

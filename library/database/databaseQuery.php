@@ -5,7 +5,7 @@ namespace sky\db;
 
 use sky\databaseException;
 use sky\systemErrorException;
-use sky\utils;
+use sky\utilities;
 use sky\validator;
 
 /**
@@ -111,10 +111,9 @@ class databaseQuery extends core {
 	/**
 	 * Get conditions or count
 	 * @param bool $count Should we return or count
-	 * @return array|bool
+	 * @return condition|bool
 	 */
 	function getConditions($count = false) {
-
 		return $count ? sizeof($this->conditions) : $this->conditions;
 	}
 
@@ -223,13 +222,13 @@ class databaseQuery extends core {
 	/**
 	 * Sets/gets records offset
 	 * @param $offset
-	 * @return databaseQuery
+	 * @return databaseQuery|int
 	 */
 	public function offset($offset = false) {
 
 		# Gets limit
 		if($offset === false)
-			return isset($this->parameters["offset"]) ? $this->parameters["offset"] : false;
+			return isset($this->parameters["offset"]) ? $this->parameters["offset"] : 0;
 
 		# Return
 		$this->parameters["offset"] = $offset;
@@ -243,7 +242,7 @@ class databaseQuery extends core {
 	 * Sets/gets max records limit
 	 * @param int|bool $limit Limit size
 	 * @throws databaseException
-	 * @return databaseQuery
+	 * @return databaseQuery|int
 	 */
 	public function limit($limit = false) {
 
@@ -392,10 +391,10 @@ class databaseQuery extends core {
 	 * @param bool   $withTime
 	 * @param string $tableName
 	 * @return $this
-	 * @see utils::getDateConditions
+	 * @see utilities::getDateConditions
 	 */
 	public function whereDates($period, $name = "date_short", $withTime = false, $tableName = "") {
-		return $this->whereList(utils::getDateConditions($period, $name, $withTime, $tableName));
+		return $this->whereList(utilities::getDateConditions($period, $name, $withTime, $tableName));
 	}
 
 	/**

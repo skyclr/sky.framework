@@ -362,6 +362,3 @@ class utilities {
 	}
 
 }
-
-/* Shortcut */
-class utils extends utilities {}

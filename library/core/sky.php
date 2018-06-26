@@ -145,7 +145,7 @@ class sky {
 		catch(\Exception $e) {
 
 			# Log
-			baseException::log($e->getMessage(), "error");
+			baseException::log($e->getMessage() . "\nFile: " .$e->getFile() . "\nLine: " . $e->getLine());
 
 			# Error
 			$error = "Во время работы произоша системная ошибка";
@@ -245,9 +245,6 @@ class sky {
 	 * Init twig template engine
 	 */
 	private function initTwig() {
-
-		# Register twig
-		\Twig_Autoloader::register();
 
 		# Create loader
 		self::$twigLoader = new \Twig_Loader_Filesystem(self::location("templates"));

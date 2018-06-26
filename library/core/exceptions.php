@@ -2,6 +2,7 @@
 
 # Framework namespace
 namespace sky;
+use PHPMailer\PHPMailer\Exception;
 
 /** Errors handler
  * @param $code
@@ -110,12 +111,16 @@ class baseException extends \Exception {
 
 		$text .= "</table>";
 
-		if(class_exists('\sky\sky') && !empty(sky::$twig))
-			return sky::$twig->render("/emails/ErrorNotify.twig", [
-				"header"  => "Error " . (isset($preferences["site"]["name"]) ? $preferences["site"]["name"] : ""),
-				"content" => $text,
-				"footer"  => isset(sky::$config['site']['signature']) ? sky::$config['site']['signature'] : date("d.m.y H:i")
-			]);
+		try {
+			if(class_exists('\sky\sky') && !empty(sky::$twig))
+				return sky::$twig->render("/emails/ErrorNotify.twig", [
+					"header"  => "Error " . (isset($preferences["site"]["name"]) ? $preferences["site"]["name"] : ""),
+					"content" => $text,
+					"footer"  => isset(sky::$config['site']['signature']) ? sky::$config['site']['signature'] : date("d.m.y H:i")
+				]);
+		} catch(Exception $e) {
+			return "<h1>Error " . (isset($preferences["site"]["name"]) ? $preferences["site"]["name"] : "") . "</h1><p>$text</p>";
+		}
 
 		# Simple string on default
 		return $this->__toString();

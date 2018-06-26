@@ -1,4 +1,0 @@
-/**
- * Main init
- */
-sky.init();

@@ -1,5 +1,4 @@
 {% import "shared/elements.twig" as elements %}
-{% import "shared/tips.twig" as tips %}
 <!doctype html>
 <html lang="ru-RU">
 <head>
@@ -11,7 +10,7 @@
 	<title>{{ preferences.site.name }}{% if page.title %} : {{ page.title }}{% endif %}</title>
 
 	<!-- Styles -->
-	<link rel="shortcut icon" type="image/png" href="{{ 'icons/favicon.ico'|url('img') }}"/>
+	<link rel="shortcut icon" type="image/png" href="{{ 'icons/favicon.png'|url('img') }}"/>
 	<link rel="stylesheet" type="text/css" href="{{ 'styles.css'|url('css') }}"/>
 
 	{% if (pathElements|join("-") ~ ".css")|url('css')|fileExists('html') %}
@@ -19,7 +18,7 @@
 	{% endif %}
 
 	<!-- Core JS raw include -->
-	<script type="text/javascript">{{ (preferences.locations.html ~ "/jvs/core/core.js")|includeRawFullPath }}</script>
+	<script type="text/javascript">{{ (preferences.locations.html ~ "/jvs/library/core.js")|includeRawFullPath }}</script>
 
 	<!-- Library -->
 	<script type="text/javascript" src="{{ 'library.js'|url('jvs') }}" async></script>
