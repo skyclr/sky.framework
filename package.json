@@ -1,6 +1,6 @@
 {
-  "name": "society_dependencies",
-  "version": "0.0.1",
+  "name": "sky.framwork",
+  "version": "5.1",
   "dependencies": {
     "gulp": "*",
     "gulp-less": "*",

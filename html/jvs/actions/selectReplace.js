@@ -21,7 +21,7 @@ sky.action("selectReplace", function({ visibleCalculator }) {
 			 rus              = "йцукенгшщзхъфывапролджэёячсмитьбю",
              eng              = "qwertyuiop[]asdfghjkl;'\\zxcvbnm,.",
              expression       = new RegExp(value.toLowerCase()),
-             expressionInvert = new RegExp(value.toLowerCase().replace(/[a-zа-яё]/g, character => {
+             expressionInvert = new RegExp(value.toLowerCase().replace(/[a-zа-яё]/g, (character) => {
                 if(rus.indexOf(character) > -1) return eng[rus.indexOf(character)];
                 if(eng.indexOf(character) > -1) return rus[eng.indexOf(character)];
                 return character;

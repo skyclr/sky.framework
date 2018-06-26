@@ -9,12 +9,12 @@ var path 	= require('path');
  */
 gulp.task('less', function () {
 
-	gulp.src('./public_html/less/*.less')
+	gulp.src('./html/less/*.less')
 		.pipe(less({  }))
-		.pipe(gulp.dest('./public_html/css'));
-	gulp.src('./public_html/less/pages/*.less')
+		.pipe(gulp.dest('./html/css'));
+	gulp.src('./html/less/pages/*.less')
 		.pipe(less({  }))
-		.pipe(gulp.dest('./public_html/css'));
+		.pipe(gulp.dest('./html/css'));
 });
 
 /**
