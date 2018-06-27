@@ -1,4 +1,4 @@
-sky.model.manager = {
+sky.service("modelsManager", function() {
 
     /**
      * Manager class
@@ -6,7 +6,7 @@ sky.model.manager = {
      * @param arr  Array of models
      * @constructor
      */
-    Manager: function(type, arr) {
+    let Manager = function(type, arr) {
 
         var self = this;
         this.items = [];
