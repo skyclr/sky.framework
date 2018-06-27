@@ -19,6 +19,7 @@ $preferences['locations'] += array(
 
 	"vendor"    => $preferences['locations']['library'] . "vendor/",
 	"classes"   => $preferences['locations']['project'] . "classes/",
+	"helpers"   => $preferences['locations']['project'] . "classes/helpers/",
 	"pages"     => $preferences['locations']['project'] . "pages/",
 	"cron"      => $preferences['locations']['project'] . "cron/",
 	"templates" => $preferences['locations']['project'] . "templates/",

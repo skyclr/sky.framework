@@ -1,9 +1,11 @@
 {% extends "/shared/basePage.twig" %}
 
 {% block content %}
+	<div class="logo"></div>
 	<h1>
-		Sky framework works perfectly! Good job! <br>
-		<span data-tip-hover="test">Database: {{ preferences.database.use ? "Yes" : "No" }}</span><br>
-		<span>Auth: {{ preferences.authentication.use ? "Yes" : "No" }}</span>
+		Sky framework works, good job! <br>
 	</h1>
+	<span class="info">Database: {{ preferences.database.use ? "Yes" : "No" }}</span>
+	<span class="info">Auth: {{ preferences.authentication.use ? "Yes" : "No" }}</span>
+	<a href="/manage" class="button">Entity builder</a>
 {% endblock %}

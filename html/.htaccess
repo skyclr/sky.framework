@@ -1,5 +1,5 @@
-Options -MultiViews
-DirectoryIndex index.php
+#Options -MultiViews
+#DirectoryIndex index2.php
 
 <IfModule mod_rewrite.c>
     RewriteEngine On

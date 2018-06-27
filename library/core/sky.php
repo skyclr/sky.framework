@@ -27,7 +27,7 @@ class sky {
 	
 	/**
 	 * System preferences
-	 * @var Array
+	 * @var []
 	 */
 	public static $config;
 
@@ -55,16 +55,17 @@ class sky {
 			$dir = dirname($backTrace[1]["file"]);
 
 		# Try to include
-		if(!empty($dir) && file_exists($dir . "/" . $className .'.php'))
-			include $dir . "/" . $className .'.php';
-		elseif(file_exists(sky::location("phpEntities") . $className .'.php'))
-			include sky::location("phpEntities") . $className .'.php';
-		elseif(file_exists(sky::location("phpManagers") . $className .'.php'))
-			include sky::location("phpManagers") . $className .'.php';
-		elseif(file_exists(sky::location("phpHelpers") . $className .'.php'))
-			include sky::location("phpHelpers") . $className .'.php';
-		elseif(file_exists(sky::location("phpCore") . $className .'.php'))
-			include sky::location("phpCore") . $className .'.php';
+		if(!empty($dir) && file_exists("$dir/$className.php"))
+			/** @noinspection PhpIncludeInspection */
+			include  "$dir/$className.php";
+		elseif(file_exists(sky::location("phpEntities") . "$className.php"))
+			include sky::location("phpEntities") . "$className.php";
+		elseif(file_exists(sky::location("phpManagers") . "$className.php"))
+			include sky::location("phpManagers") ."$className.php";
+		elseif(file_exists(sky::location("phpHelpers") . "$className.php"))
+			include sky::location("phpHelpers") . "$className.php";
+		elseif(file_exists(sky::location("phpCore") . "$className.php"))
+			include sky::location("phpCore") . "$className.php";
 		else spl_autoload($className);
 
 	}

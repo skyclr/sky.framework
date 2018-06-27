@@ -1,6 +1,9 @@
 <?php
 
 namespace sky;
+require_once "VarFilter.php";
+require_once "ArrayFilterKey.php";
+require_once "FilterRule.php";
 
 class ArrayFilter {
 
@@ -92,27 +95,6 @@ class ArrayFilter {
 
 		# Return
 		return array(0 => true, "exists" => true, 1 => $value, "value" => $value);
-
-	}
-
-}
-
-class ArrayFilterKey extends VarFilter {
-
-	private $key;
-	public $exists = false, $arrayFilter;
-
-	function __construct(ArrayFilter $arrayFilter, $key, $recursive = true) {
-
-		# Save params
-		$this->key = $key;
-		$this->arrayFilter = $arrayFilter;
-
-		# Get current value
-		list($this->exists, $this->value) = $arrayFilter->getByKey($this->key);
-
-		# Parent construct
-		parent::__construct($this->value, $recursive);
 
 	}
 

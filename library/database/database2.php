@@ -179,30 +179,35 @@ class DB2 extends core {
 			if($this->saveQueriesInfo)
 				$stat["time"] = round((microtime(true) - $beginTime), 4);
 
-			# If too long request
-			//if(microtime(true) - $beginTime > 2)
-			//	baseException::log("Too long request performed(".round((microtime(true) - $beginTime), 2)."sec), query:\n".$query);
-
 			# Cursor return
-			if($trace === "time") echo "Query \"$query\" <br/>execution time: " . round((microtime(true) - $beginTime), 4) . "sec";
-			if($return === "cursor") return $statement;
-			if($return === "none") return true;
+			if($trace === "time")
+				echo "Query \"$query\" <br/>execution time: " . round((microtime(true) - $beginTime), 4) . "sec";
 
-			# Get updated
-			if($return == "updated")
-				return $statement->rowCount();
-
-			# Additional returns
-			if($return === "id")
-				return $link->lastInsertId();
-
-			# Get result data
-			if($return === "value") {
-				$data = $statement->fetch(\PDO::FETCH_NUM);
-				return $data ? $data[0] : false;
+			# Returns
+			switch($return) {
+				case ret::CURSOR:
+					return $statement;
+				case ret::NONE:
+					return true;
+				case ret::UPDATED:
+					$data = $statement->rowCount();
+					break;
+				case ret::ID:
+					$data = $link->lastInsertId();
+					break;
+				case ret::VALUE:
+					$data = $statement->fetch(\PDO::FETCH_NUM);
+					$data = $data ? $data[0] : false;
+					break;
+				case ret::SINGLE:
+					$data = $statement->fetch(\PDO::FETCH_ASSOC);
+					break;
+				case ret::ALL_NUM:
+					$data = $statement->fetchAll(\PDO::FETCH_NUM);
+					break;
+				default:
+					$data = $statement->fetchAll(\PDO::FETCH_ASSOC);
 			}
-			elseif($return === "single") $data = $statement->fetch(\PDO::FETCH_ASSOC);
-			else                         $data = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
 			# Clear cursor
 			$statement->closeCursor();

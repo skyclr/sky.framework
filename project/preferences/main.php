@@ -14,7 +14,8 @@ $preferences = [
 	"development"  => [
 		"dev"             => $dev,
 		"traceExceptions" => $dev ? "screen" : false, # Outputs all exceptions on screen
-		"noTwigCache"     => true
+		"noTwigCache"     => true,
+		"managePassword"  => "asd",
 	],
 
 	/**
@@ -45,12 +46,12 @@ $preferences = [
 	 * if FALSE the not used
 	 */
 	"database"     => [
-		"use"      => false,
+		"use"      => true,
 		"host"     => "127.0.0.1",
-		"name"     => "databaseName",
+		"name"     => "Docs",
 		"port"     => "3306",
-		"user"     => "admin",
-		"password" => "",
+		"user"     => "root",
+		"password" => "CLR150287",
 		"charset"  => "UTF8"
 	],
 

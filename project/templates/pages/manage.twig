@@ -1,0 +1,25 @@
+{% extends "/shared/basePage.twig" %}
+
+{% block content %}
+	<div class="logo"></div>
+	<h1>Entity builder</h1>
+	<form action="" method="post">
+		<label>
+			<select name="table" id="">
+				{% for table in tables %}
+					<option value="{{ table }}">{{ table }}</option>
+				{% endfor %}
+			</select>
+		</label>
+		<label>
+			<input type="text" value="" placeholder="Entity name" name="entityName">
+		</label>
+		<label>
+			<input type="text" value="" placeholder="Manager name" name="managerName">
+		</label>
+		<input type="submit" class="button" name="getEntity" value="Скачать модель">
+		<input type="submit" class="info" name="getEntityCode" value="Показать код модели">
+		<input type="submit" class="button" name="getManager" value="Скачать менеджер">
+		<input type="submit" class="info" name="getManagerCode" value="Показать код менеджера">
+	</form>
+{% endblock %}

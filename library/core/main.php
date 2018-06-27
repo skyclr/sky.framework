@@ -37,8 +37,6 @@ require_once __DIR__ . "/../network/request.php";
 require_once __DIR__ . "/../utils/utilities.php"; 
 require_once __DIR__ . "/../utils/validator.php"; 
 require_once __DIR__ . "/../utils/vars.php";
-require_once __DIR__ . "/../utils/Filter/VarFilter.php";
 require_once __DIR__ . "/../utils/Filter/ArrayFilter.php";
-require_once __DIR__ . "/../utils/Filter/FilterRule.php";
 
 

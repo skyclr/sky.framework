@@ -270,4 +270,18 @@ class network {
 	
 	}
 
+	public static function saveStringAsFile($string , $filename, $mime = false) {
+
+		# Mime type
+		if(!$mime) $mime = "application/octet-stream";
+
+		# Draw headers
+		header('Content-Disposition: attachment; filename="' . $filename . '"');
+		header('Content-length: ' . strlen($string));
+		header("Content-type: " . $mime);
+		echo $string;
+		exit();
+
+	}
+
 }
