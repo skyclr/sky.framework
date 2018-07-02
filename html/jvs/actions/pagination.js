@@ -3,29 +3,25 @@ sky.action("pagination", {
 	setPage: function(button, _, page) {
 
 		/* Get pagination */
-		var pagination = button.parents(".pagination").data("pagination");
+		let pagination = button.parents(".pagination").data("pagination");
 
 		/* Correct page */
-		if(page == "next") {
-			button = false;
+		if(page === "next")
 			page = pagination.current + 1;
-		}
 
 		/* Correct  */
-		if(page == "previous") {
-			button = false;
+		if(page === "previous")
 			page = pagination.current - 1;
-		}
 
 		/* Go to page */
-		pagination.goToPage(page, button);
+		pagination.goToPage(page);
 
 	},
 
 	scrollTo: function(element, event) {
 
 		/* Get pagination */
-		var pagination = element.parents(".pagination").data("pagination");
+		let pagination = element.parents(".pagination").data("pagination");
 
 		/* Move */
 		pagination.scroll(event);
@@ -35,7 +31,7 @@ sky.action("pagination", {
 	grab: function(runner) {
 
 		/* Get pagination */
-		var pagination = runner.parents(".pagination").data("pagination");
+		let pagination = runner.parents(".pagination").data("pagination");
 
 		/* Binds */
 		$(window)

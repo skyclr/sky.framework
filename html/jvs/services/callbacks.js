@@ -150,12 +150,16 @@ sky.service("callbacks", function({ callback }) {
 
 			},
 
-			/**
-			 * Removes event handlers and functions
-			 * @param {string} name Event name
-			 */
-			off: function(name) {
-				delete this.advancedCallbacks[name];
+		/**
+		 * Removes event handlers and functions
+		 * @param {string} name Event name
+		 * @param func
+		 */
+			off: function(name, func = null) {
+				if(func && this.advancedCallbacks[name])
+					this.advancedCallbacks[name].removeByCallback(func);
+				else
+					delete this.advancedCallbacks[name];
 			}
 
 		};

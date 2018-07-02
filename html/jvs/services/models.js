@@ -1,4 +1,4 @@
-sky.service("model", function({ modelsStorage }) {
+sky.service("model", function({ modelsStorage, callbacks }) {
 
 	/**
 	 * List of model definitions
@@ -8,35 +8,31 @@ sky.service("model", function({ modelsStorage }) {
 	class Model {
 		constructor(type, data) {
 
-			/* Self creation if as function call */
-			if(!(this instanceof sky.model.Model))
-				return new sky.model.Model(type, data);
-
 			/* Init as base */
-			this.definition = sky.model.BaseDefinition;
+			this.definition = BaseDefinition;
 
 			/* Get special if defined */
-			if(sky.model.modelsDefinition[type])
-				this.definition = sky.model.modelsDefinition[type];
+			if(modelsDefinition[type])
+				this.definition = modelsDefinition[type];
 
 			/* Save id */
 			this.id = data[this.definition.id] || null;
 			this.type = type;
 			this.data = {};
-			this.callbacks = sky.Callbacks();
-			this.definition.creation.call(this, $.extend({}, data, true));
+			this.callbacks = callbacks();
+			this.definition.creation.bind(this)($.extend({}, data, true));
 
 		}
-		removeFromStorage() {
-			modelsStorage.remove(this);
-		}
 		extend(data) {
-			this.definition.extension.call(this, data);
+			this.definition.extension.bind(this)($.extend({}, data, true));
 			return this.changed();
 		}
 		changed() {
 			this.callbacks.fire("change", {model: this});
 			return this;
+		}
+		removeFromStorage() {
+			modelsStorage.remove(this);
 		}
 		addListener(func) {
 			this.callbacks.on("change", func);
@@ -51,7 +47,7 @@ sky.service("model", function({ modelsStorage }) {
 	 */
 	let BaseDefinition = {
 		id: "id",
-		constructor: function(data) {
+		creation: function(data) {
 			this.data = data;
 		},
 		extension: function(data) {
@@ -76,8 +72,8 @@ sky.service("model", function({ modelsStorage }) {
 
 			if(cached)
 				return cached.extend(data);
-			else
-				return model;
+
+			return model;
 
 		}
 	};

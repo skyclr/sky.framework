@@ -1,26 +1,6 @@
 //noinspection JSUnusedGlobalSymbols
 sky.action("shared", {
 
-	advertFilter: function (element) {
-		let adverts = [];
-		element.closest("form").find('[name=advertId]:checked').each(function () {
-			adverts.push(this.value);
-		});
-
-		element.closest("form").find('[name=campaignId]').each(function () {
-
-			let self = $(this).parent(),
-				conId = self.attr("data-connection-id");
-
-			if (!conId || !adverts.length || $.inArray(conId, adverts) >= 0)
-				self.removeClass('hidden');
-			else
-				self.addClass('hidden');
-
-		});
-
-	},
-
 	/**
 	 * Close parent window
 	 * @param self
@@ -35,26 +15,10 @@ sky.action("shared", {
 	},
 
 	/**
-	 * Scrolls body to top
-	 * @param _
-	 * @param event
-	 */
-	toTop: function (_, event) {
-
-		/* No # go */
-		event.preventDefault();
-
-		/* Scroll */
-		$('#pageContentHolder').animate({scrollTop: 0}, "fast");
-
-	},
-
-	/**
 	 * Stops form form submit if not valid
 	 * @param form
-	 * @param event
 	 */
-	validForm: function (form, event) {
+	validForm: function (form) {
 		if (form.validForm())
 			form.get(0).submit();
 	},
@@ -129,19 +93,6 @@ sky.action("shared", {
 	forceHideTips: function () {
 		sky.tips.hideAll(true);
 	},
-
-	attachFile: function (input) {
-		let label = input.closest(".label"),
-			file = input.val().match(/[^\\\/]+(\.[^\\\/]+)?$/)[0] || input.val(),
-			holder = sky.templates.render('page-fileHolder', {file: file}).append(input).insertBefore(label);
-
-		$('<input type="file" name="attachment[]" sky-event="change: shared.attachFile">').appendTo(label.find(".button"))
-	},
-
-	toggleMenu: function (button, event) {
-		$("#header").find(".menu").toggleClass("visible");
-	},
-
 
 	/**
 	 * Reorders current result rows without request

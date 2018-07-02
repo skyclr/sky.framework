@@ -36,7 +36,7 @@ sky.service("templates", function({ localStorage, supported, directives, excepti
 			this.compile(name);
 
 			/* Add globals */
-			data = jQuery.extend(true, {}, data, { globals: this.globals });
+			data = $.extend(true, {}, data, { globals: this.globals });
 
 			/* Render */
 			let temp = $('<div/>').append(templatesCompiled[name].render(data));

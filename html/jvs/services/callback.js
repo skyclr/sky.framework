@@ -64,6 +64,23 @@ sky.service("callback", function() {
 		},
 
 		/**
+		 * Removes function from list by context
+		 * @param func
+		 */
+		removeByCallback: function(func) {
+
+			/* Find listener */
+			$.each(this.functions, function(i, current) {
+				if(current.func === func)
+					this.functions.splice(i, 1);
+			}.bind(this));
+
+			/* Self return */
+			return this;
+
+		},
+
+		/**
 		 * Fires all functions
 		 * @param {Object} context Function context
 		 * @param {Array} args Arguments
