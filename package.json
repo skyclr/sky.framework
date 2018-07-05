@@ -3,6 +3,9 @@
   "dependencies": {
     "gulp": "*",
     "gulp-less": "*",
-    "gulp-concat": "*"
+    "gulp-concat": "*",
+    "gulp-clean-css": "*",
+    "gulp-uglifyjs": "*",
+    "gulp-compress": "*"
   }
 }

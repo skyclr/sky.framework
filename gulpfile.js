@@ -1,27 +1,35 @@
+/* Gulp modules */
 let gulp 	= require('gulp');
 let less 	= require('gulp-less');
 let concat 	= require('gulp-concat');
-let minify 	= require('gulp-minify');
-// let path 	= require('path');
+let cleanCSS = require('gulp-clean-css');
+let uglify = require('gulp-uglifyjs');
+
+/* Paths */
+let htmlPath = './html/';
+let lessFilesPath = htmlPath +'less/';
+let cssFilesPath = htmlPath + 'css/';
+let jvsFilesPath = htmlPath + 'jvs/';
 
 /**
  * Less compiling task
  */
 gulp.task('less', function () {
 
-	gulp.src('./html/less/*.less')
+	gulp.src(lessFilesPath + '*.less')
 		.pipe(less({  }))
-		.pipe(gulp.dest('./html/css'));
-	gulp.src('./html/less/pages/*.less')
+		.pipe(cleanCSS({compatibility: 'ie8'}))
+		.pipe(gulp.dest(cssFilesPath));
+	gulp.src(lessFilesPath + 'pages/*.less')
 		.pipe(less({  }))
-		.pipe(gulp.dest('./html/css'));
+		.pipe(cleanCSS({compatibility: 'ie8'}))
+		.pipe(gulp.dest(cssFilesPath));
 });
 
 /**
  * JS task to perform concatination
  */
 gulp.task('jsLib', function () {
-	let location  = "./html/jvs/";
 	gulp.src([
 		'vendor/jquery.js',
 		'vendor/twig.js',
@@ -30,29 +38,24 @@ gulp.task('jsLib', function () {
 		'library/exceptions.js',
 		'library/services.js',
 		'library/init.js'
-	], { cwd: location })
+	], { cwd: jvsFilesPath })
 		.pipe(concat('library.js'))
-		// .pipe(minify({
-		// 	ext:{
-		// 		src:'-debug.js',
-		// 		min:'.js'
-		// 	}
-		// }))
-		.pipe(gulp.dest(location));
+		// .pipe(uglify(undefined, { mangle: false }))
+		.pipe(gulp.dest(jvsFilesPath));
 });
 
 /**
  * JS task to perform concatination
  */
 gulp.task('jvs', function () {
-	let location  = "./html/jvs/";
 	gulp.src([
 		'services/*',
 		'library/servicesInit.js',
 		'actions/*',
 		'directives/*',
 		'library/projectInit.js'
-	], { cwd: location })
+	], { cwd: jvsFilesPath })
 		.pipe(concat('project.js'))
-		.pipe(gulp.dest(location));
+		// .pipe(uglify(undefined, { mangle: false }))
+		.pipe(gulp.dest(jvsFilesPath));
 });
