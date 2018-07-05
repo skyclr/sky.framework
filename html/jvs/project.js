@@ -1533,6 +1533,23 @@ sky.service("callback", function() {
 		},
 
 		/**
+		 * Removes function from list by context
+		 * @param func
+		 */
+		removeByCallback: function(func) {
+
+			/* Find listener */
+			$.each(this.functions, function(i, current) {
+				if(current.func === func)
+					this.functions.splice(i, 1);
+			}.bind(this));
+
+			/* Self return */
+			return this;
+
+		},
+
+		/**
 		 * Fires all functions
 		 * @param {Object} context Function context
 		 * @param {Array} args Arguments
@@ -1743,12 +1760,16 @@ sky.service("callbacks", function({ callback }) {
 
 			},
 
-			/**
-			 * Removes event handlers and functions
-			 * @param {string} name Event name
-			 */
-			off: function(name) {
-				delete this.advancedCallbacks[name];
+		/**
+		 * Removes event handlers and functions
+		 * @param {string} name Event name
+		 * @param func
+		 */
+			off: function(name, func = null) {
+				if(func && this.advancedCallbacks[name])
+					this.advancedCallbacks[name].removeByCallback(func);
+				else
+					delete this.advancedCallbacks[name];
 			}
 
 		};
@@ -2406,6 +2427,65 @@ sky.service("directives", function ({exceptions}) {
 		$("body").parseDirectives();
 	});
 
+});
+sky.service("drag", function({callbacks}) {
+	let self = {
+		bindEvents: (event, events) => {
+			self.bind(event)
+				.on("start", events.start)
+				.on("move", events.move)
+				.on("stop", events.stop)
+		},
+		bind: event => {
+
+			// Get original event
+			event = event.originalEvent || event;
+
+			// Check button
+			if(event.button && event.button !== 1)
+				return;
+
+			// Stop default action
+			event.preventDefault();
+
+			let started = false,
+				callbacks = callbacks();
+
+			$(document).on("mousemove.drag", function(event) {
+
+				// Start
+				if(!started) {
+					started = true;
+					callbacks.fire("start", { event: event, x: event.pageX, y: event.pageY });
+				}
+				// Move
+				else callbacks.fire("move", { event: event, x: event.pageX, y: event.pageY });
+
+				// Prevent default
+				event.preventDefault();
+				return false;
+
+			}).on("mouseup.drag", function(event) {
+
+				// Off events
+				$(document).off("mousemove.drag").off("mouseup.drag");
+
+				// If not started
+				if(!started)
+					return;
+
+				// Stop default action
+				event.preventDefault();
+
+				// Call stop callback
+				callbacks.fire("stop", { event: event, x: event.pageX, y: event.pageY });
+
+			});
+
+			return callbacks;
+		}
+	};
+	return self;
 });
 sky.service("history", function ({ callbacks, supported }) {
 
@@ -3226,6 +3306,165 @@ sky.service("localStorage", function({ callbacks }) {
 	});
 
 });
+sky.service("model", function({ modelsStorage, callbacks }) {
+
+	/**
+	 * List of model definitions
+	 */
+	let modelsDefinition = {};
+
+	class Model {
+		constructor(type, data) {
+
+			/* Init as base */
+			this.definition = BaseDefinition;
+
+			/* Get special if defined */
+			if(modelsDefinition[type])
+				this.definition = modelsDefinition[type];
+
+			/* Save id */
+			this.id = data[this.definition.id] || null;
+			this.type = type;
+			this.data = {};
+			this.callbacks = callbacks();
+			this.definition.creation.bind(this)($.extend({}, data, true));
+
+		}
+		extend(data) {
+			this.definition.extension.bind(this)($.extend({}, data, true));
+			return this.changed();
+		}
+		changed() {
+			this.callbacks.fire("change", {model: this});
+			return this;
+		}
+		removeFromStorage() {
+			modelsStorage.remove(this);
+		}
+		addListener(func) {
+			this.callbacks.on("change", func);
+		}
+		removeListener(func) {
+			this.callbacks.off("change", func);
+		}
+	}
+
+	/**
+	 * Base model definition witch would be parented
+	 */
+	let BaseDefinition = {
+		id: "id",
+		creation: function(data) {
+			this.data = data;
+		},
+		extension: function(data) {
+			$.extend(true, this.data, data);
+		}
+	};
+
+	this.service = {
+		/**
+		 * Adds new models definition
+		 * @param name
+		 * @param definition
+		 */
+		addDefinition: function(name, definition) {
+			modelsDefinition[name] = $.extend({}, BaseDefinition, definition);
+		},
+
+		fromData: function(type, data) {
+
+			let model = new this.Model(type, data);
+			let cached = modelsStorage.add(model);
+
+			if(cached)
+				return cached.extend(data);
+
+			return model;
+
+		}
+	};
+
+});
+sky.service("modelsManager", function({callbacks, model}) {
+	class Manager {
+		constructor(type, arr) {
+
+			this.items = [];
+			this.type = type;
+			this.callbacks = callbacks();
+
+			$.each(arr, (_, model) => {
+				this.items.push(model)
+			});
+		}
+		reloadFromArray(arr) {
+			this.items = [];
+			$.each(arr, (_, data) => {
+				this.items.push(model.fromData(this.type, data))
+			});
+		}
+		count() {
+			return this.items.length;
+		}
+		addListener(func) {
+			this.callbacks.on("change", func);
+		}
+		removeListener(func) {
+			this.callbacks.off("change", func);
+		}
+	}
+
+	this.service = {
+		fromArray: function(type, arr) {
+			let items = [];
+			$.each(arr, (_, data) => {
+				items.push(sky.model.fromData(type, data));
+			});
+			return new Manager(type, items);
+		}
+	};
+
+});
+sky.service("modelsStorage", function() {
+
+    let cache = {};
+
+    this.service = {
+		add: function(model) {
+
+			// Search in cache
+			let cached = this.search(model.type, model.id);
+
+			// If found extend
+			if(cached)
+				return cached;
+
+            // Create type storage if none
+            if(!this.cache[model.type])
+                this.cache[model.type] = {};
+
+            // Save model
+            this.cache[model.type][model.id] = model;
+
+		},
+
+		search: function(type, id) {
+
+			// Cache search
+			if(cache[type] && cache[type][id])
+				return cache[type][id];
+
+			// On miss
+			return false;
+		},
+
+		remove: function(model) {
+			delete cache[model.type][model.id];
+		}
+	}
+});
 /**
  * For work with different type of notifications
  */
@@ -3919,7 +4158,7 @@ sky.service("templates", function({ localStorage, supported, directives, excepti
 			this.compile(name);
 
 			/* Add globals */
-			data = jQuery.extend(true, {}, data, { globals: this.globals });
+			data = $.extend(true, {}, data, { globals: this.globals });
 
 			/* Render */
 			let temp = $('<div/>').append(templatesCompiled[name].render(data));
@@ -5326,29 +5565,25 @@ sky.action("pagination", {
 	setPage: function(button, _, page) {
 
 		/* Get pagination */
-		var pagination = button.parents(".pagination").data("pagination");
+		let pagination = button.parents(".pagination").data("pagination");
 
 		/* Correct page */
-		if(page == "next") {
-			button = false;
+		if(page === "next")
 			page = pagination.current + 1;
-		}
 
 		/* Correct  */
-		if(page == "previous") {
-			button = false;
+		if(page === "previous")
 			page = pagination.current - 1;
-		}
 
 		/* Go to page */
-		pagination.goToPage(page, button);
+		pagination.goToPage(page);
 
 	},
 
 	scrollTo: function(element, event) {
 
 		/* Get pagination */
-		var pagination = element.parents(".pagination").data("pagination");
+		let pagination = element.parents(".pagination").data("pagination");
 
 		/* Move */
 		pagination.scroll(event);
@@ -5358,7 +5593,7 @@ sky.action("pagination", {
 	grab: function(runner) {
 
 		/* Get pagination */
-		var pagination = runner.parents(".pagination").data("pagination");
+		let pagination = runner.parents(".pagination").data("pagination");
 
 		/* Binds */
 		$(window)
@@ -5481,26 +5716,6 @@ sky.action("selectReplace", function({ visibleCalculator }) {
 //noinspection JSUnusedGlobalSymbols
 sky.action("shared", {
 
-	advertFilter: function (element) {
-		let adverts = [];
-		element.closest("form").find('[name=advertId]:checked').each(function () {
-			adverts.push(this.value);
-		});
-
-		element.closest("form").find('[name=campaignId]').each(function () {
-
-			let self = $(this).parent(),
-				conId = self.attr("data-connection-id");
-
-			if (!conId || !adverts.length || $.inArray(conId, adverts) >= 0)
-				self.removeClass('hidden');
-			else
-				self.addClass('hidden');
-
-		});
-
-	},
-
 	/**
 	 * Close parent window
 	 * @param self
@@ -5515,26 +5730,10 @@ sky.action("shared", {
 	},
 
 	/**
-	 * Scrolls body to top
-	 * @param _
-	 * @param event
-	 */
-	toTop: function (_, event) {
-
-		/* No # go */
-		event.preventDefault();
-
-		/* Scroll */
-		$('#pageContentHolder').animate({scrollTop: 0}, "fast");
-
-	},
-
-	/**
 	 * Stops form form submit if not valid
 	 * @param form
-	 * @param event
 	 */
-	validForm: function (form, event) {
+	validForm: function (form) {
 		if (form.validForm())
 			form.get(0).submit();
 	},
@@ -5609,19 +5808,6 @@ sky.action("shared", {
 	forceHideTips: function () {
 		sky.tips.hideAll(true);
 	},
-
-	attachFile: function (input) {
-		let label = input.closest(".label"),
-			file = input.val().match(/[^\\\/]+(\.[^\\\/]+)?$/)[0] || input.val(),
-			holder = sky.templates.render('page-fileHolder', {file: file}).append(input).insertBefore(label);
-
-		$('<input type="file" name="attachment[]" sky-event="change: shared.attachFile">').appendTo(label.find(".button"))
-	},
-
-	toggleMenu: function (button, event) {
-		$("#header").find(".menu").toggleClass("visible");
-	},
-
 
 	/**
 	 * Reorders current result rows without request

@@ -40,7 +40,7 @@ gulp.task('jsLib', function () {
 		'library/init.js'
 	], { cwd: jvsFilesPath })
 		.pipe(concat('library.js'))
-		// .pipe(uglify(undefined, { mangle: false }))
+		.pipe(uglify(undefined, { mangle: false }))
 		.pipe(gulp.dest(jvsFilesPath));
 });
 
@@ -56,6 +56,6 @@ gulp.task('jvs', function () {
 		'library/projectInit.js'
 	], { cwd: jvsFilesPath })
 		.pipe(concat('project.js'))
-		// .pipe(uglify(undefined, { mangle: false }))
+		.pipe(uglify(undefined, { mangle: false }))
 		.pipe(gulp.dest(jvsFilesPath));
 });
