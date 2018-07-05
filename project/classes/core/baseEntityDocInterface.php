@@ -4,6 +4,18 @@ abstract class baseEntityDocInterface {
 
 	public static $ENTITY_COMPILED_FIELDS = [];
 
+	protected function filedHavePermission($field, $action) {
+		if($action == "meta" && (empty($field['permission']) || in_array($action, $field['permission'])))
+			return true;
+		if($action == "data" && !empty($field['permission']) && in_array($action, $field['permission']))
+			return true;
+		if($action == "array" &&  (empty($field['permission']) || in_array($action, $field['permission'])))
+			return true;
+		if($action == "save" && (empty($field['permission']) || in_array($action, $field['permission'])))
+			return true;
+		return false;
+	}
+
 	protected function setMeta(\sky\ArrayFilter $meta) {
 
 		# Get class name
@@ -11,7 +23,7 @@ abstract class baseEntityDocInterface {
 
 		# Go through
 		foreach(static::$ENTITY_COMPILED_FIELDS[$className] as $field)
-			if(empty($field['permission']) || $field['permission'] == 'meta') {
+			if($this->filedHavePermission($field, "meta")) {
 				$this->{$field['name']} = $this->GET_ENTITY_FIELD_VALUE($field, $meta);
 			}
 
@@ -27,7 +39,7 @@ abstract class baseEntityDocInterface {
 
 		# Go through
 		foreach(static::$ENTITY_COMPILED_FIELDS[$className] as $field)
-			if(!empty($field['permission']) && $field['permission'] == 'data')
+			if($this->filedHavePermission($field, "data"))
 				$this->{$field['name']} = $this->GET_ENTITY_FIELD_VALUE($field, $meta);
 
 		# Self return
@@ -56,9 +68,9 @@ abstract class baseEntityDocInterface {
 			case 'int':
 				return $data->key($field['field'])->typeFilter(\sky\FilterRule::TYPE_INTEGER)->convertedValueOr(\sky\VarFilter::CONVERT_INTEGER, $field["default"]);
 			case 'positive':
-				return $data->key($field['field'])->typeFilter(\sky\FilterRule::TYPE_POSITIVE)->valueOr($field["default"]);
+				return $data->key($field['field'])->typeFilter(\sky\FilterRule::TYPE_POSITIVE)->convertedValueOr(\sky\VarFilter::CONVERT_FLOAT, $field["default"]);
 			case 'float':
-				return $data->key($field['field'])->typeFilter(\sky\FilterRule::TYPE_NUMERIC)->valueOr($field["default"]);
+				return $data->key($field['field'])->typeFilter(\sky\FilterRule::TYPE_NUMERIC)->convertedValueOr(\sky\VarFilter::CONVERT_FLOAT, $field["default"]);
 			case 'text':
 				return $data->key($field['field'])->typeFilter(\sky\FilterRule::TYPE_EMPTY_STRING)->convertedValueOr(\sky\VarFilter::CONVERT_TRIM, $field["default"]);
 			default:
@@ -92,10 +104,11 @@ abstract class baseEntityDocInterface {
 	/**
 	 * Get single field value;
 	 * @param $field
+	 * @param bool $fields
 	 * @return mixed
-	 * @throws \sky\systemErrorDataException
 	 */
 	protected function GET_ENTITY_VALUE_FOR_SAVE($field, &$fields = false) {
+
 		$name = $field['name'];
 		switch($field["type"]) {
 			case 'datetime':
@@ -114,7 +127,7 @@ abstract class baseEntityDocInterface {
 		}
 
 		if(is_array($fields)) {
-			if(empty($field["saveOption"]) || $field["saveOption"] != "noSave")
+			if($this->filedHavePermission($field, "save"))
 				$fields[$field['name']] = $result;
 		}
 
@@ -164,7 +177,8 @@ abstract class baseEntityDocInterface {
 
 		# Go through
 		foreach(static::$ENTITY_COMPILED_FIELDS[$className] as $field)
-			$data[$field['name']] = $this->GET_ENTITY_VALUE_FOR_ARRAY($field);
+			if($this->filedHavePermission($field, "array"))
+				$data[$field['name']] = $this->GET_ENTITY_VALUE_FOR_ARRAY($field);
 
 		# Return
 		return $data;
@@ -208,7 +222,7 @@ abstract class baseEntityDocInterface {
 			if($varPermission = strpos($docComment, "@permission")) {
 				$right = substr($docComment, $varPermission + strlen('@permission'));
 				preg_match('/^\s+(.*)\s+/', $right, $parts);
-				$entity["permission"] = trim($parts[1]);
+				$entity["permission"] = \sky\vars::trim(explode(",", trim($parts[1])));
 			}
 
 			# Get permission
@@ -221,8 +235,8 @@ abstract class baseEntityDocInterface {
 			# Get entity default
 			if($varDefault = strpos($docComment, "@entityDefault")) {
 				$right = substr($docComment, $varDefault + strlen('@entityDefault'));
-				preg_match('/^\s*(\'([^\n]*)\'|(.*))\s+/', $right, $parts);
-				$entity["default"] = trim($parts[1]);
+				preg_match('/^\s*(\'?([^\n]*)\'?)\s+/', $right, $parts);
+				$entity["default"] = trim($parts[2]);
 				if($entity["default"] == 'null') $entity["default"] = null;
 			}
 
