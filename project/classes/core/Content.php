@@ -64,18 +64,15 @@ class Content {
 
 			$pageClass = ucfirst(Request::getPageName());
 			$pageNamespace = implode("/", array_slice(Request::getAddress(), 0, -1));
-			$pagePath = "$pageNamespace/$pageClass.php";
-
-			# Page class path
-			$classPath = Sky::location("pages") . $pagePath;
+			$pagePath = Sky::location("pages") . "$pageNamespace/$pageClass.php";
 
 			# Existing check
-			if(!file_exists($classPath))
+			if(!file_exists($pagePath))
 				throw new \sky\System404Exception("No page for path found: $pagePath");
 
 			# Page include
 			/** @noinspection PhpIncludeInspection */
-			include $classPath;
+			include $pagePath;
 
 			# Create page object
 			self::$page = BasePage::baseInit($pageClass, $pageNamespace);
