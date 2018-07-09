@@ -81,5 +81,4 @@ register_shutdown_function(function($code, $message, $file, $line) {
 			break;
 	}
 
-	\sky\BaseException::log("($type)$message;\nLine: $line.\nFile: $file", 1);
 });
