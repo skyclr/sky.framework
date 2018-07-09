@@ -121,14 +121,6 @@ class UserController implements \ArrayAccess {
 	}
 
 	/**
-	 * Returns true if user logged in and he is admin(auth::$me['usertype'] == 'admin')
-	 * @return boolean
-	 */
-	public function isAdmin() {
-		return Auth::isLoggedIn() && ($this->userData["id"] == 1 || $this->userData["id"] == 11);
-	}
-
-	/**
 	 * Initialize user preferences
 	 * @param array $preferences
 	 */
@@ -173,7 +165,7 @@ class UserController implements \ArrayAccess {
 
 		# Check if we have preferences
 		if(!$this->preferences)
-			throw new SystemErrorException("Try to save preferences, but they wern't init");
+			throw new SystemErrorException("Try to save preferences, but they weren't init");
 
 		# Save
 		$this->preferences->save($currentOnly);
@@ -224,10 +216,6 @@ class UserController implements \ArrayAccess {
 	# Get data with current offset
 	public function offsetGet($offset) {
 		return isset($this->userData[$offset]) ? $this->userData[$offset] : null;
-	}
-
-	public function inGroup($restrictionId) {
-		return false;
 	}
 
 }

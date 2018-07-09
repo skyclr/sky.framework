@@ -139,7 +139,7 @@ class DateTime extends \DateTime {
 
 	/**
 	 * Get difference between two dates
-	 * @param bool|\DateTime $date Date to take diffirence, if false now will be taken
+	 * @param bool|\DateTime $date Date to take difference, if false now will be taken
 	 * @param bool           $absolute
 	 * @return \DateInterval
 	 */

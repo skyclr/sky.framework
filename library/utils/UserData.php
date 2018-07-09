@@ -27,7 +27,7 @@ class UserData {
 	static $post;
 
 	/**
-	 * Inits static vars
+	 * Init static vars
 	 */
 	public static function init() {
 		self::$cookie = ArrayFilter::make($_COOKIE);

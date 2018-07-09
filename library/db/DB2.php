@@ -4,7 +4,6 @@
 namespace sky\db;
 
 # Exceptions required
-use sky\BaseException;
 use sky\DatabaseException;
 
 # Core
@@ -103,6 +102,7 @@ class DB2 extends Core {
 
 		try {
 
+			/** @noinspection SpellCheckingInspection */
 			$link = @new \PDO($this->databaseType . ":dbname=" .
 				$this->databaseName . ";host=" .
 				$this->databaseHost,
@@ -181,7 +181,7 @@ class DB2 extends Core {
 
 			# Cursor return
 			if($trace === "time")
-				echo "Query \"$query\" <br/>execution time: " . round((microtime(true) - $beginTime), 4) . "sec";
+				echo "Query \"$query\" <br/>execution time: " . round((microtime(true) - $beginTime), 4) . " seconds";
 
 			# Returns
 			switch($return) {

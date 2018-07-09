@@ -199,6 +199,7 @@ class Condition {
 				case "noQuotes":
 					break;
 				case "iNetAtoN":
+					/** @noinspection SpellCheckingInspection */
 					$this->value = "INET_ATON(" . Core::addDashes($this->value) . ")";
 					break;
 				case "now":

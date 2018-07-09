@@ -23,7 +23,7 @@ class UserPreferences {
 
 	/**
 	 * This function initialised user preferences class
-	 * @param Array $preferences Array of user preferences values
+	 * @param array $preferences Array of user preferences values
 	 * @throws SystemNoticeException
 	 */
     function __construct($preferences) {

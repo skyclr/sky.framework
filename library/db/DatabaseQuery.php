@@ -4,9 +4,10 @@
 namespace sky\db;
 
 use sky\DatabaseException;
+use sky\FilterRule;
 use sky\SystemErrorException;
 use sky\Utilities;
-use sky\Validator;
+use sky\VarFilter;
 
 /**
  * Class to perform new syntax to queries
@@ -251,8 +252,8 @@ class DatabaseQuery extends Core {
 			return isset($this->parameters["limit"]) ? $this->parameters["limit"] : false;
 
 		# Check
-		if(!Validator::value($limit, "positive"))
-			throw new DatabaseException("Wrong request limit: " . $limit);
+		VarFilter::check($limit)->typeFilter(FilterRule::TYPE_POSITIVE)->exceptionOnError("Wrong request limit: " . $limit);
+
 
 		# Return
 		$this->parameters["limit"] = $limit;

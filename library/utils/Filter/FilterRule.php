@@ -8,8 +8,8 @@ class FilterRule {
 	const RULE_ISSET = "isset";
 	const RULE_MAX = "max";
 	const RULE_MIN = "min";
-	const RULE_MAXLEN = "maxLength";
-	const RULE_MINLEN = "minLength";
+	const RULE_MAX_LEN = "maxLength";
+	const RULE_MIN_LEN = "minLength";
 	const RULE_PREG = "preg";
 	const RULE_SAME = "same";
 
@@ -85,11 +85,11 @@ class FilterRule {
 				$this->error = !is_numeric($value) || $value < $this->ruleCondition;
 				break;
 			}
-			case self::RULE_MAXLEN: {
+			case self::RULE_MAX_LEN: {
 				$this->error = mb_strlen($value) > $this->ruleCondition;
 				break;
 			}
-			case self::RULE_MINLEN: {
+			case self::RULE_MIN_LEN: {
 				$this->error = mb_strlen($value) < $this->ruleCondition;
 				break;
 			}

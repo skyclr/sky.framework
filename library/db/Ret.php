@@ -14,7 +14,7 @@ abstract class Ret {
 	const ALL = "all";
 
 	/** All rows in request as array without keys */
-	const ALL_NUM = "allnum";
+	const ALL_NUM = "all_num";
 
 	/** First result row */
 	const SINGLE = "single";

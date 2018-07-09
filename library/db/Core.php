@@ -277,7 +277,7 @@ abstract class Core {
 
 	/**
 	 * Implodes name list and add dashes
-	 * @param Array       $names Column names
+	 * @param array       $names Column names
 	 * @param bool|string $table Table name to add to non table set values
 	 * @throws DatabaseException
 	 * @return string

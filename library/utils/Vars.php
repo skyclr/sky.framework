@@ -22,13 +22,13 @@ class Vars {
 		if(!is_array($data)) 
 			return $result;
 
-		# Go thru data
+		# Go through data
 		foreach($data as $record) {
 			
 			# Adds additional key
 			if($key !== false) 
 				$result[$record[$name]][$key] = $record[$key];
-			# Or simle key ordering
+			# Or simple key ordering
 			else 
 				$result[$record[$name]] = $record;
 			

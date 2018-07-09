@@ -64,8 +64,6 @@ class Auth {
 					# Update database
 					Sky::$db->make(self::$usersTable)
 						->where($user['id'])
-//						->set("date_auth_last", date(dbCore::DATETIME_SQL))
-//						->set("ip", $_SERVER["REMOTE_ADDR"])
 						->set("sessionId", $uniqueId)->update();
 
 					# If user correct then we authorise him
@@ -126,7 +124,7 @@ class Auth {
 	static function initialization($usersTableAddress, $defaultPreferences) {
 
 		# Check
-		Validator::value($usersTableAddress, "trim", "Bad users table address");
+		VarFilter::check($usersTableAddress)->typeFilter(FilterRule::TYPE_EMPTY_STRING)->exceptionOnError("Bad users table address");
 
 		# Set locals
 		self::$usersTable = $usersTableAddress;
@@ -221,12 +219,12 @@ class Auth {
 
 	/**
 	 * This function try to authenticate user, and return user data on success
-	 *
 	 * @param bool|String $username  Name of user to authenticate
 	 * @param bool|String $password  Password of this user
 	 * @param bool|String $sessionId Session identifier, may be alternative for password
+	 * @return array|bool
 	 * @throws SystemErrorException
-	 * @return array|bool FALSE on fail, user data array otherwise
+	 * @throws UserErrorException
 	 */
 	static function authentication($username = false, $password = false, $sessionId = false) {
 
@@ -267,7 +265,7 @@ class Auth {
 	}
 
 	/**
-	 * This function checks cookies variables(sessionId, username) and try to authorizate his if they setted
+	 * This function checks cookies variables(sessionId, username) and try to authorize his if they set
 	 * @return bool Returns FALSE if they not set
 	 * @throws DatabaseException
 	 */

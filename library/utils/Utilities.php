@@ -23,7 +23,7 @@ class Utilities {
 
 		# If failed
 		if($result === false && $result != serialize(false))
-			throw new SystemErrorException("Can't unserialise data: ".var_export($data, true));
+			throw new SystemErrorException("Can't un-serialise data: ".var_export($data, true));
 
 		# Return
 		return $result;
@@ -39,7 +39,7 @@ class Utilities {
 		# Get this week start day
 		$thisWeekStart = date("w") == 1 ? time() : strtotime("-1 monday");
 
-		# Retrn dates information
+		# Return dates information
 		return array(
 			"today" 			=> date('Y-m-d'),
 			"yesterday" 		=> date('Y-m-d', strtotime('-1 day')),
@@ -85,7 +85,6 @@ class Utilities {
 		}
 
 		# Set name
-		if($withTime && $name === false) $name = "addate";
 		if($withTime)	$format = DateTime::DATETIME_SQL;
 		else			$format = DateTime::DATE_SQL;
 
