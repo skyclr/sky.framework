@@ -21,7 +21,7 @@ require_once("databaseQuery.php");
  * This class will provide main abstraction level to
  * work with databases
  */
-class DB2 extends core {
+class DB2 extends Core {
 
 	protected
 		$queryCount, # Number of queries performed in this page
@@ -77,12 +77,12 @@ class DB2 extends core {
 	 *
 	 * Prepares query object
 	 * @param array|string|boolean $tables Table or list of table
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 */
 	public function make($tables = false) {
 
 		# Get new query builder
-		return new databaseQuery($this, $tables);
+		return new DatabaseQuery($this, $tables);
 
 	}
 
@@ -185,24 +185,24 @@ class DB2 extends core {
 
 			# Returns
 			switch($return) {
-				case ret::CURSOR:
+				case Ret::CURSOR:
 					return $statement;
-				case ret::NONE:
+				case Ret::NONE:
 					return true;
-				case ret::UPDATED:
+				case Ret::UPDATED:
 					$data = $statement->rowCount();
 					break;
-				case ret::ID:
+				case Ret::ID:
 					$data = $link->lastInsertId();
 					break;
-				case ret::VALUE:
+				case Ret::VALUE:
 					$data = $statement->fetch(\PDO::FETCH_NUM);
 					$data = $data ? $data[0] : false;
 					break;
-				case ret::SINGLE:
+				case Ret::SINGLE:
 					$data = $statement->fetch(\PDO::FETCH_ASSOC);
 					break;
-				case ret::ALL_NUM:
+				case Ret::ALL_NUM:
 					$data = $statement->fetchAll(\PDO::FETCH_NUM);
 					break;
 				default:

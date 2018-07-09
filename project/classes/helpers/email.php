@@ -1,6 +1,6 @@
 <?php
 
-use sky\sky;
+use sky\Sky;
 use sky\systemErrorException;
 use sky\utils;
 
@@ -34,7 +34,7 @@ class email {
 		if(is_array($address)) {
 			foreach($address as $single)
 				$this->to($single);
-		} elseif(\sky\validator::value($address, "email", "null"))
+		} elseif(\sky\Validator::value($address, "email", "null"))
 			$this->to[] = $address;
 
 		return $this;
@@ -51,7 +51,7 @@ class email {
 		if(is_array($address)) {
 			foreach($address as $single)
 				$this->cc($single);
-		} elseif(\sky\validator::value($address, "email", "null"))
+		} elseif(\sky\Validator::value($address, "email", "null"))
 			$this->cc[] = $address;
 
 		return $this;
@@ -125,7 +125,7 @@ class email {
 	 * @return email
 	 */
 	public function render($name, $data) {
-		return $this->text(\sky\sky::$twig->render("emails/$name.twig", $data));
+		return $this->text(\sky\Sky::$twig->render("emails/$name.twig", $data));
 	}
 
 	/**
@@ -148,12 +148,12 @@ class email {
 					throw new systemErrorException('Possible attack: ' . $mailTo . '/' . $this->subject . '/' . $this->text);
 
 				# Set work dir + attach dir
-				\sky\fs\directory::make(sky::location("mail") . 'attachments/')->create();
+				\sky\fs\Directory::make(Sky::location("mail") . 'attachments/')->create();
 
 				# Encode message
 				$message = json_encode(
 					array(
-						'from'         => $this->from ? $this->from : sky::$config["smtp"]["from"],
+						'from'         => $this->from ? $this->from : Sky::$config["smtp"]["from"],
 						'mail'         => $mailTo,
 						'subject'      => $this->subject,
 						'cc'           => $this->cc,
@@ -166,12 +166,12 @@ class email {
 
 				# Get file location
 				if($notify)
-					$loc = sky::location("mailNotify") . date(\sky\DateTime::DATE_TIME) . '_' . \sky\utilities::getRandomString(10) . '.mail';
+					$loc = Sky::location("mailNotify") . date(\sky\DateTime::DATE_TIME) . '_' . \sky\Utilities::getRandomString(10) . '.mail';
 				else
-					$loc = sky::location("mail") . date(\sky\DateTime::DATE_TIME) . '_' . \sky\utilities::getRandomString(10) . '.mail';
+					$loc = Sky::location("mail") . date(\sky\DateTime::DATE_TIME) . '_' . \sky\Utilities::getRandomString(10) . '.mail';
 
 				# Store mail file witch should be send by cron
-				\sky\fs\file::make($loc)
+				\sky\fs\File::make($loc)
 					->write($message, true);
 
 			}

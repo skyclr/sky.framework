@@ -9,7 +9,7 @@ use sky\systemErrorException;
  * Class that holds single condition
  * @package sky\db
  */
-class condition {
+class Condition {
 	public
 		$type = "where",
 		$name,
@@ -51,7 +51,7 @@ class condition {
 	 * Adds group to current condition
 	 * @param $name
 	 * @param $logic
-	 * @return condition
+	 * @return Condition
 	 * @throws \sky\systemErrorException
 	 */
 	public function addGroup($name, $logic) {
@@ -70,7 +70,7 @@ class condition {
 
 
 		# Group
-		$group = new condition("group", $name, false, false, $logic);
+		$group = new Condition("group", $name, false, false, $logic);
 
 
 		# Add to stacks
@@ -86,14 +86,14 @@ class condition {
 	/**
 	 * Searches for specified group
 	 * @param $name
-	 * @return bool|condition
+	 * @return bool|Condition
 	 */
 	public function findGroup($name) {
 
 		# Go through
 		foreach($this->conditions as $condition) {
 
-			/** @var $condition condition */
+			/** @var $condition Condition */
 
 			# Skip none group
 			if($condition->type != "group")
@@ -137,7 +137,7 @@ class condition {
 			# Go through conditions
 			foreach($this->conditions as $condition) {
 
-				/** @var $condition condition */
+				/** @var $condition Condition */
 
 				# Useless logic
 				$logic = $result === "" ? '' : $condition->logic;
@@ -163,7 +163,7 @@ class condition {
 
 
 			# Dashes to name
-			$name = core::addBackDashes($this->name, $table);
+			$name = Core::addBackDashes($this->name, $table);
 
 
 			# Return
@@ -199,20 +199,20 @@ class condition {
 				case "noQuotes":
 					break;
 				case "iNetAtoN":
-					$this->value = "INET_ATON(" . core::addDashes($this->value) . ")";
+					$this->value = "INET_ATON(" . Core::addDashes($this->value) . ")";
 					break;
 				case "now":
 					$this->value = "NOW()";
 					break;
 				default:
-					$this->value = $this->function . "(" . core::addDashes($this->value) . ")";
+					$this->value = $this->function . "(" . Core::addDashes($this->value) . ")";
 			}
 			$this->function = "noQuotes";
 		}
 
 		# Dashes to value
 		if(!is_array($this->value) && (empty($this->function) || $this->function != "noQuotes"))
-			$this->value = core::addDashes($this->value);
+			$this->value = Core::addDashes($this->value);
 
 		# Correction
 		if($this->type !== "set") {
@@ -233,7 +233,7 @@ class condition {
 
 				# Add dashes
 				foreach($this->value as $key => $value)
-					$this->value[$key] = core::addDashes($value);
+					$this->value[$key] = Core::addDashes($value);
 
 				# Implode
 				$this->value = "(" . implode(", ", $this->value) . ")";

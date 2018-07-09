@@ -9,7 +9,7 @@ use sky\systemErrorException;
  * Class uploadedFile holds uploaded file data
  * @package sky\fs
  */
-class uploadedFile extends file {
+class UploadedFile extends File {
 
 	public
 		$temporaryName,

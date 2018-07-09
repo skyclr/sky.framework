@@ -4,14 +4,14 @@ namespace sky\fs;
 
 # Uses
 use sky\baseException;
-use sky\info;
+use sky\Info;
 use sky\systemFatalException;
 
 /**
  * Class upload
  * @package sky\fs
  */
-class upload {
+class Upload {
 
 	# Set as single
 	const SINGLE = "single";
@@ -42,7 +42,7 @@ class upload {
 				return array();
 
 			# Return file
-			return array(file::make(sys_get_temp_dir() . $_FILES[$inputName]['tmp_name']));
+			return array(File::make(sys_get_temp_dir() . $_FILES[$inputName]['tmp_name']));
 
 		} else {
 
@@ -63,7 +63,7 @@ class upload {
 					continue;
 
 				# Save file info
-				$filesData[] = file::make(sys_get_temp_dir() . $temporaryFile);
+				$filesData[] = File::make(sys_get_temp_dir() . $temporaryFile);
 
 			}
 
@@ -83,7 +83,7 @@ class upload {
 	 * @param string $inputName     Name of input tag
 	 * @param bool|string $fileType Type of files
 	 * @throws systemFatalException
-	 * @return uploadedFile[]|uploadedFile
+	 * @return UploadedFile[]|UploadedFile
 	 */
 	public static function uploadFiles($directory, $nameType = "random", $prefix = 0, $maxFiles = -1, $inputName = "userfile", $fileType = false) {
 
@@ -157,17 +157,17 @@ class upload {
 				case UPLOAD_ERR_NO_FILE:
 					if(empty($file['name']))
 						break;
-					info::error("Файл <b>\"{$file['name']}\"</b> не был загружен");
+					Info::error("Файл <b>\"{$file['name']}\"</b> не был загружен");
 					break;
 				case UPLOAD_ERR_PARTIAL:
-					info::error("Файла <b>\"{$file['name']}\"</b> был загружен лишь частично");
+					Info::error("Файла <b>\"{$file['name']}\"</b> был загружен лишь частично");
 					break;
 				case UPLOAD_ERR_FORM_SIZE:
 				case UPLOAD_ERR_INI_SIZE:
-					info::error("Файл <b>\"{$file['name']}\"</b> превышает допустимый размер");
+					Info::error("Файл <b>\"{$file['name']}\"</b> превышает допустимый размер");
 					break;
 				default: {
-					info::error("Во время загрузки файла <b>\"{$file['name']}\"</b> произошла неизвестная ошибка");
+					Info::error("Во время загрузки файла <b>\"{$file['name']}\"</b> произошла неизвестная ошибка");
 					throw new systemFatalException("Can't upload file, reason code:" . $file['error'] . '$_FILES:\n' . var_export($_FILES, true));
 				}
 			}
@@ -188,7 +188,7 @@ class upload {
 	 * @param mixed $prefix     Prefix used in name creation
 	 * @param int $maxFiles     Maximum files number
 	 * @param bool $fileType    Type of file, like image, video or extension
-	 * @return uploadedFile|bool Array if file info or false on error
+	 * @return UploadedFile|bool Array if file info or false on error
 	 * @throws systemFatalException
 	 */
 	private static function uploadFile($file, $directory, $nameType = "random", $prefix = 0, $maxFiles = -1, $fileType = false) {
@@ -202,11 +202,11 @@ class upload {
 			return false;
 
 		# Get file extensions
-		$uploadFile = new uploadedFile($directory, $file);
+		$uploadFile = new UploadedFile($directory, $file);
 
 		# File limitation
 		if($maxFiles >= 0 && $file['number'] > $maxFiles) {
-			info::error("Файл \"$uploadFile->name\" не загружен, так как превышен лимит загружаемых за раз файлов");
+			Info::error("Файл \"$uploadFile->name\" не загружен, так как превышен лимит загружаемых за раз файлов");
 			return false;
 		}
 
@@ -216,7 +216,7 @@ class upload {
 
 		# Check if this is proper file type
 		if($fileType && !$uploadFile->checkType($fileType)) {
-			info::error("Файл \"$uploadFile->fullName\" не загружен, так как файлы этого типа не разрешены");
+			Info::error("Файл \"$uploadFile->fullName\" не загружен, так как файлы этого типа не разрешены");
 			return false;
 		}
 
@@ -229,14 +229,14 @@ class upload {
 
 		# Download files
 		if(!move_uploaded_file($file['temporaryName'], $uploadFile->path)) {
-			info::error("Во время загрузки файла $uploadFile->name произоша ошибка.");
+			Info::error("Во время загрузки файла $uploadFile->name произоша ошибка.");
 			baseException::log("Cant move file '$uploadFile->temporaryName to path  $uploadFile->path");
 			return false;
 		}
 
 		# Change mode
 		if(!$uploadFile->chmod(0666))
-			info::notice("После перемещения файла не получилось изменить его права.");
+			Info::notice("После перемещения файла не получилось изменить его права.");
 
 		# Return file info
 		return $uploadFile;

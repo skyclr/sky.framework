@@ -5,13 +5,13 @@ namespace sky\db;
 
 use sky\databaseException;
 use sky\systemErrorException;
-use sky\utilities;
-use sky\validator;
+use sky\Utilities;
+use sky\Validator;
 
 /**
  * Class to perform new syntax to queries
  */
-class databaseQuery extends core {
+class DatabaseQuery extends Core {
 
 	/**
 	 * Database object
@@ -39,13 +39,13 @@ class databaseQuery extends core {
 
 	/**
 	 * Conditions list
-	 * @var condition
+	 * @var Condition
 	 */
 	private $conditions = false;
 
 	/**
 	 * Having conditions list
-	 * @var condition
+	 * @var Condition
 	 */
 	private $having = false;
 
@@ -90,7 +90,7 @@ class databaseQuery extends core {
 		$this->database = $database;
 
 		# Make main group
-		$this->conditions = new condition("group", "", false);
+		$this->conditions = new Condition("group", "", false);
 
 		# Set tables list
 		if($tables)
@@ -111,7 +111,7 @@ class databaseQuery extends core {
 	/**
 	 * Get conditions or count
 	 * @param bool $count Should we return or count
-	 * @return condition|bool
+	 * @return Condition|bool
 	 */
 	function getConditions($count = false) {
 		return $count ? sizeof($this->conditions) : $this->conditions;
@@ -157,7 +157,7 @@ class databaseQuery extends core {
 	 * Set offset and limit for page navigation request
 	 * @param int $perPage Elements per page
 	 * @param int $page    Page number
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 */
 	public function setPage($perPage, $page = 1) {
 
@@ -167,8 +167,8 @@ class databaseQuery extends core {
 	/**
 	 * Clones current query
 	 * @param mixed $drop Elements to be dropped in new request
-	 * @see databaseQuery::drop
-	 * @return databaseQuery
+	 * @see DatabaseQuery::drop
+	 * @return DatabaseQuery
 	 */
 	public function same($drop = false) {
 
@@ -187,7 +187,7 @@ class databaseQuery extends core {
 	 * Removes some request parameters
 	 * @param string|array $what Element(s) to be dropped
 	 * @param bool|string  $name Special name for some of drops
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 */
 	public function drop($what, $name = false) {
 
@@ -222,7 +222,7 @@ class databaseQuery extends core {
 	/**
 	 * Sets/gets records offset
 	 * @param $offset
-	 * @return databaseQuery|int
+	 * @return DatabaseQuery|int
 	 */
 	public function offset($offset = false) {
 
@@ -242,7 +242,7 @@ class databaseQuery extends core {
 	 * Sets/gets max records limit
 	 * @param int|bool $limit Limit size
 	 * @throws databaseException
-	 * @return databaseQuery|int
+	 * @return DatabaseQuery|int
 	 */
 	public function limit($limit = false) {
 
@@ -265,7 +265,7 @@ class databaseQuery extends core {
 	/**
 	 * Sets/gets max records limit
 	 * @param bool $use
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 */
 	public function ignore($use = true) {
 
@@ -282,7 +282,7 @@ class databaseQuery extends core {
 	 * @param string|array $field Field name to make order or array of fields
 	 * @param string       $order Order direction
 	 * @param bool         $prepend
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 * @throws databaseException
 	 */
 	public function order($field, $order = "DESC", $prepend = false) {
@@ -327,7 +327,7 @@ class databaseQuery extends core {
 	 * @param string|array $names Fields to be gathered
 	 * @param string|bool  $alias
 	 * @param string|bool  $table Table name prepends to rows
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 */
 	public function records($names, $alias = false, $table = false) {
 
@@ -362,7 +362,7 @@ class databaseQuery extends core {
 	 * Set group by fields
 	 * @param array|string $names List of fields to group by
 	 * @param bool         $prepend
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 */
 	public function group($names, $prepend = false) {
 
@@ -391,10 +391,10 @@ class databaseQuery extends core {
 	 * @param bool   $withTime
 	 * @param string $tableName
 	 * @return $this
-	 * @see utilities::getDateConditions
+	 * @see Utilities::getDateConditions
 	 */
 	public function whereDates($period, $name = "date_short", $withTime = false, $tableName = "") {
-		return $this->whereList(utilities::getDateConditions($period, $name, $withTime, $tableName));
+		return $this->whereList(Utilities::getDateConditions($period, $name, $withTime, $tableName));
 	}
 
 	/**
@@ -452,14 +452,14 @@ class databaseQuery extends core {
 	 * @param string       $compare   Comparison, like "=", or ">", "<", etc.
 	 * @param string       $logic     Logic to add before
 	 * @param bool|string  $groupName Group to add condition to
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 * @throws SystemErrorException
 	 */
 	public function where($name, $value = false, $compare = "=", $logic = "AND", $groupName = false) {
 
 		# Make main group
 		if(!$this->conditions)
-			$this->conditions = new condition("group", "", false);
+			$this->conditions = new Condition("group", "", false);
 
 		# Add condition
 		return $this->addCondition($this->conditions, $name, $value, $compare, $logic, $groupName);
@@ -473,14 +473,14 @@ class databaseQuery extends core {
 	 * @param string       $compare   Comparison, like "=", or ">", "<", etc.
 	 * @param string       $logic     Logic to add before
 	 * @param bool|string  $groupName Group to add condition to
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 * @throws SystemErrorException
 	 */
 	public function having($name, $value = false, $compare = "=", $logic = "AND", $groupName = false) {
 
 		# Make main group
 		if(!$this->having)
-			$this->having = new condition("group", "", false);
+			$this->having = new Condition("group", "", false);
 
 		# Add condition
 		return $this->addCondition($this->having, $name, $value, $compare, $logic, $groupName);
@@ -489,13 +489,13 @@ class databaseQuery extends core {
 
 	/**
 	 * Adds condition
-	 * @param condition   $group
+	 * @param Condition   $group
 	 * @param string|array $name      Field name
 	 * @param mixed        $value     Value to compare
 	 * @param string       $compare   Comparison, like "=", or ">", "<", etc.
 	 * @param string       $logic     Logic to add before
 	 * @param bool|string  $groupName Group to add condition to
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 * @throws SystemErrorException
 	 */
 	public function addCondition($group, $name, $value = false, $compare = "=", $logic = "AND", $groupName = false) {
@@ -536,7 +536,7 @@ class databaseQuery extends core {
 		}
 
 		# Prepare condition
-		$condition = new condition("where", $name, $value, $compare, $logic, $function, $groupName);
+		$condition = new Condition("where", $name, $value, $compare, $logic, $function, $groupName);
 
 		# Array push
 		$group->conditions[] = $condition;
@@ -552,7 +552,7 @@ class databaseQuery extends core {
 	 * @param string|array $name     Name of field
 	 * @param mixed        $value    Value to insert
 	 * @param bool|string  $function Function to be operated on value
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 */
 	public function setForUpdate($name, $value = false, $function = false) {
 
@@ -599,7 +599,7 @@ class databaseQuery extends core {
 	/**
 	 * Sets whole row, and append row to end of row list
 	 * @param $fields
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 */
 	public function setRow($fields) {
 		return $this->set($fields, false, false, sizeof($this->records));
@@ -611,7 +611,7 @@ class databaseQuery extends core {
 	 * @param mixed        $value    Value to insert
 	 * @param bool|string  $function Function to be operated on value
 	 * @param int          $row 	 Row number, count from 0
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 */
 	public function set($name, $value = false, $function = false, $row = 0) {
 
@@ -662,7 +662,7 @@ class databaseQuery extends core {
 	/**
 	 * Sets trace option
 	 * @param bool|string $type Type of tracing
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 */
 	public function trace($type = true) {
 
@@ -695,7 +695,7 @@ class databaseQuery extends core {
 	 * @param string|array $on      Fields to be joined on
 	 * @param string       $type    Join type
 	 * @param bool         $prepend If true join would be pushed to begin of stack
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 */
 	public function join($table, $on, $type = "LEFT", $prepend = false) {
 
@@ -706,12 +706,12 @@ class databaseQuery extends core {
 		if($prepend) {
 
 			# Prepend join
-			array_unshift($this->parameters["join"], new join($table, $on, $type));
+			array_unshift($this->parameters["join"], new Join($table, $on, $type));
 
 		} else {
 
 			# Add join
-			$this->parameters["join"][] = new join($table, $on, $type);
+			$this->parameters["join"][] = new Join($table, $on, $type);
 		}
 
 		# return
@@ -805,7 +805,7 @@ class databaseQuery extends core {
 		foreach($this->records[0] as $record) {
 
 			# Expression generation
-			$record = new condition("set", $record['name'], $record['value'], "=", "AND", $record["function"]);
+			$record = new Condition("set", $record['name'], $record['value'], "=", "AND", $record["function"]);
 
 			# Record make
 			$records[] = $record->toString();
@@ -859,10 +859,10 @@ class databaseQuery extends core {
 			if($valuesExpression != "") $valuesExpression .= ", ";
 
 			# Reinterpret values
-			$record = new condition("set", $record['name'], $record['value'], "=", "AND", $record["function"]);
+			$record = new Condition("set", $record['name'], $record['value'], "=", "AND", $record["function"]);
 
 			# Add field to list
-			$fieldsExpression .= core::addBackDashes($record->name);
+			$fieldsExpression .= Core::addBackDashes($record->name);
 
 			# Add value to list
 			$valuesExpression .= $record->value;
@@ -872,7 +872,7 @@ class databaseQuery extends core {
 		foreach($this->updateOnDuplicate as $record) {
 
 			# Expression generation
-			$record = new condition("set", $record['name'], $record['value'], "=", "AND", $record["function"]);
+			$record = new Condition("set", $record['name'], $record['value'], "=", "AND", $record["function"]);
 
 			# Record make
 			$updates[] = $record->toString();
@@ -925,11 +925,11 @@ class databaseQuery extends core {
 				if($recordNum) $valuesExpression .= ", ";
 
 				# Reinterpret values
-				$record = new condition("set", $record['name'], $record['value'], "=", "AND", $record["function"]);
+				$record = new Condition("set", $record['name'], $record['value'], "=", "AND", $record["function"]);
 
 				# Add field to list
 				if(!$rowNum)
-					$fieldsExpression .= core::addBackDashes($record->name);
+					$fieldsExpression .= Core::addBackDashes($record->name);
 
 				# Add value to list
 				$valuesExpression .= $record->value;

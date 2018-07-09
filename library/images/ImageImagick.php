@@ -4,13 +4,13 @@
 namespace sky\images;
 
 # File
-use sky\fs\file;
+use sky\fs\File;
 use sky\systemErrorException;
 use sky\systemNoticeException;
 use sky\userErrorException;
 
 # Extend image
-class imageImagick extends image {
+class ImageImagick extends Image {
 
 	/**
 	 * @var \Imagick
@@ -53,7 +53,7 @@ class imageImagick extends image {
 	 * @param integer $width  Max width of new image
 	 * @param integer $height Max height of new image file
 	 * @param bool    $crop   Identifies if image should be cropped if not  has proper proportions
-	 * @return $this|\sky\images\imageImagick
+	 * @return $this|\sky\images\ImageImagick
 	 * @throws systemNoticeException
 	 * @throws systemErrorException
 	 */
@@ -134,18 +134,18 @@ class imageImagick extends image {
 
 	/**
 	 * Saves image as current file
-	 * @param string|file $path File location
-	 * @param bool $optimize Image optimization flag (performs optimize func)
+	 * @param string|File $path File location
+	 * @param bool $optimize    Image optimization flag (performs optimize func)
 	 * @return $this
 	 */
 	public function save($path, $optimize = true) {
 
 
 		# Make file
-		if($path instanceof file)
+		if($path instanceof File)
 			$this->file = $path;
 		else
-			$this->file = new file($path);
+			$this->file = new File($path);
 
 		# Optimize
 		if($optimize)
@@ -171,11 +171,11 @@ class imageImagick extends image {
 
 	/**
 	 * Draws overlay image
-	 * @param imageImagick $image
+	 * @param ImageImagick $image
 	 * @param $x
 	 * @param $y
 	 */
-	public function drawImageOverlay(imageImagick $image, $x, $y) {
+	public function drawImageOverlay(ImageImagick $image, $x, $y) {
 
 		// Overlay the watermark on the original image
 		$this->image->compositeImage($image->image, \Imagick::COMPOSITE_OVER, $x, $y);
@@ -184,12 +184,12 @@ class imageImagick extends image {
 
 	/**
 	 * Copies image over current at coordinates from bottom left
-	 * @param imageImagick $image
+	 * @param ImageImagick $image
 	 * @param $x
 	 * @param $y
 	 * @return $this
 	 */
-	public function drawImageOverlayFromBottomLeft(imageImagick $image, $x, $y) {
+	public function drawImageOverlayFromBottomLeft(ImageImagick $image, $x, $y) {
 
 		# Get sizes
 		$image->getSizes();

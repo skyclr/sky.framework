@@ -112,11 +112,11 @@ class baseException extends \Exception {
 		$text .= "</table>";
 
 		try {
-			if(class_exists('\sky\sky') && !empty(sky::$twig))
-				return sky::$twig->render("/emails/ErrorNotify.twig", [
+			if(class_exists('\sky\Sky') && !empty(Sky::$twig))
+				return Sky::$twig->render("/emails/ErrorNotify.twig", [
 					"header"  => "Error " . (isset($preferences["site"]["name"]) ? $preferences["site"]["name"] : ""),
 					"content" => $text,
-					"footer"  => isset(sky::$config['site']['signature']) ? sky::$config['site']['signature'] : date("d.m.y H:i")
+					"footer"  => isset(Sky::$config['site']['signature']) ? Sky::$config['site']['signature'] : date("d.m.y H:i")
 				]);
 		} catch(Exception $e) {
 			return "<h1>Error " . (isset($preferences["site"]["name"]) ? $preferences["site"]["name"] : "") . "</h1><p>$text</p>";
@@ -134,14 +134,14 @@ class baseException extends \Exception {
 	public function saveLog() {
 
 		# Get log file path
-		if(isset(sky::$config) && isset(sky::$config["locations"]["logs"]))
-			$filePath = sky::$config["locations"]["logs"] . "errorLog_" . @date("d.m") . ".txt";
+		if(isset(Sky::$config) && isset(Sky::$config["locations"]["logs"]))
+			$filePath = Sky::$config["locations"]["logs"] . "errorLog_" . @date("d.m") . ".txt";
 
 		# If we need to show
-		if(!empty(sky::$config['development']['traceExceptions']) && sky::$config['development']['traceExceptions'] == "screen")
+		if(!empty(Sky::$config['development']['traceExceptions']) && Sky::$config['development']['traceExceptions'] == "screen")
 			echo '<pre>' . $this . '</pre>';
 
-		if(!empty(sky::$config['development']['noLog']))
+		if(!empty(Sky::$config['development']['noLog']))
 			return;
 
 		# Try to create file if not exists
@@ -183,7 +183,7 @@ class baseException extends \Exception {
 			$type = $this->type;
 
 		# Add message
-		info::add($this->getMessage(), $type);
+		Info::add($this->getMessage(), $type);
 
 	}
 

@@ -4,17 +4,17 @@
 namespace sky;
 
 # Special message
-use sky\info\message;
+use sky\info\Message;
 
 
 # Stored message
-require_once "message.php";
+require_once "Message.php";
 
 
 /**
  * Class to work with information messages
  */
-class info {
+class Info {
 
 	/**
 	 * Init function
@@ -22,7 +22,7 @@ class info {
 	public static function  init() {
 
 		# Link to session
-		if(!empty(sky::$config["sessionInfo"]))
+		if(!empty(Sky::$config["sessionInfo"]))
 			self::$messages = &$_SESSION["infoMessages"];
 
 		if(!self::$messages)
@@ -37,13 +37,13 @@ class info {
 	private static $messages = array();
 
 	/**
-	 * @var message
+	 * @var Message
 	 */
 	private static $last;
 
 	/**
 	 * Returns last added message
-	 * @return message
+	 * @return Message
 	 */
 	public static function getLast() {
 		return self::$last;
@@ -66,7 +66,7 @@ class info {
 	public static function add($text, $type = "error", $subtype = "global") {
 
 		# Add message
-		self::$messages[] = self::$last = new message($text, $type, $subtype);
+		self::$messages[] = self::$last = new Message($text, $type, $subtype);
 
 	}
 
@@ -110,7 +110,7 @@ class info {
 	 * Gets list of messages
 	 * @param bool|string $type
 	 * @param bool|string $subtype
-	 * @return \sky\info\message[]
+	 * @return \sky\info\Message[]
 	 */
 	public static function get($type = false, $subtype =  false) {
 
@@ -122,7 +122,7 @@ class info {
 		# Go through
 		foreach(self::$messages as $i => $message) {
 
-			/** @var $message info\message */
+			/** @var $message info\Message */
 			if($type && $type != $message->type)
 				continue;
 

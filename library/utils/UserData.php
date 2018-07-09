@@ -2,13 +2,11 @@
 
 namespace sky;
 
-use sky\validator;
-
 /**
  * Class userData holds prepared validators
  * @package userData
  */
-class userData {
+class UserData {
 
 	/**
 	 * Cookie ArrayFilter
@@ -30,6 +28,6 @@ class userData {
 }
 
 
-userData::$cookie = ArrayFilter::make($_COOKIE);
-userData::$get    = ArrayFilter::make($_GET);
-userData::$post   = ArrayFilter::make($_POST);
+UserData::$cookie = ArrayFilter::make($_COOKIE);
+UserData::$get    = ArrayFilter::make($_GET);
+UserData::$post   = ArrayFilter::make($_POST);

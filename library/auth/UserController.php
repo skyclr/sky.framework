@@ -3,16 +3,16 @@
 # Set namespace
 namespace sky\auth;
 
-use sky\auth;
-use sky\sky;
+use sky\Auth;
+use sky\Sky;
 use sky\systemErrorException;
 
-include_once 'userPreferences.php';
+include_once 'UserPreferences.php';
 
 /**
  * Class to access user preferences
  */
-class userController implements \ArrayAccess {
+class UserController implements \ArrayAccess {
 
 	/**
 	 * Main user info
@@ -22,7 +22,7 @@ class userController implements \ArrayAccess {
 
 	/**
 	 * Keeps current user preferences class
-	 * @var userPreferences
+	 * @var UserPreferences
 	 */
 	private	$preferences = false;
 
@@ -60,9 +60,9 @@ class userController implements \ArrayAccess {
 		$this->userData = $userData;
 
 		# Set info owner
-		if(!empty(sky::$config['login']['userInfo'])) {
+		if(!empty(Sky::$config['login']['userInfo'])) {
 			$this->info["owner"] = $userData["id"];
-			if($userData['id'] && $info = sky::$db->make(sky::$config["login"]["userInfo"])->where("owner", $userData["id"])->get("single"))
+			if($userData['id'] && $info = Sky::$db->make(Sky::$config["login"]["userInfo"])->where("owner", $userData["id"])->get("single"))
 				$this->info = $info;
 		}
 		else
@@ -84,7 +84,7 @@ class userController implements \ArrayAccess {
 			throw new systemErrorException("Can't save user information, because of it's not activated in config");
 
 		# Info save
-		sky::$db->make(sky::$config['login']['userInfo'])->set($this->info)->insert(true);
+		Sky::$db->make(Sky::$config['login']['userInfo'])->set($this->info)->insert(true);
 
 	}
 
@@ -104,7 +104,7 @@ class userController implements \ArrayAccess {
 			throw new systemErrorException("Can't save user information, because of it's not activated in config");
 
 		# User info get
-		if(!$info = sky::$db->make(sky::$config['login']['userInfo'])->where($this->userData['id'], "owner")->get("single"))
+		if(!$info = Sky::$db->make(Sky::$config['login']['userInfo'])->where($this->userData['id'], "owner")->get("single"))
 			throw new systemErrorException("Can't get user info");
 
 		# Save
@@ -125,7 +125,7 @@ class userController implements \ArrayAccess {
 	 * @return boolean
 	 */
 	public function isAdmin() {
-		return auth::isLoggedIn() && ($this->userData["id"] == 1 || $this->userData["id"] == 11);
+		return Auth::isLoggedIn() && ($this->userData["id"] == 1 || $this->userData["id"] == 11);
 	}
 
 	/**
@@ -133,7 +133,7 @@ class userController implements \ArrayAccess {
 	 * @param array $preferences
 	 */
 	public function setPreferences($preferences) {
-		$this->preferences = new userPreferences($preferences);
+		$this->preferences = new UserPreferences($preferences);
 	}
 
 	/**
@@ -186,18 +186,18 @@ class userController implements \ArrayAccess {
 	public function save() {
 
 		# If nothing to change
-		if(empty(sky::$config['authenticate']['changeable']))
+		if(empty(Sky::$config['authenticate']['changeable']))
 			return;
 
 		# Changes list
 		$changes = array();
 
 		# Compile
-		foreach(sky::$config['authenticate']['changeable'] as $change)
+		foreach(Sky::$config['authenticate']['changeable'] as $change)
 			$changes[$change] = $this->userData[$change];
 
 		# Update records
-		sky::$db->make(auth::$usersTable)->where($this->userData['id'])->set($changes)->update();
+		Sky::$db->make(Auth::$usersTable)->where($this->userData['id'])->set($changes)->update();
 
 	}
 

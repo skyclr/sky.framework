@@ -12,5 +12,5 @@ $preferences["locations"]["html"] = __DIR__ . "/";
 /**
  * New sky object performs all initializations
  */
-new \sky\sky();
+new \sky\Sky();
 

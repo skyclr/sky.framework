@@ -22,7 +22,7 @@ set_include_path(dirname(__FILE__));
 # Classes
 require_once __DIR__ . "/exceptions.php";
 require_once __DIR__ . "/sky.php";
-require_once __DIR__ . "/../auth/authentication.php";
+require_once __DIR__ . "/../auth/Auth.php";
 require_once __DIR__ . "/../database/database2.php";
 require_once __DIR__ . "/../utils/datetime.php"; 
 require_once __DIR__ . "/../fileSystem/file.php"; 

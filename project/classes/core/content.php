@@ -1,10 +1,10 @@
 <?php
 
 # Include base page class for page building
-use sky\auth;
+use sky\Auth;
 use sky\baseException;
-use sky\request;
-use sky\sky;
+use sky\Request;
+use sky\Sky;
 
 require_once "basePage.php";
 
@@ -56,16 +56,16 @@ class content {
 		twig::init();
 
 		# Get request
-		$path = request::getPath(self::$pageName);
+		$path = Request::getPath(self::$pageName);
 
 		# Check if available
-		if(!empty(sky::$config["authenticate"]["use"]) && !auth::isLoggedIn())
+		if(!empty(Sky::$config["authenticate"]["use"]) && !Auth::isLoggedIn())
 			foreach(self::$authPages as $page)
 				if($path != "admin/login" && preg_match("/$page/", $path))
 					$path = "login";
 
 		# Get page name
-		self::$pageName = request::getPageName(self::$pageName);
+		self::$pageName = Request::getPageName(self::$pageName);
 
 		# Make page
 		self::makePage($path);
@@ -86,7 +86,7 @@ class content {
 		try {
 
 			# Page class path
-			$classPath = sky::location("pages") . self::$pagePath . ".php";
+			$classPath = Sky::location("pages") . self::$pagePath . ".php";
 
 			# Existing check
 			if(!file_exists($classPath))
@@ -120,13 +120,13 @@ class content {
 				"page"         => self::$page,
 				"pageName"     => self::$pageName,
 				"pagePath"     => self::$pagePath,
-				"pathElements" => request::getAddress(),
+				"pathElements" => Request::getAddress(),
 				"jsTemplates"  => $jsTemplates ? json_encode($jsTemplates, true) : "{}"
 			);
 
 
 			# Render
-			self::$renderedPage = sky::$twig->render("/shared/" . self::$page->parentTemplate . ".twig", $parameters);
+			self::$renderedPage = Sky::$twig->render("/shared/" . self::$page->parentTemplate . ".twig", $parameters);
 
 		} catch(\sky\system404Exception $e) {
 
@@ -134,7 +134,7 @@ class content {
 			header("HTTP/1.0 404 Not Found", true, 404);
 
 			# Render 404 page
-			self::$renderedPage = sky::$twig->render("/system/404.twig", array("page" => request::$path));
+			self::$renderedPage = Sky::$twig->render("/system/404.twig", array("page" => Request::$path));
 
 		} catch(Exception $e) {
 
@@ -143,7 +143,7 @@ class content {
 				baseException::log($e->getMessage());
 
 			# Message
-			self::$renderedPage = sky::$twig->render("/system/errorPage.twig", array("error" => "Во время работы произошла ошибка (" . $e->getMessage() . "), пожалуйста попробуйте позже"));
+			self::$renderedPage = Sky::$twig->render("/system/errorPage.twig", array("error" => "Во время работы произошла ошибка (" . $e->getMessage() . "), пожалуйста попробуйте позже"));
 
 			# Mark that page was rendered
 			self::$page = true;

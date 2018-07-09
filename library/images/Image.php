@@ -8,7 +8,7 @@ require_once "imageImagick.php";
 
 # Uses
 use sky\DateTime;
-use sky\fs\file;
+use sky\fs\File;
 use sky\systemErrorException;
 use sky\systemNoticeException;
 use sky\userErrorException;
@@ -17,7 +17,7 @@ use sky\userErrorException;
  * Class image to work with images transformation
  * @package sky\images
  */
-class image {
+class Image {
 
 	public $width, $height;
 	protected $type;
@@ -29,19 +29,19 @@ class image {
 	protected $image;
 
 	/**
-	 * @var \sky\fs\file
+	 * @var \sky\fs\File
 	 */
 	public $file;
 
 	/**
 	 * @param $type
-	 * @return image|imageImagick
+	 * @return Image|ImageImagick
 	 */
 	public static function make($type) {
 
 		# If Imagick available
 		if(class_exists("Imagick"))
-			return new imageImagick($type);
+			return new ImageImagick($type);
 
 		# Simple
 		return new self($type);
@@ -70,7 +70,7 @@ class image {
 	public static function makeFromPath($path) {
 
 		# Make file
-		$file = new file($path);
+		$file = new File($path);
 
 		# Make image
 		return self::makeFromFile($file);
@@ -79,11 +79,11 @@ class image {
 
 	/**
 	 * Creates new image from file object
-	 * @param file $file
-	 * @return image
+	 * @param File $file
+	 * @return Image
 	 * @throws systemErrorException
 	 */
-	public static function makeFromFile(file $file) {
+	public static function makeFromFile(File $file) {
 
 		# Check
 		if($file->type != "image")
@@ -151,13 +151,13 @@ class image {
 
 	/**
 	 * Creates new image with new sizes and transparent according old one
-	 * @param image $image
+	 * @param Image $image
 	 * @param int $width
 	 * @param int $height
 	 * @throws systemErrorException
 	 * @return resource New blank image
 	 */
-	private function createFromImage(image $image, $width, $height) {
+	private function createFromImage(Image $image, $width, $height) {
 
 
 		# Create empty
@@ -243,14 +243,14 @@ class image {
 
 	/**
 	 * Copies part of one one image to another with x, y, of old part
-	 * @param image $to
+	 * @param Image $to
 	 * @param       $width
 	 * @param       $height
 	 * @param       $x
 	 * @param       $y
 	 * @throws \sky\systemNoticeException
 	 */
-	private function copyWithCrop(image $to, $width, $height, $x, $y) {
+	private function copyWithCrop(Image $to, $width, $height, $x, $y) {
 		if(!imagecopyresampled(
 				$to->image,		// To
 				$this->image,	// From
@@ -264,13 +264,13 @@ class image {
 
 	/**
 	 * Makes image copy from one to another
-	 * @param image $to			Destination image
-	 * @param int   $partWidth	Part width
-	 * @param int   $partHeight	Part height
-	 * @param bool  $crop		Crop flag
+	 * @param Image $to         Destination image
+	 * @param int   $partWidth  Part width
+	 * @param int   $partHeight Part height
+	 * @param bool  $crop       Crop flag
 	 * @throws \sky\systemNoticeException
 	 */
-	private function copy(image $to, $partWidth, $partHeight, $crop = false) {
+	private function copy(Image $to, $partWidth, $partHeight, $crop = false) {
 
 		# Resize image
 		if($crop) {
@@ -342,18 +342,18 @@ class image {
 
 	/**
 	 * Saves image as current file
-	 * @param string|file $path File location
-	 * @param bool $optimize Image optimization flag (performs optimize func)
+	 * @param string|File $path File location
+	 * @param bool $optimize    Image optimization flag (performs optimize func)
 	 * @return $this
 	 * @throws systemErrorException
 	 */
 	public function save($path, $optimize = true) {
 
 		# Make file
-		if($path instanceof file)
+		if($path instanceof File)
 			$this->file = $path;
 		else
-			$this->file = new file($path);
+			$this->file = new File($path);
 
 		# Create according to path
 		switch ($this->file->extension) {

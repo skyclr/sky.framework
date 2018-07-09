@@ -8,7 +8,7 @@ namespace sky;
  * Class request
  * Used for request routing and etc.
  */
-class request {
+class Request {
 
 	public static $real = false;
 
@@ -125,12 +125,12 @@ class request {
 
 
 		# If none
-		if(empty(sky::$config["pages"]["synonyms"]))
+		if(empty(Sky::$config["pages"]["synonyms"]))
 			return $page;
 
 
 		# Search through
-		foreach(sky::$config["pages"]["synonyms"] as $synonym => $original) {
+		foreach(Sky::$config["pages"]["synonyms"] as $synonym => $original) {
 
 			/* If we found it */
 			if($find = preg_match("/^$synonym$/", $page))

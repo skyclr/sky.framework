@@ -152,7 +152,7 @@ abstract class baseEntityDocInterface {
 
 		# Prepare query
 		/** @noinspection PhpUndefinedFieldInspection */
-		$query = \sky\sky::$db->make(static::$tableName)->set($fields);
+		$query = \sky\Sky::$db->make(static::$tableName)->set($fields);
 
 		# Save main data if none
 		/** @noinspection PhpUndefinedFieldInspection */
@@ -222,7 +222,7 @@ abstract class baseEntityDocInterface {
 			if($varPermission = strpos($docComment, "@permission")) {
 				$right = substr($docComment, $varPermission + strlen('@permission'));
 				preg_match('/^\s+(.*)\s+/', $right, $parts);
-				$entity["permission"] = \sky\vars::trim(explode(",", trim($parts[1])));
+				$entity["permission"] = \sky\Vars::trim(explode(",", trim($parts[1])));
 			}
 
 			# Get permission

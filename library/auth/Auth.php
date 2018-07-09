@@ -4,21 +4,21 @@
 namespace sky;
 
 # Uses
-use sky\auth\userController;
-use sky\db\ret;
-use sky\userData as ud;
+use sky\auth\UserController;
+use sky\db\Ret;
+use sky\UserData as ud;
 
 # Add controller
-include_once 'userController.php';
+include_once 'UserController.php';
 
 /**
  * Class for user authentication
  */
-class auth {
+class Auth {
 
 	/**
 	 * User data variable
-	 * @var auth\userController
+	 * @var auth\UserController
 	 */
 	public static $me = false;
 
@@ -42,11 +42,11 @@ class auth {
 	function __construct() {
 
 		# Logout if type
-		if(vars::type() == 'logout')
+		if(Vars::type() == 'logout')
 			self::logout();
 
 		# Try to login if type
-		if(vars::type() == 'login') {
+		if(Vars::type() == 'login') {
 
 			try {
 
@@ -57,12 +57,12 @@ class auth {
 					$uniqueId = md5(date("U") . rand(1000, getrandmax()));
 
 					# Cookies set
-					setcookie('sessionId', $uniqueId, time() + 60 * 60 * 24 * 30, sky::$config["site"]["base"]);
-					setcookie('autoLogin', 'true', time() + 60 * 60 * 24 * 30, sky::$config["site"]["base"]);
-					setcookie('username', $user['profileEmail'], time() + 60 * 60 * 24 * 30, sky::$config["site"]["base"]);
+					setcookie('sessionId', $uniqueId, time() + 60 * 60 * 24 * 30, Sky::$config["site"]["base"]);
+					setcookie('autoLogin', 'true', time() + 60 * 60 * 24 * 30, Sky::$config["site"]["base"]);
+					setcookie('username', $user['profileEmail'], time() + 60 * 60 * 24 * 30, Sky::$config["site"]["base"]);
 
 					# Update database
-					sky::$db->make(self::$usersTable)
+					Sky::$db->make(self::$usersTable)
 						->where($user['id'])
 //						->set("date_auth_last", date(dbCore::DATETIME_SQL))
 //						->set("ip", $_SERVER["REMOTE_ADDR"])
@@ -72,15 +72,15 @@ class auth {
 					self::authorisation($user);
 
 					# After login redirect
-					if(self::isLoggedIn() && !empty(sky::$config["authenticate"]["redirect"]))
-						sky::goToPage(sky::$config["authenticate"]["redirect"]);
+					if(self::isLoggedIn() && !empty(Sky::$config["authenticate"]["redirect"]))
+						Sky::goToPage(Sky::$config["authenticate"]["redirect"]);
 
-				} else info::error("Неверная пара логин/пароль" . $user);
+				} else Info::error("Неверная пара логин/пароль" . $user);
 
 			} catch(\Exception $e) {
 				if($e instanceof databaseException)
 					throw new databaseException("Can't auth user, ".$e->getMessage());
-				info::error("Ошибка во время аутентификации пользователя");
+				Info::error("Ошибка во время аутентификации пользователя");
 			}
 
 		}
@@ -101,17 +101,17 @@ class auth {
 	static function loginGuest() {
 
 		# If no need in guest account
-		if(empty(sky::$config["authenticate"]["guest"]))
+		if(empty(Sky::$config["authenticate"]["guest"]))
 			return;
 
 		# Login guest
-		self::$me = new userController(sky::$config["authenticate"]["guest"]);
+		self::$me = new UserController(Sky::$config["authenticate"]["guest"]);
 
 		# Set guest preferences
-		if(!empty(sky::$config["authenticate"]["preferencesTable"]) && self::$defaultPreferences) {
+		if(!empty(Sky::$config["authenticate"]["preferencesTable"]) && self::$defaultPreferences) {
 
 			# Add to controller
-			auth::$me->setPreferences(self::$defaultPreferences);
+			Auth::$me->setPreferences(self::$defaultPreferences);
 		}
 
 	}
@@ -126,7 +126,7 @@ class auth {
 	static function initialization($usersTableAddress, $defaultPreferences) {
 
 		# Check
-		validator::value($usersTableAddress, "trim", "Bad users table address");
+		Validator::value($usersTableAddress, "trim", "Bad users table address");
 
 		# Set locals
 		self::$usersTable = $usersTableAddress;
@@ -160,13 +160,13 @@ class auth {
 		session_destroy();
 
 		# Unset user cookies
-		setcookie('sessionId', '', time() - 3600, sky::$config["site"]["base"]);
-		setcookie('autoLogin', '', time() - 3600, sky::$config["site"]["base"]);
-		setcookie('username' , '', time() - 3600, sky::$config["site"]["base"]);
+		setcookie('sessionId', '', time() - 3600, Sky::$config["site"]["base"]);
+		setcookie('autoLogin', '', time() - 3600, Sky::$config["site"]["base"]);
+		setcookie('username' , '', time() - 3600, Sky::$config["site"]["base"]);
 
 		# Page redirect
 		if($redirect)
-			sky::goToPage("/");
+			Sky::goToPage("/");
 
 	}
 
@@ -183,30 +183,30 @@ class auth {
 			throw new systemErrorException("Auth options not initialized");
 
 		# Set me
-		self::$me = new userController($user);
+		self::$me = new UserController($user);
 
 		# Load preferences
 		try {
 
 			# If we don't use preferences
-			if(empty(sky::$config["authenticate"]["preferences"]))
+			if(empty(Sky::$config["authenticate"]["preferences"]))
 				return;
 
 			# Get user preferences
-			$preferences = sky::$db->make(sky::$config["authenticate"]["preferencesTable"])->where("user_id", self::$me["id"])->get(ret::SINGLE);
+			$preferences = Sky::$db->make(Sky::$config["authenticate"]["preferencesTable"])->where("user_id", self::$me["id"])->get(Ret::SINGLE);
 
 			# Save all preferences to storage
 			if($preferences)
-				auth::$me->setPreferences($preferences);
+				Auth::$me->setPreferences($preferences);
 
 			# Add user preferences	
 			elseif(self::$defaultPreferences) {
 
 				# Save default preferences
-				sky::$db->make(sky::$config["authenticate"]["preferencesTable"])->set(self::$defaultPreferences)->set("user_id", self::$me["id"])->insert(true);
+				Sky::$db->make(Sky::$config["authenticate"]["preferencesTable"])->set(self::$defaultPreferences)->set("user_id", self::$me["id"])->insert(true);
 
 				# Save to session
-				auth::$me->setPreferences(self::$defaultPreferences);
+				Auth::$me->setPreferences(self::$defaultPreferences);
 
 			}
 
@@ -214,7 +214,7 @@ class auth {
 
 			# In case of error
 			self::logout(false);
-			info::error("Ошибка во время авторизации");
+			Info::error("Ошибка во время авторизации");
 
 		}
 	}
@@ -243,15 +243,15 @@ class auth {
 			return false;
 
 		# Prepare request
-		$request = sky::$db->make(self::$usersTable)->where("profileEmail", $username);
+		$request = Sky::$db->make(self::$usersTable)->where("profileEmail", $username);
 
 		# Get user by name and password
 		if($password !== false)
-			$user = $request->where(array("password", "md5"), $password)->get(ret::SINGLE);
+			$user = $request->where(array("password", "md5"), $password)->get(Ret::SINGLE);
 
 		# Get user by name and unique id
 		else
-			$user = $request->where("sessionId", $sessionId)->get(ret::SINGLE);
+			$user = $request->where("sessionId", $sessionId)->get(Ret::SINGLE);
 
 		# If no data gathered
 		if(!$user)
@@ -287,7 +287,7 @@ class auth {
 		} catch(\Exception $e) {
 			if($e instanceof databaseException)
 				throw new databaseException("Can't auth user, ".$e->getMessage());
-			info::error("Во время восстановления сессии произошла ошибка");
+			Info::error("Во время восстановления сессии произошла ошибка");
 		}
 
 		# False if auth failed

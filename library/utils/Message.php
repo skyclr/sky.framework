@@ -1,12 +1,10 @@
 <?php
 
-
 # Framework namespace
 namespace sky\info;
 
-
 # Message
-class message {
+class Message {
 
 	public
 		$text,

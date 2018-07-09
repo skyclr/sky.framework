@@ -12,7 +12,7 @@ use sky\systemErrorException;
  * Class directory
  * @package sky
  */
-class directory {
+class Directory {
 
 	/**
 	 * Directory path
@@ -100,7 +100,7 @@ class directory {
 		# Delete children
 		foreach($this->read() as $path) {
 			if(is_file($path))
-				file::make($path)->delete();
+				File::make($path)->delete();
 			else
 				self::make($path)->delete();
 		}
@@ -131,7 +131,7 @@ class directory {
 		# Go through
 		if($list)
 			foreach($list as $path)
-				$files[] = file::make($path);
+				$files[] = File::make($path);
 
 
 		# Return files

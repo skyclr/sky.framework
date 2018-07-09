@@ -118,7 +118,7 @@ abstract class baseEntity extends baseEntityDocInterface {
 			->userExceptionOnError("Неверно указан ID($id)");
 
 		# Get data
-		if(!$data = \sky\sky::$db->make(static::$tableName)->where($id)->get(\sky\db\ret::SINGLE))
+		if(!$data = \sky\Sky::$db->make(static::$tableName)->where($id)->get(\sky\db\Ret::SINGLE))
 			throw new userErrorException("Записи с ID $id (" . static::$tableName .") не сущестует");
 
 		# Return data
@@ -135,7 +135,7 @@ abstract class baseEntity extends baseEntityDocInterface {
 	public function delete() {
 
 		# Delete record
-		if(!$data = \sky\sky::$db->make(static::$tableName)->where($this->id)->delete())
+		if(!$data = \sky\Sky::$db->make(static::$tableName)->where($this->id)->delete())
 			throw new userErrorException("Записи с ID $this->id не сущестует");
 
 		# Remove id

@@ -6,7 +6,7 @@ namespace sky;
 /**
  * Class validator used to validate user or data
  */
-class validator {
+class Validator {
 
 	/**
 	 * Available type of values
@@ -86,7 +86,7 @@ class validator {
 	/**
 	 * Creates new validator
 	 * @param $data
-	 * @return validator
+	 * @return Validator
 	 */
 	public static function init($data) {
 		return new self($data);
@@ -110,7 +110,7 @@ class validator {
 	 * @return mixed
 	 */
 	public static function value($value, $ruleName, $rule = false, $return = "null", $errorText = false) {
-		return validator::init($value)->rule(false, $ruleName, $rule, $return, $errorText)->get();
+		return Validator::init($value)->rule(false, $ruleName, $rule, $return, $errorText)->get();
 	}
 
 	/**
@@ -124,7 +124,7 @@ class validator {
 	 * @return mixed
 	 */
 	public static function single($data, $key, $ruleName, $rule = false, $return = "null", $errorText = false) {
-		return validator::init($data)->one($key, $ruleName, $rule, $return, $errorText);
+		return Validator::init($data)->one($key, $ruleName, $rule, $return, $errorText);
 
 	}
 
@@ -587,13 +587,13 @@ class validator {
 				# Value switch
 				switch($return) {
 					case "success":
-						info::success($errorText);
+						Info::success($errorText);
 						break;
 					case "notice":
-						info::notice($errorText);
+						Info::notice($errorText);
 						break;
 					case "error":
-						info::error($errorText);
+						Info::error($errorText);
 						break;
 					case "exception":
 						throw new userErrorException($errorText);

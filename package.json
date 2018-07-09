@@ -6,6 +6,5 @@
     "gulp-concat": "*",
     "gulp-clean-css": "*",
     "gulp-uglifyjs": "*",
-    "gulp-compress": "*"
   }
 }

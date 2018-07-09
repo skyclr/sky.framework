@@ -17,7 +17,7 @@ class entityBuilder {
 	private function __construct() {
 
 		# Add path of entity template
-		\sky\sky::$twigLoader->addPath(\sky\sky::location("helpers")."entityBuilder/");
+		\sky\Sky::$twigLoader->addPath(\sky\Sky::location("helpers")."entityBuilder/");
 
 	}
 
@@ -27,7 +27,7 @@ class entityBuilder {
 		$definition = $this->getTableDefinition($tableName, $parameters);
 
 		# Make code
-		return [\sky\sky::$twig->render("subEntityTemplateNew.twig", [
+		return [\sky\Sky::$twig->render("subEntityTemplateNew.twig", [
 			"table_name"         => $definition["table_name"],
 			"entity_name"        => $definition["entity_name"],
 			"fields"             => "public\n\t\t" . implode(",\n\t\t", $definition["fields"]) . ";",
@@ -45,7 +45,7 @@ class entityBuilder {
 		$definition = $this->getTableDefinition($tableName, $parameters);
 
 		# Make code
-		return [\sky\sky::$twig->render("subManagerTemplate.twig", [
+		return [\sky\Sky::$twig->render("subManagerTemplate.twig", [
 			"table_name"   => $definition["table_name"],
 			"entity_name"  => $definition["entity_name"],
 			"manager_name" => $definition["manager_name"],
@@ -59,8 +59,8 @@ class entityBuilder {
 
 	function getTableDefinition($tableName, $parameters) {
 
-		$database = \sky\sky::$config["database"]["name"];
-		$fields = \sky\sky::$db->query("select * from information_schema.columns where TABLE_SCHEMA = '$database' and  TABLE_NAME = '$tableName'");
+		$database = \sky\Sky::$config["database"]["name"];
+		$fields = \sky\Sky::$db->query("select * from information_schema.columns where TABLE_SCHEMA = '$database' and  TABLE_NAME = '$tableName'");
 
 		if(!$fields)
 			throw new \sky\userErrorException("No table '$tableName' exists");

@@ -5,11 +5,11 @@ namespace sky;
 
 
 /** Class to work with user and other variables */
-class vars {
+class Vars {
 
 	/**
 	 * Reorders array by specified field, uses it values in keys
-	 * @param Array       $data    Array of data to sort
+	 * @param array       $data    Array of data to sort
 	 * @param String      $name    Name of keys to sort by values of
 	 * @param bool|String $key     Special key name which will be used in $name $return[$record[$name]][$key] = $record;
 	 * @return array
@@ -153,7 +153,7 @@ class vars {
 
 	/**
 	 * Returns POST or GET subtype variable
-	 * @param Array|bool $availableTypes Array of types if not math return false
+	 * @param array|bool $availableTypes Array of types if not math return false
 	 * @return string|bool String or false if not set or not math available types
 	 */
      public static function subtype($availableTypes = false) {

@@ -6,7 +6,7 @@ namespace sky;
 /**
  * Main class
  */ 
-class sky {
+class Sky {
 
 	/**
 	 * Predefine constants
@@ -21,7 +21,7 @@ class sky {
 
 	/**
 	 * Self link
-	 * @var bool|sky
+	 * @var bool|Sky
 	 */
 	private static $sky	= false;
 	
@@ -58,14 +58,14 @@ class sky {
 		if(!empty($dir) && file_exists("$dir/$className.php"))
 			/** @noinspection PhpIncludeInspection */
 			include  "$dir/$className.php";
-		elseif(file_exists(sky::location("phpEntities") . "$className.php"))
-			include sky::location("phpEntities") . "$className.php";
-		elseif(file_exists(sky::location("phpManagers") . "$className.php"))
-			include sky::location("phpManagers") ."$className.php";
-		elseif(file_exists(sky::location("phpHelpers") . "$className.php"))
-			include sky::location("phpHelpers") . "$className.php";
-		elseif(file_exists(sky::location("phpCore") . "$className.php"))
-			include sky::location("phpCore") . "$className.php";
+		elseif(file_exists(Sky::location("phpEntities") . "$className.php"))
+			include Sky::location("phpEntities") . "$className.php";
+		elseif(file_exists(Sky::location("phpManagers") . "$className.php"))
+			include Sky::location("phpManagers") ."$className.php";
+		elseif(file_exists(Sky::location("phpHelpers") . "$className.php"))
+			include Sky::location("phpHelpers") . "$className.php";
+		elseif(file_exists(Sky::location("phpCore") . "$className.php"))
+			include Sky::location("phpCore") . "$className.php";
 		else spl_autoload($className);
 
 	}
@@ -90,7 +90,7 @@ class sky {
 			session_start();
 
 			# Pre validate data
-			require_once sky::location("library") . "utils/userData.php";
+			require_once Sky::location("library") . "utils/userData.php";
 
 		}
 
@@ -174,7 +174,7 @@ class sky {
 			echo "\nLibrary: init composer autoload...";
 
 		# Include composer auto load
-		require_once sky::location("vendor") . 'autoload.php';
+		require_once Sky::location("vendor") . 'autoload.php';
 
 		# Log
 		if($type == "console") {
@@ -216,7 +216,7 @@ class sky {
 					echo "Library: get external configs from DB...";
 
 				# Get configs
-				if($configs = sky::$db->make(self::$config["preferences"]["external"])->where("autoload", 1)->select()) {
+				if($configs = Sky::$db->make(self::$config["preferences"]["external"])->where("autoload", 1)->select()) {
 
 					# Go through
 					foreach($configs as $config)
@@ -232,11 +232,11 @@ class sky {
 
 			# Init authentication
 			if($type !== "console" && !empty(self::$config["authenticate"])  && (!isset(self::$config["authenticate"]["use"]) || self::$config["authenticate"]["use"] !== false)) {
-				auth::initialization(
+				Auth::initialization(
 							self::$config['authenticate']["table"],
 							self::$config['authenticate']["preferences"]);
 
-				new auth();
+				new Auth();
 			}
 		}
 
@@ -255,7 +255,7 @@ class sky {
 
 		# Disable cache if needed
 		if(!empty(self::$config['templates']['noCache']) || !empty(self::$config["development"]['noTwigCache']))
-			sky::$twig->setCache(false);
+			Sky::$twig->setCache(false);
 
 	}
 

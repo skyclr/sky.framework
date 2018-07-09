@@ -1,8 +1,8 @@
 <?php
-use sky\info;
-use sky\sky;
+use sky\Info;
+use sky\Sky;
 use sky\systemErrorException;
-use sky\userData as ud;
+use sky\UserData as ud;
 
 /**
  * Class page
@@ -46,7 +46,7 @@ abstract class basePage {
 	 * Page creation
 	 */
 	public function __construct() {
-		$this->preTitle = sky::$config["site"]["name"];
+		$this->preTitle = Sky::$config["site"]["name"];
 	}
 
 	/**
@@ -95,8 +95,8 @@ abstract class basePage {
 
 
 		# Add default templates
-		if(!empty(sky::$config["templates"]["jsTemplates"]["default"]))
-			$this->jsTemplates = array_merge($this->jsTemplates, sky::$config["templates"]["jsTemplates"]["default"]);
+		if(!empty(Sky::$config["templates"]["jsTemplates"]["default"]))
+			$this->jsTemplates = array_merge($this->jsTemplates, Sky::$config["templates"]["jsTemplates"]["default"]);
 
 
 		# Go through
@@ -104,7 +104,7 @@ abstract class basePage {
 
 
 			# Template path
-			$path = sky::location("twigJs") . $template . "." . sky::$config["templates"]["jsTemplates"]["extension"];
+			$path = Sky::location("twigJs") . $template . "." . Sky::$config["templates"]["jsTemplates"]["extension"];
 
 
 			# Check
@@ -119,7 +119,7 @@ abstract class basePage {
 
 
 			# Date check
-			if(!empty(sky::$config["templates"]["jsTemplates"]["clientCache"]) &&
+			if(!empty(Sky::$config["templates"]["jsTemplates"]["clientCache"]) &&
 				$date = ud::$cookie->key("storedTemplates-" . str_replace("/", "-", $template))->valueOr(false)
 			) {
 
@@ -141,12 +141,12 @@ abstract class basePage {
 
 
 			# Set multi
-			if(!empty(sky::$config["templates"]["jsTemplates"]["multiple"])) {
-				if(array_key_exists($template, sky::$config["templates"]["jsTemplates"]["multiple"])) {
+			if(!empty(Sky::$config["templates"]["jsTemplates"]["multiple"])) {
+				if(array_key_exists($template, Sky::$config["templates"]["jsTemplates"]["multiple"])) {
 					$this->jsTemplates[$key]["multiple"] = true;
 					$this->jsTemplates[$key]["date"]     = array(
 						"date"      => $this->jsTemplates[$key]["date"],
-						"templates" => sky::$config["templates"]["jsTemplates"]["multiple"][$template]
+						"templates" => Sky::$config["templates"]["jsTemplates"]["multiple"][$template]
 					);
 				}
 			}
@@ -169,11 +169,11 @@ abstract class basePage {
 
 		# Template path
 		if(!$templatePath)
-			$templatePath = sky::location("templates") . sky::$config['templates']['pages'] . content::$pagePath . "/" . content::$pageName . ".twig";
+			$templatePath = Sky::location("templates") . Sky::$config['templates']['pages'] . content::$pagePath . "/" . content::$pageName . ".twig";
 
 		# Try to find non directory
 		if(!file_exists($templatePath))
-			$templatePath = sky::location("templates") . sky::$config['templates']['pages'] . content::$pagePath . ".twig";
+			$templatePath = Sky::location("templates") . Sky::$config['templates']['pages'] . content::$pagePath . ".twig";
 
 		# Existing check
 		if(!file_exists($templatePath))
@@ -182,11 +182,11 @@ abstract class basePage {
 		# Get page name
 		$parameters += ["pageName"       => content::$pageName,
 						"pagePath"       => content::$pagePath,
-						"resultMessages" => info::get(),
+						"resultMessages" => Info::get(),
 						"page"           => $this];
 
 		# Render
-		return sky::$twig->render(mb_substr($templatePath, mb_strlen(sky::location("templates"))), $parameters);
+		return Sky::$twig->render(mb_substr($templatePath, mb_strlen(Sky::location("templates"))), $parameters);
 
 	}
 

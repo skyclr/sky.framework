@@ -5,7 +5,7 @@ namespace sky;
 
 
 /** Utilities for special needs */
-class utilities {
+class Utilities {
 
 	/**
 	 * Un serialised specified data

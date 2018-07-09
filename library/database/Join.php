@@ -4,7 +4,7 @@
 namespace sky\db;
 
 
-class join {
+class Join {
 	private
 		$table,
 		$type = "LEFT",
@@ -47,7 +47,7 @@ class join {
 
 
 		# Add dashes
-		$this->table = core::addBackDashes($this->table);
+		$this->table = Core::addBackDashes($this->table);
 
 
 		# Adds join type

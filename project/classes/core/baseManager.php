@@ -1,6 +1,6 @@
 <?php
 
-use sky\db\databaseQuery;
+use sky\db\DatabaseQuery;
 use sky\FilterRule;
 use sky\VarFilter;
 
@@ -32,13 +32,13 @@ abstract class baseManager extends \ArrayIterator {
 
 	/**
 	 * Inner query to get data
-	 * @var databaseQuery
+	 * @var DatabaseQuery
 	 */
 	protected $query;
 
 	/**
 	 * Returns query
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 */
 	public function getQuery() {
 
@@ -197,11 +197,11 @@ abstract class baseManager extends \ArrayIterator {
 
 	/**
 	 * Loads from query
-	 * @param databaseQuery|null $query
+	 * @param DatabaseQuery|null $query
 	 * @return $this
 	 * Loads from query
 	 */
-	public function load(databaseQuery $query = null) {
+	public function load(DatabaseQuery $query = null) {
 
 		# Preparations
 		$query = $this->beforeLoad($query);
@@ -218,17 +218,17 @@ abstract class baseManager extends \ArrayIterator {
 
 	/**
 	 * Loads from query
-	 * @param databaseQuery|null $query
+	 * @param DatabaseQuery|null $query
 	 * @return mixed
 	 * Loads from query
 	 */
-	public function loadFirst(databaseQuery $query = null) {
+	public function loadFirst(DatabaseQuery $query = null) {
 
 		# Preparations
 		$query = $this->beforeLoad($query);
 
 		# Get rows
-		if(!$row = $query->limit(1)->select(\sky\db\ret::SINGLE))
+		if(!$row = $query->limit(1)->select(\sky\db\Ret::SINGLE))
 			return false;
 
 		# Return
@@ -241,10 +241,10 @@ abstract class baseManager extends \ArrayIterator {
 
 	/**
 	 * Prepares query for loading from DB
-	 * @param databaseQuery|null $query
-	 * @return null|databaseQuery
+	 * @param DatabaseQuery|null $query
+	 * @return null|DatabaseQuery
 	 */
-	protected function beforeLoad(databaseQuery $query = null) {
+	protected function beforeLoad(DatabaseQuery $query = null) {
 
 		# If not set, get inner
 		if($query)
@@ -497,20 +497,20 @@ abstract class baseManager extends \ArrayIterator {
 
 	/**
 	 * Creates new query
-	 * @return databaseQuery
+	 * @return DatabaseQuery
 	 */
 	protected function prepareQuery() {
 		$reflectionClass = new ReflectionClass($this->elementClass);
 		$table = $reflectionClass->getStaticPropertyValue("tableName");
-		return $this->query = \sky\sky::$db->make($table);
+		return $this->query = \sky\Sky::$db->make($table);
 	}
 
 	/**
 	 * Gets manager total count in DB
-	 * @param databaseQuery|null $query
+	 * @param DatabaseQuery|null $query
 	 * @return false|int|Mixed
 	 */
-	public function totalCount(databaseQuery $query = null) {
+	public function totalCount(DatabaseQuery $query = null) {
 
 		# If not gathered
 		if($this->totalCount == false) {
@@ -524,7 +524,7 @@ abstract class baseManager extends \ArrayIterator {
 				$query = $this->beforeLoad($query);
 
 				# Get counter
-				$this->totalCount = $query->same(array("records", "limit", "offset", "group", "order"))->records("COUNT(*)")->select(\sky\db\ret::VALUE);
+				$this->totalCount = $query->same(array("records", "limit", "offset", "group", "order"))->records("COUNT(*)")->select(\sky\db\Ret::VALUE);
 
 			}
 

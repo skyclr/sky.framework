@@ -10,7 +10,7 @@ use sky\databaseException;
  * @abstract Advanced database functions which may be used in other classes
  * Use class for specified database to access databases
  */
-abstract class core {
+abstract class Core {
 
 	/**
 	 * Constants
@@ -37,8 +37,8 @@ abstract class core {
 
 	/**
 	 * Creates where condition based on parameters
-	 * @param condition $conditions Conditions parameters
-	 * @param bool  $mainTable  Holds table for which query is performed
+	 * @param Condition $conditions Conditions parameters
+	 * @param bool  $mainTable      Holds table for which query is performed
 	 * @return string
 	 */
 	protected function makeWhere($conditions, $mainTable = false) {
@@ -59,8 +59,8 @@ abstract class core {
 
 	/**
 	 * Creates where condition based on parameters
-	 * @param condition $conditions Conditions parameters
-	 * @param bool  $mainTable  Holds table for which query is performed
+	 * @param Condition $conditions Conditions parameters
+	 * @param bool  $mainTable      Holds table for which query is performed
 	 * @return string
 	 */
 	protected function makeHaving($conditions, $mainTable = false) {
@@ -130,7 +130,7 @@ abstract class core {
 					# Multiple joins
 					foreach($value as $join) {
 
-						/** @var $join join */
+						/** @var $join Join */
 
 						# Adds space for second join
 						if(!empty($expression))

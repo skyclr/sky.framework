@@ -4,7 +4,7 @@
 namespace sky\fs;
 
 # Use image
-use sky\images\image;
+use sky\images\Image;
 use sky\systemErrorException;
 use sky\systemNoticeException;
 
@@ -12,7 +12,7 @@ use sky\systemNoticeException;
  * Class to work with single file
  * @package sky
  */
-class file {
+class File {
 
 	# Name generation types
 	const NAME_RANDOM = "random";
@@ -52,7 +52,7 @@ class file {
 
 	/**
 	 * Directory that holds file
-	 * @var directory
+	 * @var Directory
 	 */
 	private $directory;
 
@@ -93,7 +93,7 @@ class file {
 	/**
 	 * static construct
 	 * @param string $path File path
-	 * @return file
+	 * @return File
 	 */
 	public static function make($path) {
 		return new self($path);
@@ -117,13 +117,13 @@ class file {
 
 	/**
 	 * Makes directory of current file
-	 * @return directory
+	 * @return Directory
 	 */
 	public function directory() {
 
 		# Make
 		if(!$this->directory)
-			$this->directory = new directory($this->dirPath);
+			$this->directory = new Directory($this->dirPath);
 
 
 		# Return dir
@@ -314,7 +314,7 @@ class file {
 	 * Creates image object from current file
 	 */
 	public function toImage() {
-		return image::makeFromFile($this);
+		return Image::makeFromFile($this);
 	}
 
 	/**
@@ -336,10 +336,10 @@ class file {
 	 * @return $this
 	 * @throws systemErrorException
 	 */
-	public function makeName($directory, $type = file::NAME_RANDOM, $prefix = 0) {
+	public function makeName($directory, $type = File::NAME_RANDOM, $prefix = 0) {
 
 		# New file
-		$file = file::make($directory . $this->fullName);
+		$file = File::make($directory . $this->fullName);
 
 		do {
 

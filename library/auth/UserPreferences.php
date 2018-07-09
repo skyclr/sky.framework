@@ -5,9 +5,9 @@
 namespace sky\auth;
 
 
-use sky\auth;
+use sky\Auth;
 use sky\baseException;
-use sky\sky;
+use sky\Sky;
 use sky\systemNoticeException;
 use sky\userErrorException;
 
@@ -15,7 +15,7 @@ use sky\userErrorException;
 /**
  * Class for work with user preferences 
  */
-class userPreferences {
+class UserPreferences {
     
     private
 		$settings = false,
@@ -67,7 +67,7 @@ class userPreferences {
 		
 		
 		# auth check
-		if(!auth::isLoggedIn()) {
+		if(!Auth::isLoggedIn()) {
 			baseException::log("Save with no auth, user data:".var_export($_SESSION));
 			throw new userErrorException("Вы должны быть авторизованы для этой операции"); 
 		}
@@ -84,7 +84,7 @@ class userPreferences {
 		
 		
 		# Save settings
-		sky::$db->make(sky::$config['authenticate']['preferencesTable'])->where("owner", auth::$me['id'])->set($changes)->update();
+		Sky::$db->make(Sky::$config['authenticate']['preferencesTable'])->where("owner", Auth::$me['id'])->set($changes)->update();
 		
 	}
 
@@ -115,8 +115,8 @@ class userPreferences {
 
 
         # Save preference data
-        if($save && auth::isLoggedIn())
-            sky::$db->make(sky::$config['authenticate']['preferencesTable'])->where("owner", auth::$me['id'])->set($name, $value)->update();
+        if($save && Auth::isLoggedIn())
+            Sky::$db->make(Sky::$config['authenticate']['preferencesTable'])->where("owner", Auth::$me['id'])->set($name, $value)->update();
         
 		
 		# Mark changes

@@ -7,7 +7,7 @@
 
 # Inner settings
 use sky\baseException;
-use sky\sky;
+use sky\Sky;
 use sky\systemException;
 
 $maxMailsAtATime = 100;    # Maximum mail messages limit sent at execution (Максимальное кол-во обрабатываемых писем за один запуск скрипта)
@@ -29,19 +29,19 @@ if(!flock($fp, LOCK_EX | LOCK_NB))
 require_once dirname(__FILE__) . '/../library/core/main.php';
 
 # Init
-new sky('console');
+new Sky('console');
 restore_error_handler();
 
 # Make actions
 try {
 
 	# Set paths
-	$mailFolder = sky::location("mail");
-	$mailNotifyFolder = sky::location("mailNotify");
+	$mailFolder = Sky::location("mail");
+	$mailNotifyFolder = Sky::location("mailNotify");
 	$lockName   = $mailFolder . "running.lock";
 
 	# Создание директории для email и аттачей
-	\sky\fs\directory::make($mailFolder)->create();
+	\sky\fs\Directory::make($mailFolder)->create();
 
 	# Open lock file
 	$fp = fopen($lockName, "a");
@@ -93,7 +93,7 @@ try {
 
 			# From
 			if($mailData['from'])
-				$mail->setFrom(sky::$config['smtp']['login']);
+				$mail->setFrom(Sky::$config['smtp']['login']);
 
 			# CC copy
 			if($mailData['cc']) {
@@ -103,12 +103,12 @@ try {
 
 			# Set parameters
 			$mail->SMTPAuth   = true;
-			$mail->Port       = sky::$config['smtp']['port'];
-			$mail->Host       = sky::$config['smtp']['server'];
-			$mail->Hostname   = sky::$config['smtp']['server'];
-			$mail->SMTPSecure = sky::$config['smtp']['ssl'] ? "ssl" : false;
-			$mail->Username   = sky::$config['smtp']['login'];
-			$mail->Password   = sky::$config['smtp']['password'];
+			$mail->Port       = Sky::$config['smtp']['port'];
+			$mail->Host       = Sky::$config['smtp']['server'];
+			$mail->Hostname   = Sky::$config['smtp']['server'];
+			$mail->SMTPSecure = Sky::$config['smtp']['ssl'] ? "ssl" : false;
+			$mail->Username   = Sky::$config['smtp']['login'];
+			$mail->Password   = Sky::$config['smtp']['password'];
 			$mail->Timeout    = 5;
 			$mail->Mailer     = "smtp";
 

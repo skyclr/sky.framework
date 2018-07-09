@@ -6,7 +6,7 @@ namespace sky;
 /**
  * Class to work with network
  */
-class network { 
+class Network {
 
 	public static 
 		$requestTypes 		= array("POST", "GET", "HEAD"),
@@ -160,7 +160,7 @@ class network {
 				throw new userErrorException("Ваш URI('$url') имеет неверный формат.");
 
 			# Unknown error
-			throw new systemErrorException("CURL error(#" . ($code = curl_errno($curl)) . "): " . sky::$config["curlErrorCodes"][$code], $code);
+			throw new systemErrorException("CURL error(#" . ($code = curl_errno($curl)) . "): " . Sky::$config["curlErrorCodes"][$code], $code);
 
 		}
 

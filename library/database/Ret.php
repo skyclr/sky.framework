@@ -8,7 +8,7 @@ namespace sky\db;
  * Class DBR, holds return values of query execution
  * @package sky\db
  */
-abstract class ret {
+abstract class Ret {
 
 	/** All rows in request */
 	const ALL = "all";
