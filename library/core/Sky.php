@@ -297,7 +297,7 @@ class Sky {
     	if(stripos($page, "http:") !== false)
 			$page = self::$config["site"]["base"] . $page;
         header("Location: $page");
-        die('Похоже ваш браузер не поддерживает перенаправления, перейдите на <a href="' . self::$config["site"]["base"] . $page . '">эту страницу</a>');
+        die('Похоже ваш браузер не поддерживает перенаправления, перейдите на <a href="' . $page . '">эту страницу</a>');
     }
 
 }
