@@ -23,7 +23,7 @@ global $preferences;
 require_once __DIR__ . "/exceptions.php";
 require_once __DIR__ . "/Sky.php";
 require_once __DIR__ . "/../auth/Auth.php";
-require_once __DIR__ . "/../database/DB2.php";
+require_once __DIR__ . "/../db/DB2.php";
 require_once __DIR__ . "/../utils/DateTime.php";
 require_once __DIR__ . "/../fileSystem/File.php";
 require_once __DIR__ . "/../fileSystem/Directory.php";

@@ -128,7 +128,7 @@ class Sky {
 			# New content
 			new \Content();
 
-			#Output rendered page
+			# Output rendered page
 			/** @noinspection PhpUndefinedClassInspection */
 			echo \Content::$renderedPage;
 

@@ -101,7 +101,6 @@ class Content {
 			# Create page object
 			self::$page = BasePage::baseInit();
 
-
 			# Make templates list
 			$jsTemplates = array();
 			foreach(self::$page->jsTemplates as $template) {
@@ -117,7 +116,6 @@ class Content {
 				"pathElements" => Request::getAddress(),
 				"jsTemplates"  => $jsTemplates ? json_encode($jsTemplates, true) : "{}"
 			);
-
 
 			# Render
 			self::$renderedPage = Sky::$twig->render("/shared/" . self::$page->parentTemplate . ".twig", $parameters);
