@@ -74,7 +74,7 @@ class Content {
 			# Page include
 			/** @noinspection PhpIncludeInspection */
 			include $pagePath;
-var_dump($pageClassFull, class_exists($pageClassFull));
+var_dump($pagePath, $pageClassFull, class_exists($pageClassFull));
 			if(!class_exists($pageClassFull))
 				return;
 
