@@ -63,7 +63,7 @@ class Content {
 		try {
 
 			$pageClass = ucfirst(Request::getPageName());
-			$pageNamespace = implode("/", array_slice(Request::getAddress(), 0, -1));
+			$pageNamespace = implode("/", array_slice(Request::getAddress(), 1, -1));
 			$pageClassFull = "$pageNamespace/$pageClass";
 			$pagePath = Sky::location("pages") . "$pageClassFull.php";
 
