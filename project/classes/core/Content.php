@@ -21,18 +21,6 @@ class Content {
 	public static $renderedPage = "";
 
 	/**
-	 * Path to current page
-	 * @var string
-	 */
-	public static $pagePath = "/index";
-
-	/**
-	 * Page name
-	 * @var string
-	 */
-	public static $pageName = "index";
-
-	/**
 	 * Page object
 	 * @var bool|BasePage
 	 */
@@ -61,12 +49,6 @@ class Content {
 				if(preg_match("/$page/", $path))
 					Request::setAddress('/login');
 
-		# Get page path
-		self::$pagePath = Request::getAddress();
-
-		# Get page name
-		self::$pageName = Request::getPageName();
-
 		# Make page
 		self::makePage();
 
@@ -80,15 +62,16 @@ class Content {
 		# Page object creation
 		try {
 
-			$pageClass = ucfirst(self::$pageName);
-			$pageNamespace = implode("/", array_slice(self::$pagePath, 0, -1));
+			$pageClass = ucfirst(Request::getPageName());
+			$pageNamespace = implode("/", array_slice(Request::getAddress(), 0, -1));
+			$pagePath = "$pageNamespace/$pageClass.php";
 
 			# Page class path
-			$classPath = Sky::location("pages") . self::$pagePath . ".php";
+			$classPath = Sky::location("pages") . $pagePath;
 
 			# Existing check
 			if(!file_exists($classPath))
-				throw new \sky\System404Exception("No page for path found: " . self::$pagePath);
+				throw new \sky\System404Exception("No page for path found: $pagePath");
 
 			# Page include
 			/** @noinspection PhpIncludeInspection */
