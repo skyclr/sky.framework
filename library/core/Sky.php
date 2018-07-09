@@ -91,10 +91,7 @@ class Sky {
 
 			# Pre validate data
 			require_once Sky::location("library") . "utils/UserData.php";
-
-			\sky\UserData::$cookie = \sky\ArrayFilter::make($_COOKIE);
-			\sky\UserData::$get    = \sky\ArrayFilter::make($_GET);
-			\sky\UserData::$post   = \sky\ArrayFilter::make($_POST);
+			UserData::init();
 
 		}
 

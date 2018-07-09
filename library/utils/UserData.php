@@ -25,4 +25,13 @@ class UserData {
 	 * @var ArrayFilter
 	 */
 	static $post;
+
+	/**
+	 * Inits static vars
+	 */
+	public static function init() {
+		self::$cookie = ArrayFilter::make($_COOKIE);
+		self::$get    = ArrayFilter::make($_GET);
+		self::$post   = ArrayFilter::make($_POST);
+	}
 }
