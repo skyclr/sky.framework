@@ -13,11 +13,11 @@ class Twig_Tests_TemplateWrapperTest extends \PHPUnit\Framework\TestCase
     public function testHasGetBlocks()
     {
         $twig = new Twig_Environment(new Twig_Loader_Array(array(
-            'index' => '{% block foo %}{% endblock %}',
-            'index_with_use' => '{% use "imported" %}{% block foo %}{% endblock %}',
-            'index_with_extends' => '{% extends "extended" %}{% block foo %}{% endblock %}',
-            'imported' => '{% block imported %}{% endblock %}',
-            'extended' => '{% block extended %}{% endblock %}',
+			'index'              => '{% block foo %}{% endblock %}',
+			'index_with_use'     => '{% use "imported" %}{% block foo %}{% endblock %}',
+			'index_with_extends' => '{% extends "extended" %}{% block foo %}{% endblock %}',
+			'imported'           => '{% block imported %}{% endblock %}',
+			'extended'           => '{% block extended %}{% endblock %}',
         )));
 
         $wrapper = new Twig_TemplateWrapper($twig, $twig->loadTemplate('index'));
@@ -39,7 +39,7 @@ class Twig_Tests_TemplateWrapperTest extends \PHPUnit\Framework\TestCase
     public function testRenderBlock()
     {
         $twig = new Twig_Environment(new Twig_Loader_Array(array(
-            'index' => '{% block foo %}{{ foo }}{{ bar }}{% endblock %}',
+			'index' => '{% block foo %}{{ foo }}{{ bar }}{% endblock %}',
         )));
         $twig->addGlobal('bar', 'BAR');
 
@@ -50,7 +50,7 @@ class Twig_Tests_TemplateWrapperTest extends \PHPUnit\Framework\TestCase
     public function testDisplayBlock()
     {
         $twig = new Twig_Environment(new Twig_Loader_Array(array(
-            'index' => '{% block foo %}{{ foo }}{{ bar }}{% endblock %}',
+			'index' => '{% block foo %}{{ foo }}{{ bar }}{% endblock %}',
         )));
         $twig->addGlobal('bar', 'BAR');
 

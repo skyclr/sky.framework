@@ -158,17 +158,17 @@ EOHTML
         return array(
             // error occurs in a template
             array(
-                array(
-                    'index' => "\n\n{{ foo.bar }}\n\n\n{{ 'foo' }}",
+				array(
+					'index' => "\n\n{{ foo.bar }}\n\n\n{{ 'foo' }}",
                 ),
-                'index', 3,
+				'index', 3,
             ),
 
             // error occurs in an included template
             array(
                 array(
-                    'index' => "{% include 'partial' %}",
-                    'partial' => '{{ foo.bar }}',
+					'index'   => "{% include 'partial' %}",
+					'partial' => '{{ foo.bar }}',
                 ),
                 'partial', 1,
             ),
@@ -176,28 +176,28 @@ EOHTML
             // error occurs in a parent block when called via parent()
             array(
                 array(
-                    'index' => "{% extends 'base' %}
+					'index' => "{% extends 'base' %}
                     {% block content %}
                         {{ parent() }}
                     {% endblock %}",
-                    'base' => '{% block content %}{{ foo.bar }}{% endblock %}',
+					'base'  => '{% block content %}{{ foo.bar }}{% endblock %}',
                 ),
                 'base', 1,
             ),
 
             // error occurs in a block from the child
             array(
-                array(
-                    'index' => "{% extends 'base' %}
+				array(
+					'index' => "{% extends 'base' %}
                     {% block content %}
                         {{ foo.bar }}
                     {% endblock %}
                     {% block foo %}
                         {{ foo.bar }}
                     {% endblock %}",
-                    'base' => '{% block content %}{% endblock %}',
+					'base'  => '{% block content %}{% endblock %}',
                 ),
-                'index', 3,
+				'index', 3,
             ),
         );
     }

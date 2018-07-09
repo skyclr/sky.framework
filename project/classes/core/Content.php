@@ -56,8 +56,12 @@ class Content {
 
 	}
 
+	public static function getPageClassDirRelative() {
+		return implode("/", array_slice(Request::getAddress(), 0, -1));
+	}
+
 	public static function getPageClassDir() {
-		return Sky::location("pages") . implode("/", array_slice(Request::getAddress(), 0, -1));
+		return Sky::location("pages") . self::getPageClassDirRelative();
 	}
 
 	public static function getPageClassPath() {
@@ -65,7 +69,7 @@ class Content {
 	}
 
 	public static function getPageClass() {
-		if(self::$pageClass) self::$pageClass = self::getPageClassNamespace() . "\\" . self::getPageClassName();
+		if(!self::$pageClass) self::$pageClass = self::getPageClassNamespace() . "\\" . self::getPageClassName();
 		return self::$pageClass;
 	}
 
@@ -74,7 +78,7 @@ class Content {
 	}
 
 	public static function getPageClassNamespace() {
-		if(self::$pageNamespace) self::$pageNamespace = ucfirst(Request::getPageName());
+		if(!self::$pageNamespace) self::$pageNamespace = ucfirst(Request::getPageName());
 		return implode("\\", array_slice(Request::getAddress(), 0, -1));
 	}
 
@@ -93,6 +97,7 @@ class Content {
 			/** @noinspection PhpIncludeInspection */
 			include self::getPageClassPath();
 
+			# Check if class exists
 			if(!class_exists(self::getPageClass()))
 				return;
 

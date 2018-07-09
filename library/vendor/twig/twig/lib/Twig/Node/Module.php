@@ -50,8 +50,8 @@ class Twig_Node_Module extends Twig_Node
 
         // embedded templates are set as attributes so that they are only visited once by the visitors
         parent::__construct($nodes, array(
-            'index' => null,
-            'embedded_templates' => $embeddedTemplates,
+			'index'              => null,
+			'embedded_templates' => $embeddedTemplates,
         ), 1);
 
         // populate the template name of all node children

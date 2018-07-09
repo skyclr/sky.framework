@@ -165,21 +165,18 @@ abstract class BasePage {
 
 		# Template path
 		if(!$templatePath)
-			$templatePath = Sky::location("templates") . Sky::$config['templates']['pages'] . Content::$pagePath . "/" . Content::$pageName . ".twig";
+			$templatePath = Sky::location("templates") . Sky::$config['templates']['pages'] . Content::getPageClassDirRelative() . Content::getPageClassName() . "/" . Content::getPageClassName() . ".twig";
 
 		# Try to find non directory
 		if(!file_exists($templatePath))
-			$templatePath = Sky::location("templates") . Sky::$config['templates']['pages'] . Content::$pagePath . ".twig";
+			$templatePath = Sky::location("templates") . Sky::$config['templates']['pages'] . Content::getPageClassDirRelative() . Content::getPageClassName() . ".twig";
 
 		# Existing check
 		if(!file_exists($templatePath))
 			throw new SystemErrorException("Try to render not existing template: $templatePath");
 
 		# Get page name
-		$parameters += ["pageName"       => Content::$pageName,
-						"pagePath"       => Content::$pagePath,
-						"resultMessages" => Info::get(),
-						"page"           => $this];
+		$parameters += ["resultMessages" => Info::get(), "page" => $this];
 
 		# Render
 		return Sky::$twig->render(mb_substr($templatePath, mb_strlen(Sky::location("templates"))), $parameters);
