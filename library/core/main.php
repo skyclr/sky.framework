@@ -65,7 +65,7 @@ set_error_handler(function($code, $message, $file, $line) {
 
 }, E_ALL | E_STRICT);
 
-register_shutdown_function(function($code, $message, $file, $line) {
+register_shutdown_function(function() {
 	switch($code) {
 		case E_ERROR    :
 			$type = "php error";
