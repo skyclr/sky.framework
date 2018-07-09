@@ -64,8 +64,3 @@ set_error_handler(function ($code, $message, $file, $line) {
 	\sky\BaseException::log("($type)$message;\nLine: $line.\nFile: $file", 1);
 
 }, E_ALL | E_STRICT);
-
-\sky\UserData::$cookie = \sky\ArrayFilter::make($_COOKIE);
-\sky\UserData::$get    = \sky\ArrayFilter::make($_GET);
-\sky\UserData::$post   = \sky\ArrayFilter::make($_POST);
-
