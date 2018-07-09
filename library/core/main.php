@@ -40,7 +40,7 @@ require_once __DIR__ . "/../utils/Vars.php";
 require_once __DIR__ . "/../utils/Filter/ArrayFilter.php";
 
 # Register error handler
-set_error_handler(function ($code, $message, $file, $line) {
+set_error_handler(function($code, $message, $file, $line) {
 
 	# Skip pdo gone aways
 	if(!error_reporting() || stripos($message, "MySQL server has gone away") !== false)
@@ -64,3 +64,7 @@ set_error_handler(function ($code, $message, $file, $line) {
 	\sky\BaseException::log("($type)$message;\nLine: $line.\nFile: $file", 1);
 
 }, E_ALL | E_STRICT);
+
+register_shutdown_function(function() {
+	echo "test";
+});
