@@ -32,6 +32,8 @@ class Content {
 	 */
 	public static $authPages = [''];
 
+	private static $pageNamespace, $pageClass;
+
 	/**
 	 * Make page and resolve addresses
 	 */
@@ -54,32 +56,48 @@ class Content {
 
 	}
 
+	public static function getPageClassDir() {
+		return Sky::location("pages") . implode("/", array_slice(Request::getAddress(), 0, -1));
+	}
+
+	public static function getPageClassPath() {
+		return self::getPageClassDir() . self::getPageClassName() . ".php";
+	}
+
+	public static function getPageClass() {
+		if(self::$pageClass) self::$pageClass = self::getPageClassNamespace() . "\\" . self::getPageClassName();
+		return self::$pageClass;
+	}
+
+	public static function getPageClassName() {
+		return ucfirst(Request::getPageName());
+	}
+
+	public static function getPageClassNamespace() {
+		if(self::$pageNamespace) self::$pageNamespace = ucfirst(Request::getPageName());
+		return implode("\\", array_slice(Request::getAddress(), 0, -1));
+	}
+
 	/**
 	 * Makes new page
 	 */
 	public static function makePage() {
 
-		# Page object creation
 		try {
 
-			$pageClass = ucfirst(Request::getPageName());
-			$pageNamespace = implode("/", array_slice(Request::getAddress(), 1, -1));
-			$pageClassFull = "$pageNamespace/$pageClass";
-			$pagePath = Sky::location("pages") . "$pageClassFull.php";
-
 			# Existing check
-			if(!file_exists($pagePath))
-				throw new \sky\System404Exception("No page for path found: $pagePath");
+			if(!file_exists(self::getPageClassPath()))
+				throw new \sky\System404Exception("No page for path found: " . self::getPageClassPath());
 
 			# Page include
 			/** @noinspection PhpIncludeInspection */
-			include $pagePath;
-var_dump($pagePath, $pageClassFull, class_exists($pageClassFull));
-			if(!class_exists($pageClassFull))
+			include self::getPageClassPath();
+
+			if(!class_exists(self::getPageClass()))
 				return;
 
 			# Create page object
-			self::$page = BasePage::baseInit($pageClassFull);
+			self::$page = BasePage::baseInit(self::getPageClass());
 
 			# Make templates list
 			$jsTemplates = array();
