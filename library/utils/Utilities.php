@@ -3,7 +3,6 @@
 # Set namespace
 namespace sky;
 
-
 /** Utilities for special needs */
 class Utilities {
 
@@ -11,23 +10,20 @@ class Utilities {
 	 * Un serialised specified data
 	 * @param string $data Data to un serialise
 	 * @return mixed
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	public static function unSerialise($data) {
 
 		# Empty data
 		if(empty($data))
-			throw new systemErrorException("Data is empty");
-
+			throw new SystemErrorException("Data is empty");
 
 		# Un serialise
 		$result = @unserialize($data);
 
-
 		# If failed
 		if($result === false && $result != serialize(false))
-			throw new systemErrorException("Can't unserialise data: ".var_export($data, true));
-
+			throw new SystemErrorException("Can't unserialise data: ".var_export($data, true));
 
 		# Return
 		return $result;
@@ -67,10 +63,8 @@ class Utilities {
 	 */
 	public static function getDateConditions($period, $name = "date_short", $withTime = false, $tableName = "") {
 
-
 		# Get dates of each standard period
 		$dates = self::getDates();
-
 
 		# Create objects
 		switch($period) {
@@ -90,17 +84,14 @@ class Utilities {
 			} else $date = $period;
 		}
 
-
 		# Set name
 		if($withTime && $name === false) $name = "addate";
 		if($withTime)	$format = DateTime::DATETIME_SQL;
 		else			$format = DateTime::DATE_SQL;
 
-
 		# Add table to name if needed
 		if($tableName)
 			$name = $tableName . '.' . $name;
-
 
 		# Make conditions
 		if(isset($date)) return array(array($name, $date->format($format)));
@@ -160,16 +151,13 @@ class Utilities {
 	 */
 	public static function getRandomString($length = 20) {
 
-
 		# Set default length
 		if(!is_numeric($length) || $length < 0)
 			$length = 20;
 
-
 		# Max 32
 		if($length > 32)
 			$length = 32;
-
 
 		# MAke string
 		return mb_substr(md5(mt_rand() . mt_rand()), 0, $length);
@@ -185,31 +173,26 @@ class Utilities {
 	 * @param array|bool $names         Contains names to search in $filter
 	 * @param bool       $defaultPeriod If since and till not set, if you set here "1 month", they will be today and today - 1 month
 	 * @param string     $maxDatePeriod If since or till les than this period, then they will be set to it
-	 * @throws \Exception|systemException|userErrorException|systemErrorException
+	 * @throws \Exception|SystemException|UserErrorException|SystemErrorException
 	 * @return array(\sky\DateTime,  \sky\DateTime)
 	 */
 	public static function getSinceAndTill($filter, $period = false, $names = false, $defaultPeriod = false, $maxDatePeriod = "2 year") {
-
 
 		# If int then months
 		if(is_int($period))
 			$period = $period . " month";
 
-
 		# Add month to default period
 		if(is_int($defaultPeriod))
 			$defaultPeriod = $defaultPeriod . " month";
-
 
 		# Set default to max if no set
 		if($defaultPeriod === false)
 			$defaultPeriod = $period;
 
-
 		# Set default names
 		if(!$names)
 			$names = array("since", "till");
-
 
 		# Vars init
 		$till 	= false;
@@ -218,14 +201,12 @@ class Utilities {
 		$today 	= new DateTime();
 		$today->modify("+5 minutes");
 
-
 		# Set minimum begin date
 		if($maxDatePeriod) {
 			$minDate = clone $today;
 			$minDate->trim();
 			$minDate->modify("-" . $maxDatePeriod);
 		}
-
 
 		# Add time if date only
 		foreach($names as $key => $name) {
@@ -235,20 +216,16 @@ class Utilities {
 				$filter[$name] = mb_substr($filter[$name], 0, 10) . ($key == 0 ? " 00:00:00" : " 23:59:59");
 		}
 
-
 		# Since and till add
 		try {
-
 
 			# Creates new since
 			if(!empty($filter[$names[0]]))
 				$since = new DateTime($filter[$names[0]]);
 
-
 			# Creates new till
 			if(!empty($filter[$names[1]]))
 				$till = new DateTime($filter[$names[1]]);
-
 
 			# Check if since less than minimum
 			if($since && $minDate) {
@@ -257,7 +234,6 @@ class Utilities {
 					$since = clone $minDate;
 			}
 
-
 			# Check if till less than minimum
 			if($till && $minDate) {
 				$difference = $till->diff($minDate);
@@ -265,11 +241,8 @@ class Utilities {
 					$till = clone $minDate;
 			}
 
-
-
 			# If we have max period
 			if($period) {
-
 
 				# If both set then we need to check
 				if($since && $till) {
@@ -289,7 +262,6 @@ class Utilities {
 
 			}
 
-
 			# If we have default period
 			if($defaultPeriod) {
 
@@ -299,7 +271,7 @@ class Utilities {
 					$since = clone $today;
 					$since->trim();
 					if(!(@$since->modify("-" . $defaultPeriod)))
-						throw new systemErrorException("Неверно указан defaultPeriod");
+						throw new SystemErrorException("Неверно указан defaultPeriod");
 
 				}
 
@@ -309,7 +281,6 @@ class Utilities {
 					$since->trim();
 					$since->modify("-$defaultPeriod");
 				}
-
 
 				# Till cant be bigger than now
 				//if($till > $today) $till = clone($today);
@@ -323,11 +294,10 @@ class Utilities {
 			# Return as array
 			return array($since, $till);
 
-
-		} catch(systemException $e) {
+		} catch(SystemException $e) {
 			throw $e;
 		} catch(\Exception $e) {
-			throw new userErrorException("Неверно указана дата");
+			throw new UserErrorException("Неверно указана дата");
 		}
 	}
 

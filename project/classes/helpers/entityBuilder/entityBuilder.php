@@ -63,7 +63,7 @@ class entityBuilder {
 		$fields = \sky\Sky::$db->query("select * from information_schema.columns where TABLE_SCHEMA = '$database' and  TABLE_NAME = '$tableName'");
 
 		if(!$fields)
-			throw new \sky\userErrorException("No table '$tableName' exists");
+			throw new \sky\UserErrorException("No table '$tableName' exists");
 
 		$entityName = ucfirst($tableName);
 		if($entityName[strlen($entityName) - 1] == "s")

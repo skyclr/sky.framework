@@ -2,7 +2,7 @@
 
 # Special namespace
 namespace sky\db;
-use sky\systemErrorException;
+use sky\SystemErrorException;
 
 
 /**
@@ -52,7 +52,7 @@ class Condition {
 	 * @param $name
 	 * @param $logic
 	 * @return Condition
-	 * @throws \sky\systemErrorException
+	 * @throws \sky\SystemErrorException
 	 */
 	public function addGroup($name, $logic) {
 
@@ -64,7 +64,7 @@ class Condition {
 		# Get parent
 		if(sizeof($parts) > 1)  {
 			if(!$parent	= $this->findGroup(implode(".", array_slice($parts, 0, -1))))
-				throw new systemErrorException("Try add group for not existing parent group: $name");
+				throw new SystemErrorException("Try add group for not existing parent group: $name");
 		} else
 			$parent = $this;
 

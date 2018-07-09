@@ -6,10 +6,10 @@ namespace sky\auth;
 
 
 use sky\Auth;
-use sky\baseException;
+use sky\BaseException;
 use sky\Sky;
-use sky\systemNoticeException;
-use sky\userErrorException;
+use sky\SystemNoticeException;
+use sky\UserErrorException;
 
 
 /**
@@ -24,13 +24,13 @@ class UserPreferences {
 	/**
 	 * This function initialised user preferences class
 	 * @param Array $preferences Array of user preferences values
-	 * @throws systemNoticeException
+	 * @throws SystemNoticeException
 	 */
     function __construct($preferences) {
         
 		# Check
         if(!is_array($preferences))
-            throw new systemNoticeException("Настройки пользователя имеют неверный формат");
+            throw new SystemNoticeException("Настройки пользователя имеют неверный формат");
         
 		# Save
         $_SESSION["preferences"] = $this->settings = $preferences;
@@ -61,15 +61,15 @@ class UserPreferences {
 	/**
 	 * Saves current settings list
 	 * @param Bool $current Indicates that only changes during this page should be saved
-	 * @throws userErrorException
+	 * @throws UserErrorException
 	 */
 	public function save($current = false) {
 		
 		
 		# auth check
 		if(!Auth::isLoggedIn()) {
-			baseException::log("Save with no auth, user data:".var_export($_SESSION));
-			throw new userErrorException("Вы должны быть авторизованы для этой операции"); 
+			BaseException::log("Save with no auth, user data:".var_export($_SESSION));
+			throw new UserErrorException("Вы должны быть авторизованы для этой операции");
 		}
 		
 		

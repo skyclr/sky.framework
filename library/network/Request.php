@@ -118,7 +118,7 @@ class Request {
 	/**
 	 * Finds page synonyms
 	 * @param string $page Page name
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 * @return string Page name, as is fi no synonyms or synonym page
 	 */
 	public static function findSynonyms($page) {
@@ -138,7 +138,7 @@ class Request {
 
 			/* If regexp wrong */
 			if($find === false)
-				throw new systemErrorException("Wrong synonym set: '$synonym' preg failed");
+				throw new SystemErrorException("Wrong synonym set: '$synonym' preg failed");
 
 		}
 

@@ -5,8 +5,8 @@ namespace sky\fs;
 
 # Use image
 use sky\images\Image;
-use sky\systemErrorException;
-use sky\systemNoticeException;
+use sky\SystemErrorException;
+use sky\SystemNoticeException;
 
 /**
  * Class to work with single file
@@ -158,7 +158,7 @@ class File {
 	/**
 	 * Deletes file
 	 * @return boolean True on delete, false if not exists
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	public function delete() {
 
@@ -170,7 +170,7 @@ class File {
 
 		# Try to delete
 		if(!@unlink($this->path))
-			throw new systemErrorException("Невозможно удалить файл " . $this->path);
+			throw new SystemErrorException("Невозможно удалить файл " . $this->path);
 
 
 		# Return
@@ -182,15 +182,15 @@ class File {
 	 * Copies file
 	 * @param String $destination        Destination file path
 	 * @param Bool   $overwrite          If false throws exception on file exists
-	 * @throws systemNoticeException
-	 * @throws systemErrorException
+	 * @throws SystemNoticeException
+	 * @throws SystemErrorException
 	 */
 	public function copy($destination, $overwrite = true) {
 
 
 		# If exists
 		if(!$overwrite && file_exists($destination))
-			throw new systemNoticeException("File already exists");
+			throw new SystemNoticeException("File already exists");
 
 
 		# Copy
@@ -199,7 +199,7 @@ class File {
 
 		# Exception if error occupies
 		if($result === false)
-			throw new systemErrorException("Can't copy file");
+			throw new SystemErrorException("Can't copy file");
 
 
 	}
@@ -208,15 +208,15 @@ class File {
 	 * Moves file
 	 * @param string $destination New path
 	 * @param bool   $overwrite   Indicates to overwrite if $destination is exists
-	 * @throws systemNoticeException
-	 * @throws systemErrorException
+	 * @throws SystemNoticeException
+	 * @throws SystemErrorException
 	 */
 	public function move($destination, $overwrite = true) {
 
 
 		# If exists
 		if(!$overwrite && file_exists($destination))
-			throw new systemNoticeException("File already exists");
+			throw new SystemNoticeException("File already exists");
 
 
 		# Copy
@@ -225,7 +225,7 @@ class File {
 
 		# Exception if error occupies
 		if($result === false)
-			throw new systemErrorException("Can't move file");
+			throw new SystemErrorException("Can't move file");
 
 	}
 
@@ -235,7 +235,7 @@ class File {
 	 * @param bool   $rewrite   Indicates if file should be rewrite
 	 * @param bool   $limitSize Max file size
 	 * @return $this
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	function write($string, $rewrite = false, $limitSize = false) {
 
@@ -243,23 +243,23 @@ class File {
 		# File size is too big, could not process
 		if(!$rewrite && is_numeric($limitSize) && $limitSize > 0) {
 			if(file_exists($this->path) && filesize($this->path) > ($limitSize * 1024 * 1024))
-				throw new systemErrorException("File is too big: $this->path for add/write");
+				throw new SystemErrorException("File is too big: $this->path for add/write");
 		}
 
 
 		# Opening file
 		if(!$fp = fopen($this->path, ($rewrite ? "w" : "a")))
-			throw new systemErrorException("Couldn't open the file: $this->path for add/write");
+			throw new SystemErrorException("Couldn't open the file: $this->path for add/write");
 
 
 		# Locking file
 		if(!flock($fp, LOCK_EX))
-			throw new systemErrorException("Couldn't lock the file: $this->path");
+			throw new SystemErrorException("Couldn't lock the file: $this->path");
 
 
 		# Writing file
 		if(fwrite($fp, $string) === FALSE)
-			throw new systemErrorException("Couldn't write to the file: $this->path");
+			throw new SystemErrorException("Couldn't write to the file: $this->path");
 
 
 		# Unlocking file
@@ -322,7 +322,7 @@ class File {
 	 * @param string $type Type of name generation
 	 * @param mixed $prefix Prefix parameter
 	 * @return $this
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	public function makeNameOnly($type = "random", $prefix = 0) {
 		return $this->makeName($this->directory()->path, $type, $prefix);
@@ -334,7 +334,7 @@ class File {
 	 * @param string $type Type of name generation
 	 * @param mixed $prefix Prefix parameter
 	 * @return $this
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	public function makeName($directory, $type = File::NAME_RANDOM, $prefix = 0) {
 
@@ -374,7 +374,7 @@ class File {
 
 				# Check
 				if(!$prefix && $file->exists())
-					throw new systemErrorException("File $this->path already exists");
+					throw new SystemErrorException("File $this->path already exists");
 			}
 		} while($file->exists());
 
@@ -463,19 +463,19 @@ class File {
 
 	/**
 	 * Write file to output without buffering (for big files)
-	 * @throws \sky\systemErrorException
+	 * @throws \sky\SystemErrorException
 	 */
 	public function getUnBuffered() {
 
 
 		# Check if file exists
 		if(!file_exists($this->path))
-			throw new systemErrorException("File does not exists: " . $this->path);
+			throw new SystemErrorException("File does not exists: " . $this->path);
 
 
 		# Read file and write it
 		if(!$file = fopen($this->path, "r"))
-			throw new systemErrorException("File is not readable: " . $this->path);
+			throw new SystemErrorException("File is not readable: " . $this->path);
 
 
 		# While we read

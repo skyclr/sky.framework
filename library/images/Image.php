@@ -9,9 +9,9 @@ require_once "imageImagick.php";
 # Uses
 use sky\DateTime;
 use sky\fs\File;
-use sky\systemErrorException;
-use sky\systemNoticeException;
-use sky\userErrorException;
+use sky\SystemErrorException;
+use sky\SystemNoticeException;
+use sky\UserErrorException;
 
 /**
  * Class image to work with images transformation
@@ -81,13 +81,13 @@ class Image {
 	 * Creates new image from file object
 	 * @param File $file
 	 * @return Image
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	public static function makeFromFile(File $file) {
 
 		# Check
 		if($file->type != "image")
-			throw new systemErrorException("Try to create image from not image source: $file->path");
+			throw new SystemErrorException("Try to create image from not image source: $file->path");
 
 		# Make image
 		$image = self::make($file->extension);
@@ -108,13 +108,13 @@ class Image {
 
 	/**
 	 * Gets image sizes from file
-	 * @throws systemNoticeException
+	 * @throws SystemNoticeException
 	 */
 	public function getSizes() {
 
 		# Gathers old image sizes
 		if(!($sizes = getimagesize($this->file->path)))
-			throw new systemNoticeException("Невозможно получить размеры изображения {$this->file->path}");
+			throw new SystemNoticeException("Невозможно получить размеры изображения {$this->file->path}");
 
 		# Convert
 		list($this->width, $this->height) = $sizes;
@@ -123,8 +123,8 @@ class Image {
 
 	/**
 	 * Generates image from file path
-	 * @throws userErrorException
-	 * @throws systemErrorException
+	 * @throws UserErrorException
+	 * @throws SystemErrorException
 	 * @return resource
 	 */
 	protected function createFromFile() {
@@ -133,15 +133,15 @@ class Image {
 			case 'jpg':
 			case 'jpeg':
 				if (!$image = \imagecreatefromjpeg($this->file->path))
-					throw new systemErrorException("Невозможно создать изображение из файла {$this->file->path}"); break;
+					throw new SystemErrorException("Невозможно создать изображение из файла {$this->file->path}"); break;
 			case 'gif':
 				if (!$image = \imagecreatefromgif($this->file->path))
-					throw new systemErrorException("Невозможно создать изображение из файла {$this->file->path}"); break;
+					throw new SystemErrorException("Невозможно создать изображение из файла {$this->file->path}"); break;
 			case 'png':
 				if (!$image = \imagecreatefrompng($this->file->path))
-					throw new systemErrorException("Невозможно создать изображение из файла {$this->file->path}"); break;
+					throw new SystemErrorException("Невозможно создать изображение из файла {$this->file->path}"); break;
 			default:
-				throw new userErrorException("Неизвестный тип изображения: \"$this->type\"");
+				throw new UserErrorException("Неизвестный тип изображения: \"$this->type\"");
 				break;
 		}
 
@@ -154,7 +154,7 @@ class Image {
 	 * @param Image $image
 	 * @param int $width
 	 * @param int $height
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 * @return resource New blank image
 	 */
 	private function createFromImage(Image $image, $width, $height) {
@@ -162,7 +162,7 @@ class Image {
 
 		# Create empty
 		if(!($newImage = imagecreatetruecolor($width, $height)))
-			throw new systemErrorException("");
+			throw new SystemErrorException("");
 
 		# Set properties according to type
 		if($this->type == "png" || $this->type == "gif") {
@@ -248,7 +248,7 @@ class Image {
 	 * @param       $height
 	 * @param       $x
 	 * @param       $y
-	 * @throws \sky\systemNoticeException
+	 * @throws \sky\SystemNoticeException
 	 */
 	private function copyWithCrop(Image $to, $width, $height, $x, $y) {
 		if(!imagecopyresampled(
@@ -259,7 +259,7 @@ class Image {
 				$height,
 				$width * $this->width / $to->width,
 				$height * $this->height / $to->height))
-			throw new systemNoticeException("Невозможно создать миниатрю для файла {$this->file->fullName}");
+			throw new SystemNoticeException("Невозможно создать миниатрю для файла {$this->file->fullName}");
 	}
 
 	/**
@@ -268,7 +268,7 @@ class Image {
 	 * @param int   $partWidth  Part width
 	 * @param int   $partHeight Part height
 	 * @param bool  $crop       Crop flag
-	 * @throws \sky\systemNoticeException
+	 * @throws \sky\SystemNoticeException
 	 */
 	private function copy(Image $to, $partWidth, $partHeight, $crop = false) {
 
@@ -279,7 +279,7 @@ class Image {
 					(int)($this->height -  $this->height * ($partHeight/$to->height))/2);
 		}
 		elseif(!imagecopyresampled($to->image, $this->image, 0, 0, 0, 0, $to->width, $to->height, $this->width, $this->height))
-			throw new systemNoticeException("Невозможно создать миниатрю для файла {$this->file->fullName}");
+			throw new SystemNoticeException("Невозможно создать миниатрю для файла {$this->file->fullName}");
 	}
 
 	/**
@@ -345,7 +345,7 @@ class Image {
 	 * @param string|File $path File location
 	 * @param bool $optimize    Image optimization flag (performs optimize func)
 	 * @return $this
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	public function save($path, $optimize = true) {
 
@@ -360,18 +360,18 @@ class Image {
 			case 'jpg':
 			case 'jpeg':
 				if (!imagejpeg($this->image, $this->file->path, $optimize ? 50 : 100))
-					throw new systemErrorException("Невозможно создать файл $this->file->path");
+					throw new SystemErrorException("Невозможно создать файл $this->file->path");
 				break;
 			case 'gif':
 				if (!imagegif($this->image, $this->file->path))
-					throw new systemErrorException("Невозможно создать файл $this->file->path");
+					throw new SystemErrorException("Невозможно создать файл $this->file->path");
 				break;
 			case 'png':
 				if (!imagepng($this->image, $this->file->path, $optimize ? 50 : 100))
-					throw new systemErrorException("Невозможно создать файл $this->file->path");
+					throw new SystemErrorException("Невозможно создать файл $this->file->path");
 				break;
 			default:
-				throw new systemErrorException("Неизвестное расширение изображения: \"{$this->file->fullName}\"");
+				throw new SystemErrorException("Неизвестное расширение изображения: \"{$this->file->fullName}\"");
 		}
 
 		# Return
@@ -401,14 +401,14 @@ class Image {
 
 			# If no data
 			if(empty($exif['GPS']))
-				throw new userErrorException("No GPS data persists");
+				throw new UserErrorException("No GPS data persists");
 
 			# If wrong data
 			if(empty($exif['GPS']['GPSLatitudeRef']) ||
 					empty($exif['GPS']['GPSLatitude']) ||
 					empty($exif['GPS']['GPSLongitudeRef']) ||
 					empty($exif['GPS']['GPSLongitude']))
-				throw new userErrorException("Wrong GPS data for {$this->file->path}: ".var_export($exif, true));
+				throw new UserErrorException("Wrong GPS data for {$this->file->path}: ".var_export($exif, true));
 
 			# Get reference and latitude
 			$reference = $exif['GPS']['GPSLatitudeRef'];

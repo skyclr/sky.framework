@@ -26,8 +26,3 @@ class UserData {
 	 */
 	static $post;
 }
-
-
-UserData::$cookie = ArrayFilter::make($_COOKIE);
-UserData::$get    = ArrayFilter::make($_GET);
-UserData::$post   = ArrayFilter::make($_POST);

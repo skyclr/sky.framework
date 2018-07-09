@@ -2,47 +2,12 @@
 
 # Framework namespace
 namespace sky;
-use PHPMailer\PHPMailer\Exception;
-
-/** Errors handler
- * @param $code
- * @param $message
- * @param $file
- * @param $line
- */
-function errorHandler($code, $message, $file, $line) {
-
-	# Skip pdo gone aways
-	if(!error_reporting() || stripos($message, "MySQL server has gone away") !== false)
-		return;
-
-	switch($code) {
-		case E_ERROR    :
-			$type = "php error";
-			break;
-		case E_PARSE    :
-			$type = "php parse";
-			break;
-		case E_STRICT    :
-			$type = "php error";
-			break;
-		default:
-			$type = "php";
-			break;
-	}
-
-	baseException::log("($type)$message;\nLine: $line.\nFile: $file", 1);
-
-}
-
-# Register error handler
-set_error_handler('\sky\errorHandler', E_ALL | E_STRICT);
 
 /**
  * Base class for all exceptions
  * <b>Extends</b> Exception
  */
-class baseException extends \Exception {
+class BaseException extends \Exception {
 
 	/**
 	 * Indicates that we should mail exceptions
@@ -118,7 +83,7 @@ class baseException extends \Exception {
 					"content" => $text,
 					"footer"  => isset(Sky::$config['site']['signature']) ? Sky::$config['site']['signature'] : date("d.m.y H:i")
 				]);
-		} catch(Exception $e) {
+		} catch(\PHPMailer\PHPMailer\Exception $e) {
 			return "<h1>Error " . (isset($preferences["site"]["name"]) ? $preferences["site"]["name"] : "") . "</h1><p>$text</p>";
 		}
 
@@ -168,7 +133,7 @@ class baseException extends \Exception {
 	 *                        <b>0</b> - good, <b>1</b> - error, <b>2</b> - no message will be putted to stack
 	 */
 	public static function log($message, $code = 1) {
-		$e = new baseException($message, $code);
+		$e = new BaseException($message, $code);
 		$e->saveLog();
 	}
 
@@ -239,14 +204,14 @@ class baseException extends \Exception {
 /* Advanced exception */
 
 /** This exception class always logged and never showed to user */
-class systemException extends baseException {
+class SystemException extends BaseException {
 	public function __construct($message, $code = 1) {
 		parent::__construct($message, $code, false, true);
 	}
 }
 
 /** Exception on system error */
-class systemErrorException extends systemException {
+class SystemErrorException extends SystemException {
 	public function __construct($message) {
 
 		parent::__construct($message, 1);
@@ -254,21 +219,21 @@ class systemErrorException extends systemException {
 }
 
 /** Exception on system notice error */
-class systemNoticeException extends systemException {
+class SystemNoticeException extends SystemException {
 	public function __construct($message) {
 		parent::__construct($message, 1);
 	}
 }
 
 /** System fatal exception */
-class systemFatalException extends systemException {
+class SystemFatalException extends SystemException {
 	public function __construct($message) {
 		parent::__construct($message, 4);
 	}
 }
 
 /** System fatal exception */
-class systemErrorDataException extends systemException {
+class SystemErrorDataException extends SystemException {
 	public $data;
 
 	/**
@@ -292,7 +257,7 @@ class systemErrorDataException extends systemException {
 }
 
 /** Class of exception which throws database messages */
-class databaseException extends systemException {
+class DatabaseException extends SystemException {
 	# Redefine the exception so message isn't optional
 	public function __construct($message) {
 		parent::__construct($message, 5);
@@ -301,42 +266,42 @@ class databaseException extends systemException {
 }
 
 /** Exception by user fault */
-class userException extends baseException {
+class UserException extends BaseException {
 	public function __construct($message, $type, $show = true) {
 		parent::__construct($message, $type, $show, false);
 	}
 }
 
 /** Error exception by user fault */
-class userErrorException extends userException {
+class UserErrorException extends UserException {
 	public function __construct($message, $show = true) {
 		parent::__construct($message, 1, $show);
 	}
 }
 
 /** Error exception if user permission restricted */
-class userPermissionException extends userErrorException {
+class UserPermissionException extends UserErrorException {
 	public function __construct($message, $show = true) {
 		parent::__construct($message, $show);
 	}
 }
 
 /** Notice exception by user fault */
-class userNoticeException extends userException {
+class UserNoticeException extends UserException {
 	public function __construct($message, $show = true) {
 		parent::__construct($message, 3, $show);
 	}
 }
 
 /** Exception for authorization */
-class userAuthorisationException extends userException {
+class UserAuthorisationException extends UserException {
 	public function __construct($message = "Вы должны войти в систему", $show = true) {
 		parent::__construct($message, 1, $show);
 	}
 }
 
 /** Exception on system error */
-class system404Exception extends baseException {
+class System404Exception extends BaseException {
 	public function __construct($message, $code = 1) {
 		parent::__construct($message, $code, false, false);
 	}

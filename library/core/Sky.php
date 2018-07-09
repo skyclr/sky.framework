@@ -112,7 +112,7 @@ class Sky {
 				if($type == "console")
 					echo "\e[34mLibrary: init done\e[0m\n";
 
-			} catch(userErrorException $e) {}
+			} catch(UserErrorException $e) {}
 
 			# Self link
 			self::$sky = $this;
@@ -131,13 +131,13 @@ class Sky {
 			return;
 
 		}
-		catch(databaseException $e) {
+		catch(DatabaseException $e) {
 
 			# User info error message
 			$error = "В данный момент мы меняем конфигурацию базы данных. Пожалуйста попробуйте позже";
 
 		}
-		catch(baseException $e) {
+		catch(BaseException $e) {
 
 			# Error
 			$error = "Во время работы произоша системная ошибка";
@@ -146,7 +146,7 @@ class Sky {
 		catch(\Exception $e) {
 
 			# Log
-			baseException::log($e->getMessage() . "\nFile: " .$e->getFile() . "\nLine: " . $e->getLine());
+			BaseException::log($e->getMessage() . "\nFile: " .$e->getFile() . "\nLine: " . $e->getLine());
 
 			# Error
 			$error = "Во время работы произоша системная ошибка";
@@ -262,7 +262,7 @@ class Sky {
 	/**
 	 * Gets location path from preferences
 	 * @param string $name Name of location
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 * @return string
 	 */
     public static function location($name) {
@@ -275,7 +275,7 @@ class Sky {
 				return self::location("phpCore") . "content.php";
 
 			# Else exception go
-			throw new systemErrorException("Unknown location requested: " . $name);
+			throw new SystemErrorException("Unknown location requested: " . $name);
 
 		}
 

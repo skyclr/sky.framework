@@ -3,7 +3,6 @@
 # Framework namespace
 namespace sky;
 
-
 /** Class to work with user and other variables */
 class Vars {
 
@@ -15,17 +14,14 @@ class Vars {
 	 * @return array
 	 */
 	public static function reorderByKey($data, $name = "id", $key = false) {
-	
-		
+
 		# Result array
 		$result = array();
 
-		
 		# If no data then empty result
 		if(!is_array($data)) 
 			return $result;
-		
-		
+
 		# Go thru data
 		foreach($data as $record) {
 			
@@ -37,8 +33,7 @@ class Vars {
 				$result[$record[$name]] = $record;
 			
 		}
-		
-		
+
 		# Return
 		return $result;
 		
@@ -81,26 +76,21 @@ class Vars {
 	 * @return array
 	 */
     public static function getByKey($data, $name = 'id', $key = false) {
-    
-		
+
 		# Empty result
     	$result = array();
-
 
 		# If wrong data
 		if(!is_array($data))
 			return $result;
 
-		
     	# Go through array
     	foreach($data as $item) {
-			
-			
+
 			# If not suck key value
     		if(!isset($item[$name])) 
 				continue;
-			
-			
+
 			# If need order key
 			if($key)	
 				$result[$item[$key]] = $item[$name];
@@ -129,23 +119,19 @@ class Vars {
             else $type = false;
         }
         else $type = $_GET['type'];
-		
-		
+
 		# If no correction
         if ($availableTypes === false) 
 			return $type;
-            
-		
+
         # If AT not an array
         if (!is_array($availableTypes) && $type == $availableTypes) 
 			return $type;
-		
-		
+
 		# If in array
         if(in_array($type, $availableTypes)) 
 			return $type;
-		
-		
+
         # If no match
         return false;
  
@@ -166,23 +152,19 @@ class Vars {
             else $type = false;
         }
         else $type = $_GET['subtype'];
-		
-		
+
 		# If no correction
         if ($availableTypes === false) 
 			return $type;
-            
-		
+
         # If AT not an array
         if (!is_array($availableTypes) && $type == $availableTypes) 
 			return $type;
-		
-		
+
 		# If in array
         if(in_array($type, $availableTypes)) 
 			return $type;
-		
-		
+
         # If no match
         return false;
     }

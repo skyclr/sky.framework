@@ -78,8 +78,8 @@ class Auth {
 				} else Info::error("Неверная пара логин/пароль" . $user);
 
 			} catch(\Exception $e) {
-				if($e instanceof databaseException)
-					throw new databaseException("Can't auth user, ".$e->getMessage());
+				if($e instanceof DatabaseException)
+					throw new DatabaseException("Can't auth user, ".$e->getMessage());
 				Info::error("Ошибка во время аутентификации пользователя");
 			}
 
@@ -121,7 +121,7 @@ class Auth {
 	 * @param string $usersTableAddress        Name of tables where stores user data
 	 * @param array  $defaultPreferences      Array of default settings which will assign to new users,
 	 *                                        or if any error on get user setting occupied
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	static function initialization($usersTableAddress, $defaultPreferences) {
 
@@ -173,14 +173,14 @@ class Auth {
 	/**
 	 * This function performs user authorisation on server based on authentication result.
 	 * @param array|bool $user      User information gathered by Auth::authentication.
-	 * @throws systemErrorException
-	 * @throws databaseException
+	 * @throws SystemErrorException
+	 * @throws DatabaseException
 	 */
 	static function authorisation($user = false) {
 
 		# Check if initialised
 		if(!self::$isInit)
-			throw new systemErrorException("Auth options not initialized");
+			throw new SystemErrorException("Auth options not initialized");
 
 		# Set me
 		self::$me = new UserController($user);
@@ -210,7 +210,7 @@ class Auth {
 
 			}
 
-		} catch(baseException $e) {
+		} catch(BaseException $e) {
 
 			# In case of error
 			self::logout(false);
@@ -225,14 +225,14 @@ class Auth {
 	 * @param bool|String $username  Name of user to authenticate
 	 * @param bool|String $password  Password of this user
 	 * @param bool|String $sessionId Session identifier, may be alternative for password
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 * @return array|bool FALSE on fail, user data array otherwise
 	 */
 	static function authentication($username = false, $password = false, $sessionId = false) {
 
 		# Check if initialised
 		if (!self::$isInit)
-			throw new systemErrorException("Переменные аутентификации не инициализированы");
+			throw new SystemErrorException("Переменные аутентификации не инициализированы");
 
 		# Check is username set
 		if($username === false && is_null($username = ud::$post->key("username")->valueOr('')))
@@ -259,7 +259,7 @@ class Auth {
 
 		# Check status
 		if($user["active"] == 0)
-			throw new userErrorException("Вы не активировали ваш аккаунт");
+			throw new UserErrorException("Вы не активировали ваш аккаунт");
 
 		# Return data
 		return $user;
@@ -269,7 +269,7 @@ class Auth {
 	/**
 	 * This function checks cookies variables(sessionId, username) and try to authorizate his if they setted
 	 * @return bool Returns FALSE if they not set
-	 * @throws databaseException
+	 * @throws DatabaseException
 	 */
 	static function isLoggedInBefore() {
 
@@ -285,8 +285,8 @@ class Auth {
 				return true;
 			}
 		} catch(\Exception $e) {
-			if($e instanceof databaseException)
-				throw new databaseException("Can't auth user, ".$e->getMessage());
+			if($e instanceof DatabaseException)
+				throw new DatabaseException("Can't auth user, ".$e->getMessage());
 			Info::error("Во время восстановления сессии произошла ошибка");
 		}
 

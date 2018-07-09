@@ -23,7 +23,7 @@ class DateTime extends \DateTime {
 	 * @param String		$time			Date string
 	 * @param String		$errorMessage	Exception text throw in case of error
 	 * @param \DateTimeZone	$timeZone		Zone like in real DateTime
-	 * @throws userErrorException
+	 * @throws UserErrorException
 	 */
 	public function __construct($time = "now", $errorMessage = "Неверно указана дата", $timeZone = null) {
 		try {
@@ -37,7 +37,7 @@ class DateTime extends \DateTime {
 
 		# In case of creation error
 		} catch(\Exception $e) {
-			throw new userErrorException($errorMessage . ": " . $time);
+			throw new UserErrorException($errorMessage . ": " . $time);
 		}
 
 	}
@@ -48,7 +48,7 @@ class DateTime extends \DateTime {
 	 * @param string $time   Date/time to set
 	 * @param string $errorMessage
 	 * @param null   $timeZone
-	 * @throws userErrorException
+	 * @throws UserErrorException
 	 * @return DateTime
 	 */
 	public static function createFromFormat($format, $time, $errorMessage = "Неверно указана дата", $timeZone = null) {
@@ -61,7 +61,7 @@ class DateTime extends \DateTime {
 
 			# In case of creation error
 		} catch(\Exception $e) {
-			throw new userErrorException($errorMessage . ": $time");
+			throw new UserErrorException($errorMessage . ": $time");
 		}
 
 		return self::make($date->format(self::DATETIME_SQL));
@@ -73,7 +73,7 @@ class DateTime extends \DateTime {
 	 * @param String		$errorMessage	Exception text throw in case of error
 	 * @param \DateTimeZone	$timeZone		Zone like in real DateTime
 	 * @return DateTime
-	 * @throws userErrorException
+	 * @throws UserErrorException
 	 */
 	public static function make($time = "now", $errorMessage = "Неверно указана дата", $timeZone = null) {
 		return new DateTime($time, $errorMessage, $timeZone);
@@ -183,13 +183,13 @@ class DateTime extends \DateTime {
 	 * Applies strftime to current date
 	 * @param string $format Date format
 	 * @return string Formatted date
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	public function strftime($format) {
 
 		# Check
 		if(!function_exists("strftime"))
-			throw new systemErrorException("No function strftime");
+			throw new SystemErrorException("No function strftime");
 
 		# Reformat
 		return strftime($format, $this->format("U"));

@@ -333,7 +333,7 @@ abstract class baseManager extends \ArrayIterator {
 	/**
 	 * Static creation
 	 * @return static
-	 * @throws \sky\systemErrorException
+	 * @throws \sky\SystemErrorException
 	 */
 	static function make() {
 
@@ -342,7 +342,7 @@ abstract class baseManager extends \ArrayIterator {
 
 		# Check existence
 		if(!class_exists($manager->elementClass))
-			throw new \sky\systemErrorException("Manager \"" . get_called_class()  . "\" uses \"$manager->elementClass\" class which not exists");
+			throw new \sky\SystemErrorException("Manager \"" . get_called_class()  . "\" uses \"$manager->elementClass\" class which not exists");
 
 		# Prepare query
 		$manager->prepareQuery();
@@ -555,7 +555,7 @@ abstract class baseManager extends \ArrayIterator {
 	/**
 	 * Delete all items in set
 	 * @return $this
-	 * @throws \sky\userErrorException
+	 * @throws \sky\UserErrorException
 	 */
 	public function delete() {
 

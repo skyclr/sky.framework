@@ -5,9 +5,9 @@ namespace sky\images;
 
 # File
 use sky\fs\File;
-use sky\systemErrorException;
-use sky\systemNoticeException;
-use sky\userErrorException;
+use sky\SystemErrorException;
+use sky\SystemNoticeException;
+use sky\UserErrorException;
 
 # Extend image
 class ImageImagick extends Image {
@@ -19,8 +19,8 @@ class ImageImagick extends Image {
 
 	/**
 	 * Generates image from file path
-	 * @throws userErrorException
-	 * @throws systemErrorException
+	 * @throws UserErrorException
+	 * @throws SystemErrorException
 	 * @return \Imagick
 	 */
 	protected function createFromFile() {
@@ -31,14 +31,14 @@ class ImageImagick extends Image {
 
 	/**
 	 * Gets image sizes from file
-	 * @throws systemNoticeException
+	 * @throws SystemNoticeException
 	 */
 	public function getSizes() {
 
 
 		# Gathers old image sizes
 		if(!$sizes = $this->image->getImageGeometry())
-			throw new systemNoticeException("Невозможно получить размеры изображения {$this->file->path}");
+			throw new SystemNoticeException("Невозможно получить размеры изображения {$this->file->path}");
 
 
 		# Convert
@@ -54,8 +54,8 @@ class ImageImagick extends Image {
 	 * @param integer $height Max height of new image file
 	 * @param bool    $crop   Identifies if image should be cropped if not  has proper proportions
 	 * @return $this|\sky\images\ImageImagick
-	 * @throws systemNoticeException
-	 * @throws systemErrorException
+	 * @throws SystemNoticeException
+	 * @throws SystemErrorException
 	 */
 	public function resize($width, $height, $crop = false) {
 
@@ -97,7 +97,7 @@ class ImageImagick extends Image {
 
 
 		} catch(\ImagickException $e) {
-			throw new systemErrorException("Imagick error: " . $e->getMessage());
+			throw new SystemErrorException("Imagick error: " . $e->getMessage());
 		}
 
 	}

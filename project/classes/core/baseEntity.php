@@ -1,7 +1,7 @@
 <?php
 
 use sky\ArrayFilter;
-use sky\userErrorException;
+use sky\UserErrorException;
 
 abstract class baseEntity extends baseEntityDocInterface {
 
@@ -109,7 +109,7 @@ abstract class baseEntity extends baseEntityDocInterface {
 	 * Creates new user according to DB record with specified id
 	 * @param int $id User id
 	 * @return $this
-	 * @throws userErrorException
+	 * @throws UserErrorException
 	 */
 	public static function load($id) {
 
@@ -119,7 +119,7 @@ abstract class baseEntity extends baseEntityDocInterface {
 
 		# Get data
 		if(!$data = \sky\Sky::$db->make(static::$tableName)->where($id)->get(\sky\db\Ret::SINGLE))
-			throw new userErrorException("Записи с ID $id (" . static::$tableName .") не сущестует");
+			throw new UserErrorException("Записи с ID $id (" . static::$tableName .") не сущестует");
 
 		# Return data
 		return new static($data);
@@ -130,13 +130,13 @@ abstract class baseEntity extends baseEntityDocInterface {
 	/**
 	 * Deletes from DB record with specified id
 	 * @return static
-	 * @throws userErrorException
+	 * @throws UserErrorException
 	 */
 	public function delete() {
 
 		# Delete record
 		if(!$data = \sky\Sky::$db->make(static::$tableName)->where($this->id)->delete())
-			throw new userErrorException("Записи с ID $this->id не сущестует");
+			throw new UserErrorException("Записи с ID $this->id не сущестует");
 
 		# Remove id
 		$this->id = null;
@@ -176,7 +176,7 @@ abstract class baseEntity extends baseEntityDocInterface {
 
 	/**
 	 * Converts current entity to array of simple types
-	 * @throws \sky\systemErrorException
+	 * @throws \sky\SystemErrorException
 	 */
 	public function toArray() {
 
@@ -184,7 +184,7 @@ abstract class baseEntity extends baseEntityDocInterface {
 		if($this instanceof baseEntityDocInterface)
 			return ["id" => $this->id] + parent::toArray();
 
-		throw new \sky\systemErrorException("Array presentation of '" . __CLASS__ .  "' not implemented yet");
+		throw new \sky\SystemErrorException("Array presentation of '" . __CLASS__ .  "' not implemented yet");
 	}
 
 }

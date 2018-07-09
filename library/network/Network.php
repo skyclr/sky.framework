@@ -40,26 +40,23 @@ class Network {
 	 * Preforms curl request
 	 * @param string     $url     URI of page to perform request
 	 * @param array|bool $options Array of options to perform request
-	 * @throws userErrorException
-	 * @throws systemErrorException
+	 * @throws UserErrorException
+	 * @throws SystemErrorException
 	 * @return array
 	 */
 	public static function curlRequest($url, $options = false) {
 
 		# Empty check
 		if(empty($url))
-			throw new userErrorException("URL для выполнения запроса не задан");
-
+			throw new UserErrorException("URL для выполнения запроса не задан");
 
 		# Default 0 socks index
 		if(!isset($options['socks']))
 			$options['socks'] = false;
 
-
 		# Request
 		if(!isset($options['request']) || !in_array($options['request'], self::$requestTypes))
 			$options['request'] = "GET";
-
 
 		# Setting headers
 		if(isset($options['headers']))
@@ -128,7 +125,6 @@ class Network {
 				$parameters[CURLOPT_PROXYUSERPWD] = $options['proxy']['auth'];
 		}
 
-
 		# Cookie
 		if(isset($options['cookie'])) {
 			$parameters[CURLOPT_COOKIEJAR]  = $options['cookie'];
@@ -137,30 +133,28 @@ class Network {
 
 		# Set parameters
 		if(curl_setopt_array($curl, $parameters) === false)
-			throw new systemErrorException("Can't set curl parameters");
-
+			throw new SystemErrorException("Can't set curl parameters");
 
 		# Execute
 		$returned = curl_exec($curl);
-
 
 		# If some error
 		if($returned === false) {
 
 			# Can't resolve
 			if(curl_errno($curl) == 6)
-				throw new userErrorException("Невозможно определить адрес сервера '$url'.");
+				throw new UserErrorException("Невозможно определить адрес сервера '$url'.");
 
 			# Inactive
 			if(curl_errno($curl) == 7)
-				throw new userErrorException("Сервер '$url' не активен.");
+				throw new UserErrorException("Сервер '$url' не активен.");
 
 			# Inactive
 			if(curl_errno($curl) == 3)
-				throw new userErrorException("Ваш URI('$url') имеет неверный формат.");
+				throw new UserErrorException("Ваш URI('$url') имеет неверный формат.");
 
 			# Unknown error
-			throw new systemErrorException("CURL error(#" . ($code = curl_errno($curl)) . "): " . Sky::$config["curlErrorCodes"][$code], $code);
+			throw new SystemErrorException("CURL error(#" . ($code = curl_errno($curl)) . "): " . Sky::$config["curlErrorCodes"][$code], $code);
 
 		}
 
@@ -234,7 +228,7 @@ class Network {
 	/**
 	 * get IP address by host url
 	 * @param string $url String contains url
-	 * @throws userErrorException
+	 * @throws UserErrorException
 	 * @return int
 	 * @internal param String $url Url which is host parameter of parse_url
 	 */
@@ -245,8 +239,7 @@ class Network {
 			$url = mb_substr($url, 8, mb_strlen($url, "utf-8"), "utf-8");
 		elseif(mb_strpos($url, "http://", 0, "utf-8") === 0)
 			$url = mb_substr($url, 7, mb_strlen($url, "utf-8"), "utf-8");
-		
-		
+
 		# Remove last slash
 		if($url[mb_strlen($url, "utf-8")-1] == "/")
 			$url = mb_substr($url, 0, mb_strlen($url, "utf-8") - 1, "utf-8");
@@ -256,14 +249,14 @@ class Network {
 
 		# If no result
 		if (!sizeof($urlIp))
-			throw new userErrorException("Невозможно определить IP-адрес по url: ".$url);
+			throw new UserErrorException("Невозможно определить IP-адрес по url: ".$url);
 
 		# Convert
 		$urlIpInt = ip2long($urlIp[0]);
 		
 		# Validate IP
 		if ($urlIpInt[0] == -1 || $urlIp[0] != long2ip($urlIpInt)) 
-			throw new userErrorException("Невозможно определить IP-адрес по url – ".$url);
+			throw new UserErrorException("Невозможно определить IP-адрес по url – ".$url);
 
 		# Return
 		return $urlIpInt;

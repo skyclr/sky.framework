@@ -2,7 +2,7 @@
 
 # Include base page class for page building
 use sky\Auth;
-use sky\baseException;
+use sky\BaseException;
 use sky\Request;
 use sky\Sky;
 
@@ -90,7 +90,7 @@ class content {
 
 			# Existing check
 			if(!file_exists($classPath))
-				throw new \sky\system404Exception("No page for path found: $pagePath");
+				throw new \sky\System404Exception("No page for path found: $pagePath");
 
 			# Page include
 			/** @noinspection PhpIncludeInspection */
@@ -128,7 +128,7 @@ class content {
 			# Render
 			self::$renderedPage = Sky::$twig->render("/shared/" . self::$page->parentTemplate . ".twig", $parameters);
 
-		} catch(\sky\system404Exception $e) {
+		} catch(\sky\System404Exception $e) {
 
 			# Set code
 			header("HTTP/1.0 404 Not Found", true, 404);
@@ -139,8 +139,8 @@ class content {
 		} catch(Exception $e) {
 
 			# Log if needed
-			if(!($e instanceof baseException))
-				baseException::log($e->getMessage());
+			if(!($e instanceof BaseException))
+				BaseException::log($e->getMessage());
 
 			# Message
 			self::$renderedPage = Sky::$twig->render("/system/errorPage.twig", array("error" => "Во время работы произошла ошибка (" . $e->getMessage() . "), пожалуйста попробуйте позже"));

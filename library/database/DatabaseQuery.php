@@ -3,8 +3,8 @@
 # Special database namespace
 namespace sky\db;
 
-use sky\databaseException;
-use sky\systemErrorException;
+use sky\DatabaseException;
+use sky\SystemErrorException;
 use sky\Utilities;
 use sky\Validator;
 
@@ -241,7 +241,7 @@ class DatabaseQuery extends Core {
 	/**
 	 * Sets/gets max records limit
 	 * @param int|bool $limit Limit size
-	 * @throws databaseException
+	 * @throws DatabaseException
 	 * @return DatabaseQuery|int
 	 */
 	public function limit($limit = false) {
@@ -252,7 +252,7 @@ class DatabaseQuery extends Core {
 
 		# Check
 		if(!Validator::value($limit, "positive"))
-			throw new databaseException("Wrong request limit: " . $limit);
+			throw new DatabaseException("Wrong request limit: " . $limit);
 
 		# Return
 		$this->parameters["limit"] = $limit;
@@ -283,7 +283,7 @@ class DatabaseQuery extends Core {
 	 * @param string       $order Order direction
 	 * @param bool         $prepend
 	 * @return DatabaseQuery
-	 * @throws databaseException
+	 * @throws DatabaseException
 	 */
 	public function order($field, $order = "DESC", $prepend = false) {
 
@@ -309,7 +309,7 @@ class DatabaseQuery extends Core {
 
 		# Check
 		if(!in_array($order, array("ASC", "DESC")))
-			throw new databaseException("Wrong order type: " . $order);
+			throw new DatabaseException("Wrong order type: " . $order);
 
 		# Add param
 		if($prepend && !empty($this->parameters['order']))
@@ -781,14 +781,14 @@ class DatabaseQuery extends Core {
 	/**
 	 * Performs update query
 	 * @param string $return What should be returned, see database doc return types
-	 * @throws databaseException
+	 * @throws DatabaseException
 	 * @return int number of updated records
 	 */
 	public function update($return = 'updated') {
 
 		# Check to update
 		if(!$this->records)
-			throw new databaseException("No fields to update");
+			throw new DatabaseException("No fields to update");
 
 		# Prepare
 		$records = array();

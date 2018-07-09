@@ -47,7 +47,7 @@ class FilterRule {
 	 * Checks if var have proper type
 	 * @param VarFilter $varFilter Var to check
 	 * @param           $value
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	function check(VarFilter $varFilter, $value) {
 
@@ -98,7 +98,7 @@ class FilterRule {
 				break;
 			}
 			default:
-				throw new systemErrorException("Unknown validation rule: $this->rule");
+				throw new SystemErrorException("Unknown validation rule: $this->rule");
 		}
 
 	}
@@ -107,7 +107,7 @@ class FilterRule {
 	 * Checks if var have proper type
 	 * @param VarFilter $varFilter Var to check
 	 * @param           $value
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	function checkRecursive(VarFilter $varFilter, $value) {
 
@@ -138,7 +138,7 @@ class FilterRule {
 	/**
 	 * Checks if value has proper type
 	 * @param           $value
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	private function checkType($value) {
 
@@ -184,7 +184,7 @@ class FilterRule {
 				break;
 			}
 			default:
-				throw new systemErrorException("Unknown require type: $this->ruleCondition");
+				throw new SystemErrorException("Unknown require type: $this->ruleCondition");
 		}
 
 	}

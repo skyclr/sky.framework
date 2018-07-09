@@ -89,7 +89,7 @@ final class Twig_ExtensionSet
         }
 
         if (!isset($this->extensions[$class])) {
-        	\sky\baseException::log(sprintf('The "%s" extension is not enabled.', $class));
+        	\sky\BaseException::log(sprintf('The "%s" extension is not enabled.', $class));
             throw new Twig_Error_Runtime(sprintf('The "%s" extension is not enabled.', $class));
         }
 

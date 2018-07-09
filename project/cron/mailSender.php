@@ -6,9 +6,9 @@
  */
 
 # Inner settings
-use sky\baseException;
+use sky\BaseException;
 use sky\Sky;
-use sky\systemException;
+use sky\SystemException;
 
 $maxMailsAtATime = 100;    # Maximum mail messages limit sent at execution (Максимальное кол-во обрабатываемых писем за один запуск скрипта)
 $processedMails  = 0;       # Reset processed counter (Кол-во обработанных писем)
@@ -82,7 +82,7 @@ try {
 
 		# Data check
 		if(!is_array($mailData) || !count($mailData) || !isset($mailData['mail'])) {
-			baseException::log("Wrong mail contents for a file: " . $file);
+			BaseException::log("Wrong mail contents for a file: " . $file);
 			continue;
 		}
 
@@ -213,7 +213,7 @@ try {
 			# Close SMTP conn.
 			$mail->SmtpClose();
 
-		} catch(systemException $e) {
+		} catch(SystemException $e) {
 			echo "[mailSender]Error: " . $e->getMessage();
 		}
 

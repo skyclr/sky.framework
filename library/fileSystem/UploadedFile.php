@@ -2,7 +2,7 @@
 
 # Namespace set
 namespace sky\fs;
-use sky\systemErrorException;
+use sky\SystemErrorException;
 
 
 /**
@@ -40,7 +40,7 @@ class UploadedFile extends File {
 	 * @param string $type Type of name generation
 	 * @param mixed $prefix Prefix parameter
 	 * @return $this
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	public function makeUploadName($type, $prefix) {
 		$file = parent::makeName($this->directory()->path, $type, $prefix);

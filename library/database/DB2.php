@@ -4,8 +4,8 @@
 namespace sky\db;
 
 # Exceptions required
-use sky\baseException;
-use sky\databaseException;
+use sky\BaseException;
+use sky\DatabaseException;
 
 # Core
 require_once("core.php");
@@ -89,13 +89,13 @@ class DB2 extends Core {
 	/**
 	 * Return database connection object
 	 * @return \PDO
-	 * @throws databaseException
+	 * @throws DatabaseException
 	 */
 	private function connect() {
 
 		# Checks connection parameters
 		if(!isset($this->databaseHost) || !isset($this->databaseName) || !isset($this->databaseUser) || !isset($this->databasePassword))
-			throw new databaseException("Connection parameters doesn't initialized");
+			throw new DatabaseException("Connection parameters doesn't initialized");
 
 		# Checks if link exists
 		if(isset($this->databaseLink))
@@ -114,7 +114,7 @@ class DB2 extends Core {
 			$data->closeCursor();
 
 		} catch(\PDOException $e) {
-			throw new databaseException("Database connection error: " . $e->getMessage());
+			throw new DatabaseException("Database connection error: " . $e->getMessage());
 		}
 
 		# If all ok
@@ -134,7 +134,7 @@ class DB2 extends Core {
 
 		# Check trace type
 		if($trace && !in_array($trace, $this->traceTypes))
-			throw new databaseException("Wrong trace type: " . $trace);
+			throw new DatabaseException("Wrong trace type: " . $trace);
 
 		# Connect if needed
 		$link = $this->connect();
@@ -161,7 +161,7 @@ class DB2 extends Core {
 			# Is statement not prepared
 			if($statement === false) {
 				$error = $link->errorInfo();
-				throw new databaseException("Database query error: " . $error[2] . "\nQuery was: " . $query);
+				throw new DatabaseException("Database query error: " . $error[2] . "\nQuery was: " . $query);
 			}
 
 			# Executes query
@@ -170,7 +170,7 @@ class DB2 extends Core {
 			# If error occupied
 			if($error === false) {
 				$error = $statement->errorInfo();
-				throw new databaseException("Database query error: " . $error[2] . "\nQuery was: " . $query);
+				throw new DatabaseException("Database query error: " . $error[2] . "\nQuery was: " . $query);
 			}
 
 			# Query count incrementation
@@ -217,7 +217,7 @@ class DB2 extends Core {
 			return $data;
 
 		} catch(\PDOException $e) {
-			throw new databaseException("Database error($return): " . $e->getMessage() . " file: " . $e->getFile(). ", line: " . $e->getLine() . "\nQuery was: $query");
+			throw new DatabaseException("Database error($return): " . $e->getMessage() . " file: " . $e->getFile(). ", line: " . $e->getLine() . "\nQuery was: $query");
 		}
 	}
 

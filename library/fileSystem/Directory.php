@@ -5,7 +5,7 @@ namespace sky\fs;
 
 
 # Uses
-use sky\systemErrorException;
+use sky\SystemErrorException;
 
 
 /**
@@ -39,7 +39,7 @@ class Directory {
 	/**
 	 * Creates new directory
 	 * @return $this
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	public function create() {
 
@@ -50,12 +50,12 @@ class Directory {
 
 		# If already exists but not dir
 		if($exists && !is_dir($this->path))
-			throw new systemErrorException("Файл $this->path уже существует, и при этом не является директорией");
+			throw new SystemErrorException("Файл $this->path уже существует, и при этом не является директорией");
 
 
 		# Try to create
 		if(!$exists && !@mkdir($this->path, 0777, true))
-			throw new systemErrorException("Невозможно создать диретокрию \"$this->path\"");
+			throw new SystemErrorException("Невозможно создать диретокрию \"$this->path\"");
 
 
 		# Self return
@@ -65,7 +65,7 @@ class Directory {
 
 	/**
 	 * Deletes directory recursively
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 * @return $this
 	 */
 	public function delete() {
@@ -82,7 +82,7 @@ class Directory {
 
 		# Delete dir
 		if(!@rmdir($this->path))
-			throw new systemErrorException("Невозможно удалить директорию " . $this->path);
+			throw new SystemErrorException("Невозможно удалить директорию " . $this->path);
 
 
 		# Delete success
@@ -91,7 +91,7 @@ class Directory {
 
 	/**
 	 * Removes all directory content
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 * @return $this
 	 */
 	public function clear() {
@@ -114,14 +114,14 @@ class Directory {
 	 * returns list of directory entries
 	 * @param string $pattern Regexp to find
 	 * @return array
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	public function read($pattern = "*") {
 
 
 		# Get list
 		if(!is_array($list = glob($this->path . $pattern)))
-			throw new systemErrorException("Невозможно прочитать директорию " . $this->path);
+			throw new SystemErrorException("Невозможно прочитать директорию " . $this->path);
 
 
 		# Files holder

@@ -52,7 +52,7 @@ abstract class baseEntityDocInterface {
 	 * @param $field
 	 * @param \sky\ArrayFilter $data
 	 * @return mixed
-	 * @throws \sky\systemErrorDataException
+	 * @throws \sky\SystemErrorDataException
 	 */
 	protected function GET_ENTITY_FIELD_VALUE($field, \sky\ArrayFilter $data) {
 		switch($field["type"]) {
@@ -74,7 +74,7 @@ abstract class baseEntityDocInterface {
 			case 'text':
 				return $data->key($field['field'])->typeFilter(\sky\FilterRule::TYPE_EMPTY_STRING)->convertedValueOr(\sky\VarFilter::CONVERT_TRIM, $field["default"]);
 			default:
-				throw new \sky\systemErrorDataException("Unknown field type: {$field["type"]}");
+				throw new \sky\SystemErrorDataException("Unknown field type: {$field["type"]}");
 		}
 	}
 
@@ -82,7 +82,7 @@ abstract class baseEntityDocInterface {
 	 * Get single field value;
 	 * @param $field
 	 * @return mixed
-	 * @throws \sky\systemErrorDataException
+	 * @throws \sky\SystemErrorDataException
 	 */
 	protected function GET_ENTITY_VALUE_FOR_ARRAY($field) {
 		$name = $field['name'];

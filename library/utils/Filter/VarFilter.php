@@ -85,7 +85,7 @@ class VarFilter {
 				if(!($this->value instanceof DateTime))
 					$this->value = DateTime::make($this->value);
 				break;
-			default: throw new systemErrorException("Unknown conversion: $how");
+			default: throw new SystemErrorException("Unknown conversion: $how");
 		}
 		return $this;
 	}
@@ -168,8 +168,8 @@ class VarFilter {
 	 * @param            $action
 	 * @param bool|false $name
 	 * @throws \Exception
-	 * @throws systemErrorException
-	 * @throws userErrorException
+	 * @throws SystemErrorException
+	 * @throws UserErrorException
 	 */
 	protected function performAction($action, $name = false) {
 
@@ -177,10 +177,10 @@ class VarFilter {
 			throw $action;
 
 		if($name == "systemException")
-			throw new systemErrorException($action);
+			throw new SystemErrorException($action);
 
 		if($name == "userException")
-			throw new userErrorException($action);
+			throw new UserErrorException($action);
 
 	}
 

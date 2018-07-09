@@ -281,8 +281,8 @@ class Validator {
 	 * @param $ruleName
 	 * @param $rule
 	 * @return int|string
-	 * @throws userErrorException
-	 * @throws systemErrorException
+	 * @throws UserErrorException
+	 * @throws SystemErrorException
 	 */
 	private function validateRule($key, $value, $ruleName, $rule) {
 
@@ -351,7 +351,7 @@ class Validator {
 				break;
 			}
 			default:
-				throw new systemErrorException("Unknown validation rule: $rule");
+				throw new SystemErrorException("Unknown validation rule: $rule");
 		}
 
 
@@ -365,8 +365,8 @@ class Validator {
 	 * @param $value
 	 * @param $type
 	 * @return int|string
-	 * @throws userErrorException
-	 * @throws systemErrorException
+	 * @throws UserErrorException
+	 * @throws SystemErrorException
 	 */
 	private function validateType($value, $type) {
 
@@ -480,7 +480,7 @@ class Validator {
 
 				break;
 			}
-			default: throw new systemErrorException("Unknown require type: $type");
+			default: throw new SystemErrorException("Unknown require type: $type");
 		}
 
 
@@ -550,8 +550,8 @@ class Validator {
 	 * @param string|array   $ruleName  Name of rule that should to be applied
 	 * @param string|boolean $rule      Rule condition
 	 * @param string         $return    What to return on error
-	 * @throws userErrorException
-	 * @throws systemErrorException
+	 * @throws UserErrorException
+	 * @throws SystemErrorException
 	 * @return int|mixed|null|string
 	 */
 	private function validate($key, $ruleName, $rule, $return) {
@@ -596,9 +596,9 @@ class Validator {
 						Info::error($errorText);
 						break;
 					case "exception":
-						throw new userErrorException($errorText);
+						throw new UserErrorException($errorText);
 					case "system":
-						throw new systemErrorException($errorText);
+						throw new SystemErrorException($errorText);
 					case "null":
 						$value = null;
 				}

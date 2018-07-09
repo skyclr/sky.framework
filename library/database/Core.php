@@ -3,7 +3,7 @@
 # Special DB namespace
 namespace sky\db;
 
-use sky\databaseException;
+use sky\DatabaseException;
 
 
 /**
@@ -82,7 +82,7 @@ abstract class Core {
 	 * @param String $name    Part name
 	 * @param Mixed  $value   Value for expression generation
 	 * @param Mixed  $options Additional options
-	 * @throws databaseException
+	 * @throws DatabaseException
 	 * @return string
 	 */
 	protected function getQueryPart($name, $value, $options = false) {
@@ -90,7 +90,7 @@ abstract class Core {
 
 		# Check type
 		if(is_array($value) && $this->parametersTypes[$name] !== "multi")
-			throw new databaseException("This parameter can't be array: " . $name);
+			throw new DatabaseException("This parameter can't be array: " . $name);
 
 
 		# Prepare expression
@@ -279,7 +279,7 @@ abstract class Core {
 	 * Implodes name list and add dashes
 	 * @param Array       $names Column names
 	 * @param bool|string $table Table name to add to non table set values
-	 * @throws databaseException
+	 * @throws DatabaseException
 	 * @return string
 	 */
 	public static function implodeNames($names, $table = false) {
@@ -288,7 +288,7 @@ abstract class Core {
 
 		# Check
 		if(!is_array($names))
-			throw new databaseException("Not an array");
+			throw new DatabaseException("Not an array");
 
 		# Go through
 		foreach($names as $name) {

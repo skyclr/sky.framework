@@ -3,9 +3,9 @@
 namespace sky\fs;
 
 # Uses
-use sky\baseException;
+use sky\BaseException;
 use sky\Info;
-use sky\systemFatalException;
+use sky\SystemFatalException;
 
 /**
  * Class upload
@@ -82,7 +82,7 @@ class Upload {
 	 * @param int $maxFiles         How much files should we download
 	 * @param string $inputName     Name of input tag
 	 * @param bool|string $fileType Type of files
-	 * @throws systemFatalException
+	 * @throws SystemFatalException
 	 * @return UploadedFile[]|UploadedFile
 	 */
 	public static function uploadFiles($directory, $nameType = "random", $prefix = 0, $maxFiles = -1, $inputName = "userfile", $fileType = false) {
@@ -146,7 +146,7 @@ class Upload {
 	 * Checks file for base upload errors
 	 * @param array $file File info
 	 * @return bool
-	 * @throws systemFatalException
+	 * @throws SystemFatalException
 	 */
 	private static function checkFile($file) {
 
@@ -168,7 +168,7 @@ class Upload {
 					break;
 				default: {
 					Info::error("Во время загрузки файла <b>\"{$file['name']}\"</b> произошла неизвестная ошибка");
-					throw new systemFatalException("Can't upload file, reason code:" . $file['error'] . '$_FILES:\n' . var_export($_FILES, true));
+					throw new SystemFatalException("Can't upload file, reason code:" . $file['error'] . '$_FILES:\n' . var_export($_FILES, true));
 				}
 			}
 
@@ -189,7 +189,7 @@ class Upload {
 	 * @param int $maxFiles     Maximum files number
 	 * @param bool $fileType    Type of file, like image, video or extension
 	 * @return UploadedFile|bool Array if file info or false on error
-	 * @throws systemFatalException
+	 * @throws SystemFatalException
 	 */
 	private static function uploadFile($file, $directory, $nameType = "random", $prefix = 0, $maxFiles = -1, $fileType = false) {
 
@@ -230,7 +230,7 @@ class Upload {
 		# Download files
 		if(!move_uploaded_file($file['temporaryName'], $uploadFile->path)) {
 			Info::error("Во время загрузки файла $uploadFile->name произоша ошибка.");
-			baseException::log("Cant move file '$uploadFile->temporaryName to path  $uploadFile->path");
+			BaseException::log("Cant move file '$uploadFile->temporaryName to path  $uploadFile->path");
 			return false;
 		}
 

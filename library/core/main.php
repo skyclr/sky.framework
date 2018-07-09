@@ -6,10 +6,6 @@ ini_set("max_execution_time", 15);
 mb_internal_encoding("utf-8");
 ini_set("session.gc_maxlifetime", 86400);
 
-# Include preferences
-require __DIR__ . "/../../project/preferences/main.php";
-global $preferences;
-
 # Set errors
 if(!empty($dev)) {
 	ini_set("display_errors", 1);
@@ -18,6 +14,10 @@ if(!empty($dev)) {
 
 # Path to include files
 set_include_path(dirname(__FILE__));
+
+# Include preferences
+require __DIR__ . "/../../project/preferences/main.php";
+global $preferences;
 
 # Classes
 require_once __DIR__ . "/exceptions.php";
@@ -39,4 +39,33 @@ require_once __DIR__ . "/../utils/Validator.php";
 require_once __DIR__ . "/../utils/Vars.php";
 require_once __DIR__ . "/../utils/Filter/ArrayFilter.php";
 
+# Register error handler
+set_error_handler(function ($code, $message, $file, $line) {
+
+	# Skip pdo gone aways
+	if(!error_reporting() || stripos($message, "MySQL server has gone away") !== false)
+		return;
+
+	switch($code) {
+		case E_ERROR    :
+			$type = "php error";
+			break;
+		case E_PARSE    :
+			$type = "php parse";
+			break;
+		case E_STRICT    :
+			$type = "php error";
+			break;
+		default:
+			$type = "php";
+			break;
+	}
+
+	\sky\BaseException::log("($type)$message;\nLine: $line.\nFile: $file", 1);
+
+}, E_ALL | E_STRICT);
+
+\sky\UserData::$cookie = \sky\ArrayFilter::make($_COOKIE);
+\sky\UserData::$get    = \sky\ArrayFilter::make($_GET);
+\sky\UserData::$post   = \sky\ArrayFilter::make($_POST);
 

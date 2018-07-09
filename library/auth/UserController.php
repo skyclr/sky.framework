@@ -5,7 +5,7 @@ namespace sky\auth;
 
 use sky\Auth;
 use sky\Sky;
-use sky\systemErrorException;
+use sky\SystemErrorException;
 
 include_once 'UserPreferences.php';
 
@@ -75,13 +75,13 @@ class UserController implements \ArrayAccess {
 
 	/**
 	 * Saves additional information
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	public function saveInfo() {
 
 		# If not available
 		if(!$this->info)
-			throw new systemErrorException("Can't save user information, because of it's not activated in config");
+			throw new SystemErrorException("Can't save user information, because of it's not activated in config");
 
 		# Info save
 		Sky::$db->make(Sky::$config['login']['userInfo'])->set($this->info)->insert(true);
@@ -91,21 +91,21 @@ class UserController implements \ArrayAccess {
 	/**
 	 * Gets users info
 	 * @return array user information
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	public function getInfo() {
 
 		# Logged in check
 		if(!Auth::isLoggedIn())
-			throw new systemErrorException("Try to get info of logged out user");
+			throw new SystemErrorException("Try to get info of logged out user");
 
 		# If not available
 		if(!$this->info)
-			throw new systemErrorException("Can't save user information, because of it's not activated in config");
+			throw new SystemErrorException("Can't save user information, because of it's not activated in config");
 
 		# User info get
 		if(!$info = Sky::$db->make(Sky::$config['login']['userInfo'])->where($this->userData['id'], "owner")->get("single"))
-			throw new systemErrorException("Can't get user info");
+			throw new SystemErrorException("Can't get user info");
 
 		# Save
 		return $this->info = $info;
@@ -149,14 +149,14 @@ class UserController implements \ArrayAccess {
 	 * @param String $name  Name of preference to get/set
 	 * @param Mixed  $value Value of preference, if not set then you wil get instead of set
 	 * @param Bool   $save  Indicates should be preferences saved immediately
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 * @return Mixed
 	 */
 	public function pref($name, $value = 'leaveEmptyToGet', $save = true) {
 
 		# Check if we have preferences
 		if(!$this->preferences)
-			throw new systemErrorException("Try to work with preferences, but they weren't init");
+			throw new SystemErrorException("Try to work with preferences, but they weren't init");
 
 		# Operations
 		if($value === 'leaveEmptyToGet') return $this->preferences->get($name);
@@ -167,13 +167,13 @@ class UserController implements \ArrayAccess {
 	/**
 	 * Saves changes in preferences
 	 * @param Bool $currentOnly Indicates that only changes in current script should be saved
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	public function savePreferences($currentOnly = true) {
 
 		# Check if we have preferences
 		if(!$this->preferences)
-			throw new systemErrorException("Try to save preferences, but they wern't init");
+			throw new SystemErrorException("Try to save preferences, but they wern't init");
 
 		# Save
 		$this->preferences->save($currentOnly);

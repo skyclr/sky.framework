@@ -1,7 +1,7 @@
 <?php
 
 use sky\Sky;
-use sky\systemErrorException;
+use sky\SystemErrorException;
 use sky\utils;
 
 class email {
@@ -138,14 +138,14 @@ class email {
 
 			# Validate incoming params
 			if(!$this->subject || !$this->text)
-				throw new systemErrorException('No header or text in message');
+				throw new SystemErrorException('No header or text in message');
 
 			# Send mails
 			foreach($this->to as $mailTo) {
 
 				# Checking for spam attempt
 				if(strpos($mailTo . $this->subject . $this->text, 'MIME-Version:') !== false || strpos($mailTo . $this->subject . $this->text, 'Content-Type:') !== false)
-					throw new systemErrorException('Possible attack: ' . $mailTo . '/' . $this->subject . '/' . $this->text);
+					throw new SystemErrorException('Possible attack: ' . $mailTo . '/' . $this->subject . '/' . $this->text);
 
 				# Set work dir + attach dir
 				\sky\fs\Directory::make(Sky::location("mail") . 'attachments/')->create();

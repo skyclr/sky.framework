@@ -1,7 +1,7 @@
 <?php
 use sky\Info;
 use sky\Sky;
-use sky\systemErrorException;
+use sky\SystemErrorException;
 use sky\UserData as ud;
 
 /**
@@ -162,7 +162,7 @@ abstract class basePage {
 	 * @param array $parameters Render parameters
 	 * @param bool $templatePath
 	 * @return string Rendered template
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	public function render($parameters = [], $templatePath = false) {
 
@@ -177,7 +177,7 @@ abstract class basePage {
 
 		# Existing check
 		if(!file_exists($templatePath))
-			throw new systemErrorException("Try to render not existing template: $templatePath");
+			throw new SystemErrorException("Try to render not existing template: $templatePath");
 
 		# Get page name
 		$parameters += ["pageName"       => content::$pageName,

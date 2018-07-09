@@ -3,7 +3,7 @@
 use sky\Auth;
 use sky\Request;
 use sky\Sky;
-use sky\systemErrorException;
+use sky\SystemErrorException;
 
 /**
  * Class twig
@@ -22,14 +22,14 @@ class twig extends Twig_Extension {
 
 	/**
 	 * Init twig extensions
-	 * @throws systemErrorException
+	 * @throws SystemErrorException
 	 */
 	public static function init() {
 
 
 		# If not created
 		if(!Sky::$twig)
-			throw new systemErrorException("Try to init Twig without using it");
+			throw new SystemErrorException("Try to init Twig without using it");
 
 		/** @noinspection PhpUndefinedMethodInspection */
 		Sky::$twig->getExtension('Twig_Extension_Core')->setNumberFormat(0, '.', " ");

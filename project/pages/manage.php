@@ -20,10 +20,10 @@ class page extends basePage {
 	function main() {
 
 		if(empty(\sky\Sky::$config["development"]["managePassword"]))
-			throw new \sky\userErrorException("No manage password provided, please set it in main.php preferences in [\"development\"][\"managePassword\"]");
+			throw new \sky\UserErrorException("No manage password provided, please set it in main.php preferences in [\"development\"][\"managePassword\"]");
 
 		if(empty(\sky\Sky::$config["database"]["use"]))
-			throw new \sky\userErrorException("Database not enabled, please set it in main.php preferences");
+			throw new \sky\UserErrorException("Database not enabled, please set it in main.php preferences");
 
 		if(!empty($_POST["getEntity"]))
 			$this->getEntity();
