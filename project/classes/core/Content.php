@@ -52,54 +52,50 @@ class Content {
 		# Make twig extend
 		Twig::init();
 
-		# Get request
+		# Get path
 		$path = Request::getPath();
 
 		# Check if available
 		if(!empty(Sky::$config["authenticate"]["use"]) && !Auth::isLoggedIn())
 			foreach(self::$authPages as $page)
 				if(preg_match("/$page/", $path))
-					$path = "login";
+					Request::setAddress('/login');
+
+		# Get page path
+		self::$pagePath = Request::getAddress();
 
 		# Get page name
 		self::$pageName = Request::getPageName();
 
 		# Make page
-		self::makePage($path);
+		self::makePage();
 
 	}
 
 	/**
 	 * Makes new page
-	 * @param string $pagePath Page path inside pages folder
 	 */
-	public static function makePage($pagePath = "index") {
-
-		# Save page path
-		self::$pagePath = $pagePath ? $pagePath : "index";
+	public static function makePage() {
 
 		# Page object creation
 		try {
+
+			$pageClass = ucfirst(self::$pageName);
+			$pageNamespace = implode("/", array_slice(self::$pagePath, 0, -1));
 
 			# Page class path
 			$classPath = Sky::location("pages") . self::$pagePath . ".php";
 
 			# Existing check
 			if(!file_exists($classPath))
-				throw new \sky\System404Exception("No page for path found: $pagePath");
+				throw new \sky\System404Exception("No page for path found: " . self::$pagePath);
 
 			# Page include
 			/** @noinspection PhpIncludeInspection */
 			include $classPath;
 
-			# Check if proper class exists
-			if(!class_exists("page")) {
-				self::$page = true;
-				return;
-			}
-
 			# Create page object
-			self::$page = BasePage::baseInit();
+			self::$page = BasePage::baseInit($pageClass, $pageNamespace);
 
 			# Make templates list
 			$jsTemplates = array();

@@ -3,7 +3,7 @@
 use sky\ArrayFilter;
 use sky\UserErrorException;
 
-abstract class baseEntity extends baseEntityDocInterface {
+abstract class BaseEntity extends BaseEntityDocInterface {
 
 	/**
 	 * Entity db id
@@ -28,7 +28,7 @@ abstract class baseEntity extends baseEntityDocInterface {
 		$this->id = $meta->key("id")->typeFilter(\sky\FilterRule::TYPE_POSITIVE)->convertedValueOr(\sky\VarFilter::CONVERT_INTEGER,null);
 
 		# Call compiled set meta
-		if($this instanceof baseEntityDocInterface)
+		if($this instanceof BaseEntityDocInterface)
 			parent::setMeta($meta);
 
 		return $this;
@@ -43,7 +43,7 @@ abstract class baseEntity extends baseEntityDocInterface {
 	public function setData(ArrayFilter $data, $dataFromMeta = false) {
 
 		# Call compiled set meta
-		if($this instanceof baseEntityDocInterface)
+		if($this instanceof BaseEntityDocInterface)
 			parent::setData($data);
 
 		return $this;
@@ -82,8 +82,8 @@ abstract class baseEntity extends baseEntityDocInterface {
 	 */
 	public function __construct($meta, $data = false) {
 
-		# Initialize baseEntityDocInterface
-		if($this instanceof baseEntityDocInterface)
+		# Initialize BaseEntityDocInterface
+		if($this instanceof BaseEntityDocInterface)
 			static::ENTITY_COMPILE_FIELDS();
 
 		# Correct
@@ -158,7 +158,7 @@ abstract class baseEntity extends baseEntityDocInterface {
 
 	/**
 	 * Self cloning
-	 * @return baseEntity
+	 * @return BaseEntity
 	 */
 	public function copy() {
 		return clone $this;
@@ -180,8 +180,8 @@ abstract class baseEntity extends baseEntityDocInterface {
 	 */
 	public function toArray() {
 
-		# Initialize baseEntityDocInterface
-		if($this instanceof baseEntityDocInterface)
+		# Initialize BaseEntityDocInterface
+		if($this instanceof BaseEntityDocInterface)
 			return ["id" => $this->id] + parent::toArray();
 
 		throw new \sky\SystemErrorException("Array presentation of '" . __CLASS__ .  "' not implemented yet");

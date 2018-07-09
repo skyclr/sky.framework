@@ -4,10 +4,10 @@ use sky\db\DatabaseQuery;
 use sky\FilterRule;
 use sky\VarFilter;
 
-abstract class baseManager extends \ArrayIterator {
+abstract class BaseManager extends \ArrayIterator {
 
 	/**
-	 * Array element class, extended from baseEntity
+	 * Array element class, extended from BaseEntity
 	 * @var string
 	 */
 	protected $elementClass = "NotDefined";
@@ -158,7 +158,7 @@ abstract class baseManager extends \ArrayIterator {
 
 	/**
 	 * Returns new manager with items, which items not in list
-	 * @param array|baseManager $items Items list
+	 * @param array|BaseManager $items Items list
 	 * @return static
 	 */
 	public function excludeItems($items) {
@@ -167,7 +167,7 @@ abstract class baseManager extends \ArrayIterator {
 		$manager = static::make();
 
 		# Convert to array
-		if($items instanceof baseManager)
+		if($items instanceof BaseManager)
 			$items = iterator_to_array($items);
 
 		# Go
@@ -275,7 +275,7 @@ abstract class baseManager extends \ArrayIterator {
 	/**
 	 * Adds new item from data array
 	 * @param $rowData
-	 * @return baseEntity
+	 * @return BaseEntity
 	 */
 	public function addItemFromDataArray($rowData) {
 		$this[] = $item = call_user_func([$this->elementClass, "make"], $rowData);
@@ -316,7 +316,7 @@ abstract class baseManager extends \ArrayIterator {
 
 	/**
 	 * Add multiple items
-	 * @param baseManager $manager Manager
+	 * @param BaseManager $manager Manager
 	 * @return $this
 	 */
 	public function addItemsFromManager($manager) {
@@ -543,7 +543,7 @@ abstract class baseManager extends \ArrayIterator {
 
 		$result = array();
 
-		/** @var baseEntity $item */
+		/** @var BaseEntity $item */
 		foreach($this as $item)
 			/** @noinspection PhpUndefinedMethodInspection */
 			$result[] = $item->toArray();
@@ -559,7 +559,7 @@ abstract class baseManager extends \ArrayIterator {
 	 */
 	public function delete() {
 
-		/** @var baseEntity $element */
+		/** @var BaseEntity $element */
 		foreach($this as $element)
 			$element->delete();
 

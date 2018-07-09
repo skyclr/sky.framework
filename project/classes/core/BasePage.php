@@ -71,17 +71,28 @@ abstract class BasePage {
 
 	/**
 	 * Performs some global page actions
+	 * @param string $pageClass Page class name
+	 * @param string $pageNamespace Page class namespace
+	 * @return BasePage
+	 * @throws SystemErrorException
 	 */
-	public static function baseInit() {
+	public static function baseInit($pageClass, $pageNamespace) {
+
+		/* get class full name */
+		$classFull = $pageNamespace . "/" . $pageClass;
 
 		# Create page
-		$page = new page();
+		$page = new $classFull();
 
-		# Templates init
-		$page->initJsTemplates();
+		if($page instanceof BasePage) {
 
-		# Page action
-		$page->main();
+			# Templates init
+			$page->initJsTemplates();
+
+			# Page action
+			$page->main();
+
+		} else throw new SystemErrorException("Page class isn't parented from base page class");
 
 		# Return new page exemplar
 		return $page;

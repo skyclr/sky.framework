@@ -1,6 +1,6 @@
 <?php
 
-abstract class baseEntityDocInterface {
+abstract class BaseEntityDocInterface {
 
 	public static $ENTITY_COMPILED_FIELDS = [];
 
