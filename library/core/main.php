@@ -21,22 +21,22 @@ set_include_path(dirname(__FILE__));
 
 # Classes
 require_once __DIR__ . "/exceptions.php";
-require_once __DIR__ . "/sky.php";
+require_once __DIR__ . "/Sky.php";
 require_once __DIR__ . "/../auth/Auth.php";
-require_once __DIR__ . "/../database/database2.php";
-require_once __DIR__ . "/../utils/datetime.php"; 
-require_once __DIR__ . "/../fileSystem/file.php"; 
-require_once __DIR__ . "/../fileSystem/directory.php";
-require_once __DIR__ . "/../fileSystem/upload.php";
-require_once __DIR__ . "/../fileSystem/uploadedFile.php";
-require_once __DIR__ . "/../fileSystem/file.php";
-require_once __DIR__ . "/../utils/info.php";
-require_once __DIR__ . "/../images/image.php"; 
-require_once __DIR__ . "/../network/network.php"; 
-require_once __DIR__ . "/../network/request.php"; 
-require_once __DIR__ . "/../utils/utilities.php"; 
-require_once __DIR__ . "/../utils/validator.php"; 
-require_once __DIR__ . "/../utils/vars.php";
+require_once __DIR__ . "/../database/DB2.php";
+require_once __DIR__ . "/../utils/DateTime.php";
+require_once __DIR__ . "/../fileSystem/File.php";
+require_once __DIR__ . "/../fileSystem/Directory.php";
+require_once __DIR__ . "/../fileSystem/Upload.php";
+require_once __DIR__ . "/../fileSystem/File.php";
+require_once __DIR__ . "/../fileSystem/UploadedFile.php";
+require_once __DIR__ . "/../utils/Info.php";
+require_once __DIR__ . "/../images/Image.php";
+require_once __DIR__ . "/../network/Network.php";
+require_once __DIR__ . "/../network/Request.php";
+require_once __DIR__ . "/../utils/Utilities.php";
+require_once __DIR__ . "/../utils/Validator.php";
+require_once __DIR__ . "/../utils/Vars.php";
 require_once __DIR__ . "/../utils/Filter/ArrayFilter.php";
 
 
