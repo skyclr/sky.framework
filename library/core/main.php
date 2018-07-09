@@ -65,6 +65,21 @@ set_error_handler(function($code, $message, $file, $line) {
 
 }, E_ALL | E_STRICT);
 
-register_shutdown_function(function() {
-	echo "test";
+register_shutdown_function(function($code, $message, $file, $line) {
+	switch($code) {
+		case E_ERROR    :
+			$type = "php error";
+			break;
+		case E_PARSE    :
+			$type = "php parse";
+			break;
+		case E_STRICT    :
+			$type = "php error";
+			break;
+		default:
+			$type = "php";
+			break;
+	}
+
+	\sky\BaseException::log("($type)$message;\nLine: $line.\nFile: $file", 1);
 });
