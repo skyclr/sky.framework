@@ -71,18 +71,14 @@ abstract class BasePage {
 
 	/**
 	 * Performs some global page actions
-	 * @param string $pageClass Page class name
-	 * @param string $pageNamespace Page class namespace
+	 * @param $classNameFull
 	 * @return BasePage
 	 * @throws SystemErrorException
 	 */
-	public static function baseInit($pageClass, $pageNamespace) {
-
-		/* get class full name */
-		$classFull = $pageNamespace . "/" . $pageClass;
+	public static function baseInit($classNameFull) {
 
 		# Create page
-		$page = new $classFull();
+		$page = new $classNameFull();
 
 		if($page instanceof BasePage) {
 
@@ -104,19 +100,15 @@ abstract class BasePage {
 	 */
 	private function initJsTemplates() {
 
-
 		# Add default templates
 		if(!empty(Sky::$config["templates"]["jsTemplates"]["default"]))
 			$this->jsTemplates = array_merge($this->jsTemplates, Sky::$config["templates"]["jsTemplates"]["default"]);
 
-
 		# Go through
 		foreach($this->jsTemplates as $key => $template) {
 
-
 			# Template path
 			$path = Sky::location("twigJs") . $template . "." . Sky::$config["templates"]["jsTemplates"]["extension"];
-
 
 			# Check
 			if(!file_exists($path)) {
@@ -124,10 +116,8 @@ abstract class BasePage {
 				continue;
 			}
 
-
 			# Get time modified
 			$mTime = filemtime($path);
-
 
 			# Date check
 			if(!empty(Sky::$config["templates"]["jsTemplates"]["clientCache"]) &&
@@ -142,14 +132,12 @@ abstract class BasePage {
 
 			}
 
-
 			# Rebuild
 			$this->jsTemplates[$key] = array(
 				"realPath" => $template,
 				"path"     => str_replace("/", "-", $template),
 				"date"     => $mTime
 			);
-
 
 			# Set multi
 			if(!empty(Sky::$config["templates"]["jsTemplates"]["multiple"])) {
@@ -162,9 +150,7 @@ abstract class BasePage {
 				}
 			}
 
-
 		}
-
 
 	}
 
@@ -176,7 +162,6 @@ abstract class BasePage {
 	 * @throws SystemErrorException
 	 */
 	public function render($parameters = [], $templatePath = false) {
-
 
 		# Template path
 		if(!$templatePath)

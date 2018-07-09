@@ -64,7 +64,8 @@ class Content {
 
 			$pageClass = ucfirst(Request::getPageName());
 			$pageNamespace = implode("/", array_slice(Request::getAddress(), 0, -1));
-			$pagePath = Sky::location("pages") . "$pageNamespace/$pageClass.php";
+			$pageClassFull = "$pageNamespace/$pageClass";
+			$pagePath = Sky::location("pages") . "$pageClassFull.php";
 
 			# Existing check
 			if(!file_exists($pagePath))
@@ -75,7 +76,7 @@ class Content {
 			include $pagePath;
 
 			# Create page object
-			self::$page = BasePage::baseInit($pageClass, $pageNamespace);
+			self::$page = BasePage::baseInit($pageClassFull);
 
 			# Make templates list
 			$jsTemplates = array();
