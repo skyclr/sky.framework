@@ -39,7 +39,7 @@ class DateTime extends \DateTime {
 		} catch(\Exception $e) {
 			throw new UserErrorException($errorMessage . ": " . $time);
 		}
-
+		return $this;
 	}
 
 	/**

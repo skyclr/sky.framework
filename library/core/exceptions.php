@@ -83,7 +83,7 @@ class BaseException extends \Exception {
 					"content" => $text,
 					"footer"  => isset(Sky::$config['site']['signature']) ? Sky::$config['site']['signature'] : date("d.m.y H:i")
 				]);
-		} catch(\PHPMailer\PHPMailer\Exception $e) {
+		} catch(\Exception $e) {
 			return "<h1>Error " . (isset($preferences["site"]["name"]) ? $preferences["site"]["name"] : "") . "</h1><p>$text</p>";
 		}
 

@@ -90,7 +90,6 @@ class Sky {
 			session_start();
 
 			# Pre validate data
-			require_once Sky::location("library") . "utils/UserData.php";
 			UserData::init();
 
 		}
@@ -179,6 +178,7 @@ class Sky {
 			echo "\nLibrary: init composer autoload...";
 
 		# Include composer auto load
+		/** @noinspection PhpIncludeInspection */
 		require_once Sky::location("vendor") . 'autoload.php';
 
 		# Log
