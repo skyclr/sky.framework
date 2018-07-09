@@ -13,10 +13,12 @@ class VarFilter {
 
 	const CONVERT_TRIM = "trim";
 	const CONVERT_INTEGER = "int";
+	const CONVERT_FLOAT = "float";
 	const CONVERT_CEIL = "ceil";
 	const CONVERT_FLOOR = "floor";
 	const CONVERT_BOOL = "bool";
 	const CONVERT_DATE = "date";
+	const CONVERT_HTML_SPEC_CHARD_DECODE = "h_sc_d";
 
 	public 	$value,
 		$recursive = true;
@@ -75,17 +77,21 @@ class VarFilter {
 		switch($how) {
 			case self::CONVERT_INTEGER:
 				$this->value = (int)$this->value; break;
+			case self::CONVERT_FLOAT:
+				$this->value = (float)$this->value; break;
 			case self::CONVERT_TRIM:
 				$this->value = trim($this->value); break;
 			case self::CONVERT_CEIL:
 				$this->value = ceil($this->value); break;
 			case self::CONVERT_FLOOR:
 				$this->value = floor($this->value); break;
+			case self::CONVERT_HTML_SPEC_CHARD_DECODE:
+				$this->value = htmlspecialchars_decode($this->value); break;
 			case self::CONVERT_DATE:
 				if(!($this->value instanceof DateTime))
 					$this->value = DateTime::make($this->value);
 				break;
-			default: throw new SystemErrorException("Unknown conversion: $how");
+			default: throw new systemErrorException("Unknown conversion: $how");
 		}
 		return $this;
 	}
@@ -168,8 +174,8 @@ class VarFilter {
 	 * @param            $action
 	 * @param bool|false $name
 	 * @throws \Exception
-	 * @throws SystemErrorException
-	 * @throws UserErrorException
+	 * @throws systemErrorException
+	 * @throws userErrorException
 	 */
 	protected function performAction($action, $name = false) {
 
@@ -177,10 +183,10 @@ class VarFilter {
 			throw $action;
 
 		if($name == "systemException")
-			throw new SystemErrorException($action);
+			throw new systemErrorException($action);
 
 		if($name == "userException")
-			throw new UserErrorException($action);
+			throw new userErrorException($action);
 
 	}
 
