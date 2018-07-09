@@ -26,7 +26,7 @@ if(!flock($fp, LOCK_EX | LOCK_NB))
 	die("Another process is running\n");
 
 # System include
-require_once dirname(__FILE__) . '/../library/core/main.php';
+require_once __DIR__. '/../../library/core/main.php';
 
 # Init
 new Sky('console');
@@ -89,7 +89,7 @@ try {
 		try {
 
 			# Init Mailer
-			$mail = new PHPMailer();
+			$mail = new \PHPMailer\PHPMailer\PHPMailer();
 
 			# From
 			if($mailData['from'])

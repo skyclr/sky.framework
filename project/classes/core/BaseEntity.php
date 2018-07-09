@@ -5,12 +5,6 @@ use sky\UserErrorException;
 
 abstract class BaseEntity extends BaseEntityDocInterface {
 
-	/**
-	 * Entity db id
-	 * @var int
-	 */
-	public $id;
-
 	/** @var ArrayFilter */
 	protected $originalMeta;
 

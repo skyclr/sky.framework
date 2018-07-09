@@ -16,7 +16,6 @@ class Twig extends Twig_Extension {
 	 * @return string
 	 */
 	public function getName() {
-
 		return "sky";
 	}
 
@@ -73,14 +72,14 @@ class Twig extends Twig_Extension {
 
 	}
 
+
 	/**
-	 * Checks if current page quial to expression
+	 * Checks if current page equal to expression
 	 * @param $expression
 	 * @return bool
 	 */
 	public static function pageIs($expression) {
-
-		return Content::$pagePath == $expression;
+		return Content::getPageClassDirRelative() . Content::getPageClass() == $expression;
 	}
 
 	/**
@@ -89,10 +88,9 @@ class Twig extends Twig_Extension {
 	 * @return bool
 	 */
 	public static function sectionIs($expression) {
-
-		$address = Request::getOriginalPathParts();
-
-		return $address[0] == $expression;
+		/** @noinspection PhpParamsInspection */
+		$path = implode("/", Request::getOriginalPathParts());
+		return mb_stripos($path, $expression) === 0;
 	}
 
 	/**
@@ -111,6 +109,7 @@ class Twig extends Twig_Extension {
 	 * @return bool
 	 */
 	public static function richText($expression) {
+		/** @noinspection HtmlUnknownTarget */
 		$expression = preg_replace('/(https?:\/\/[^\s]+)/u', '<a href="$1">$1</a>', $expression);
 		$expression = preg_replace('/\n/u', '<br/>', $expression);
 		$expression = preg_replace('/\[b\](.*)\[\/b\]/u', '<b>$1</b>', $expression);
@@ -259,8 +258,6 @@ class JSTemplateTag extends Twig_TokenParser {
 	 * @throws Twig_Error_Syntax
 	 */
 	public function parse(Twig_Token $token) {
-
-		$lineno = $token->getLine();
 		$value = $this->parser->getExpressionParser()->parseExpression();
 		$stream = $this->parser->getStream();
 		$body = $this->parser->subparse(array($this, 'decideIfEnd'));

@@ -205,5 +205,37 @@ class Vars {
      	return $result;
 
 	}
+
+	/**
+	 * Appends string to each array element
+	 * @param $data
+	 * @param $string
+	 * @return array|string
+	 */
+	public static function appendString($data, $string) {
+		if(is_array($data)) {
+			foreach($data as $i => $value)
+				$data[$i] = self::appendString($value, $string);
+			return $data;
+		}
+		return $data . $string;
+	}
+
+	/**
+	 * Trims each string in array
+	 * @param $data
+	 * @return array|string
+	 */
+	public static function trim($data) {
+		if(is_array($data)) {
+			foreach($data as $i => $value)
+				$data[$i] = self::trim($value);
+			return $data;
+		}
+		if(is_string($data))
+			return trim($data);
+
+		return $data;
+	}
 	
 }

@@ -2,6 +2,12 @@
 
 abstract class BaseEntityDocInterface {
 
+	/**
+	 * Entity db id
+	 * @var int
+	 */
+	public $id;
+
 	public static $ENTITY_COMPILED_FIELDS = [];
 
 	protected function filedHavePermission($field, $action) {
@@ -155,12 +161,9 @@ abstract class BaseEntityDocInterface {
 		$query = \sky\Sky::$db->make(static::$tableName)->set($fields);
 
 		# Save main data if none
-		/** @noinspection PhpUndefinedFieldInspection */
 		if(!$this->id)
-			/** @noinspection PhpUndefinedFieldInspection */
 			$this->id = $query->insert($replace);
 		else
-			/** @noinspection PhpUndefinedFieldInspection */
 			$query->where("id", $this->id)->update();
 
 		# Return

@@ -2,7 +2,6 @@
 
 use sky\Sky;
 use sky\SystemErrorException;
-use sky\utils;
 
 class email {
 
@@ -34,7 +33,7 @@ class email {
 		if(is_array($address)) {
 			foreach($address as $single)
 				$this->to($single);
-		} elseif(\sky\Validator::value($address, "email", "null"))
+		} elseif(\sky\VarFilter::check($address)->typeFilter(\sky\FilterRule::TYPE_EMAIL)->valueOr(null))
 			$this->to[] = $address;
 
 		return $this;
@@ -51,7 +50,7 @@ class email {
 		if(is_array($address)) {
 			foreach($address as $single)
 				$this->cc($single);
-		} elseif(\sky\Validator::value($address, "email", "null"))
+		} elseif(\sky\VarFilter::check($address)->typeFilter(\sky\FilterRule::TYPE_EMAIL)->valueOr(null))
 			$this->cc[] = $address;
 
 		return $this;
