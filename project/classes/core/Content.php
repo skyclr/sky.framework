@@ -8,14 +8,11 @@ use sky\Sky;
 
 require_once "basePage.php";
 
-# Create new content
-new content();
-
 /**
  * Class content
  * Content generate class
  */
-class content {
+class Content {
 
 	/**
 	 * Rendered page
@@ -37,7 +34,7 @@ class content {
 
 	/**
 	 * Page object
-	 * @var bool|basePage
+	 * @var bool|BasePage
 	 */
 	public static $page = false;
 
@@ -56,16 +53,16 @@ class content {
 		twig::init();
 
 		# Get request
-		$path = Request::getPath(self::$pageName);
+		$path = Request::getPath();
 
 		# Check if available
 		if(!empty(Sky::$config["authenticate"]["use"]) && !Auth::isLoggedIn())
 			foreach(self::$authPages as $page)
-				if($path != "admin/login" && preg_match("/$page/", $path))
+				if(preg_match("/$page/", $path))
 					$path = "login";
 
 		# Get page name
-		self::$pageName = Request::getPageName(self::$pageName);
+		self::$pageName = Request::getPageName();
 
 		# Make page
 		self::makePage($path);
@@ -78,9 +75,8 @@ class content {
 	 */
 	public static function makePage($pagePath = "index") {
 
-
 		# Save page path
-		self::$pagePath = $pagePath;
+		self::$pagePath = $pagePath ? $pagePath : "index";
 
 		# Page object creation
 		try {
@@ -103,7 +99,7 @@ class content {
 			}
 
 			# Create page object
-			self::$page = basePage::baseInit();
+			self::$page = BasePage::baseInit();
 
 
 			# Make templates list
@@ -118,8 +114,6 @@ class content {
 			# Prepare rendering parameters
 			$parameters = array(
 				"page"         => self::$page,
-				"pageName"     => self::$pageName,
-				"pagePath"     => self::$pagePath,
 				"pathElements" => Request::getAddress(),
 				"jsTemplates"  => $jsTemplates ? json_encode($jsTemplates, true) : "{}"
 			);
@@ -134,7 +128,7 @@ class content {
 			header("HTTP/1.0 404 Not Found", true, 404);
 
 			# Render 404 page
-			self::$renderedPage = Sky::$twig->render("/system/404.twig", array("page" => Request::$path));
+			self::$renderedPage = Sky::$twig->render("/system/404.twig", array("page" => Request::getOriginalPath()));
 
 		} catch(Exception $e) {
 

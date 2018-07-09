@@ -90,7 +90,7 @@ class Sky {
 			session_start();
 
 			# Pre validate data
-			require_once Sky::location("library") . "utils/userData.php";
+			require_once Sky::location("library") . "utils/UserData.php";
 
 		}
 
@@ -123,9 +123,12 @@ class Sky {
 			# Content include after all initialisations
 			require_once self::location("contentClass");
 
+			# New content
+			new \Content();
+
 			#Output rendered page
 			/** @noinspection PhpUndefinedClassInspection */
-			echo \content::$renderedPage;
+			echo \Content::$renderedPage;
 
 			# No more actions
 			return;

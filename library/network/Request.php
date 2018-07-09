@@ -10,21 +10,48 @@ namespace sky;
  */
 class Request {
 
-	public static $real = false;
+	/**
+	 * Original path parts
+	 * @var bool
+	 */
+	private static $real = false;
 
-	public static $path = false;
+	/**
+	 * Original path string
+	 * @var bool
+	 */
+	private static $path = false;
 
 	/**
 	 * Gets path with resolved .. and .
-	 * @param string $default Default page name, if none in address
 	 * @return string Path
 	 */
-	public static function getPath($default = "index") {
-
+	public static function getOriginalPathParts() {
 
 		# Get address elements
-		$route = self::getAddress($default);
+		return self::$real;
 
+	}
+
+	/**
+	 * Gets path with resolved .. and .
+	 * @return string Path
+	 */
+	public static function getOriginalPath() {
+
+		# Get address elements
+		return self::$path;
+
+	}
+
+	/**
+	 * Gets path with resolved .. and .
+	 * @return string Path
+	 */
+	public static function getPath() {
+
+		# Get address elements
+		$route = self::getAddress();
 
 		# Make compiled
 		return implode("/", $route);
@@ -33,19 +60,17 @@ class Request {
 
 	/**
 	 * Gets current addresses stack
-	 * @param string $default Default page
 	 * @return array
 	 */
-	public static function getAddress($default = "index") {
-
-		# If no sub pages were requested
-		if(empty($_GET["pagePath"]))
-			self::setAddress($default);
-
+	public static function getAddress() {
 
 		# Save path
 		if(self::$path === false)
-			self::$path = $_GET["pagePath"];
+			self::$path = empty($_GET["pagePath"]) ? "" : $_GET["pagePath"];
+
+		# If no sub pages were requested
+		if(empty($_GET["pagePath"]))
+			self::setAddress("index");
 
 		# Return slitted path
 		$elements = explode("/", $_GET["pagePath"]);
@@ -56,7 +81,6 @@ class Request {
 
 		# Would hold route parts
 		$route = array();
-
 
 		# Compile route
 		foreach($elements as $element) {
@@ -77,13 +101,11 @@ class Request {
 
 		}
 
-
 		/* If synonym */
 		if(implode("/", $route) != ($newRoute = self::findSynonyms(implode("/", $route)))) {
 			self::setAddress($newRoute);
-			return self::getAddress($default);
+			return self::getAddress();
 		}
-
 
 		# Return
 		return $route;
@@ -97,18 +119,17 @@ class Request {
 	 */
 	public static function setAddress($address) {
 		$_GET["pagePath"] = $address;
-		return self::getPath("index");
+		return self::getPath();
 	}
 
 	/**
 	 * Gets page name from path
-	 * @param string $default Default page in no path gained
 	 * @return string
 	 */
-	public static function getPageName($default = "index") {
+	public static function getPageName() {
 
 		# Get path
-		$pathElements = self::getAddress($default);
+		$pathElements = self::getAddress();
 
 		# Return path last element
 		return array_pop($pathElements);
@@ -121,13 +142,11 @@ class Request {
 	 * @throws SystemErrorException
 	 * @return string Page name, as is fi no synonyms or synonym page
 	 */
-	public static function findSynonyms($page) {
-
+	private static function findSynonyms($page) {
 
 		# If none
 		if(empty(Sky::$config["pages"]["synonyms"]))
 			return $page;
-
 
 		# Search through
 		foreach(Sky::$config["pages"]["synonyms"] as $synonym => $original) {
@@ -141,7 +160,6 @@ class Request {
 				throw new SystemErrorException("Wrong synonym set: '$synonym' preg failed");
 
 		}
-
 
 		# Return
 		return $page;

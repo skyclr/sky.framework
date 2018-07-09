@@ -28,7 +28,7 @@ class Twig_Tests_NodeVisitor_OptimizerTest extends \PHPUnit\Framework\TestCase
 
         $stream = $env->parse($env->tokenize(new Twig_Source('{% extends "foo" %}{% block content %}{{ parent() }}{% endblock %}', 'index')));
 
-        $node = $stream->getNode('blocks')->getNode('content')->getNode(0)->getNode('body');
+        $node = $stream->getNode('blocks')->getNode('Content')->getNode(0)->getNode('body');
 
         $this->assertEquals('Twig_Node_Expression_Parent', get_class($node));
         $this->assertTrue($node->getAttribute('output'));

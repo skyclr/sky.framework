@@ -6,7 +6,7 @@ require_once \sky\Sky::location("helpers") . "entityBuilder/entityBuilder.php";
  * Class page
  * Used for creation main page
  */
-class page extends basePage {
+class page extends BasePage {
 
 	/**
 	 *  Page title

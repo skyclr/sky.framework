@@ -80,7 +80,7 @@ class twig extends Twig_Extension {
 	 */
 	public static function pageIs($expression) {
 
-		return content::$pagePath == $expression;
+		return Content::$pagePath == $expression;
 	}
 
 	/**

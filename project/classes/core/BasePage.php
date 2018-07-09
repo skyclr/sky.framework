@@ -8,7 +8,7 @@ use sky\UserData as ud;
  * Class page
  * Used for creation main page
  */
-abstract class basePage {
+abstract class BasePage {
 
 	public
 
@@ -169,19 +169,19 @@ abstract class basePage {
 
 		# Template path
 		if(!$templatePath)
-			$templatePath = Sky::location("templates") . Sky::$config['templates']['pages'] . content::$pagePath . "/" . content::$pageName . ".twig";
+			$templatePath = Sky::location("templates") . Sky::$config['templates']['pages'] . Content::$pagePath . "/" . Content::$pageName . ".twig";
 
 		# Try to find non directory
 		if(!file_exists($templatePath))
-			$templatePath = Sky::location("templates") . Sky::$config['templates']['pages'] . content::$pagePath . ".twig";
+			$templatePath = Sky::location("templates") . Sky::$config['templates']['pages'] . Content::$pagePath . ".twig";
 
 		# Existing check
 		if(!file_exists($templatePath))
 			throw new SystemErrorException("Try to render not existing template: $templatePath");
 
 		# Get page name
-		$parameters += ["pageName"       => content::$pageName,
-						"pagePath"       => content::$pagePath,
+		$parameters += ["pageName"       => Content::$pageName,
+						"pagePath"       => Content::$pagePath,
 						"resultMessages" => Info::get(),
 						"page"           => $this];
 
