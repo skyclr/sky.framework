@@ -75,6 +75,9 @@ class Content {
 			/** @noinspection PhpIncludeInspection */
 			include $pagePath;
 
+			if(!class_exists($pageClassFull))
+				return;
+
 			# Create page object
 			self::$page = BasePage::baseInit($pageClassFull);
 
