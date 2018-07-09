@@ -9,7 +9,7 @@ use sky\SystemErrorException;
  * Class twig
  * Works with twig template engine
  */
-class twig extends Twig_Extension {
+class Twig extends Twig_Extension {
 
 	/**
 	 * Extension name
@@ -69,7 +69,7 @@ class twig extends Twig_Extension {
 		Sky::$twig->addGlobal('base', Sky::$config['site']['base']);
 
 		# Add tag parser
-		//sky::$twig->addTokenParser(new jsTemplateTag());
+		sky::$twig->addTokenParser(new JSTemplateTag());
 
 	}
 
@@ -90,7 +90,7 @@ class twig extends Twig_Extension {
 	 */
 	public static function sectionIs($expression) {
 
-		$address = Request::$real;
+		$address = Request::getOriginalPathParts();
 
 		return $address[0] == $expression;
 	}
@@ -250,7 +250,7 @@ class twig extends Twig_Extension {
 /**
  * Class for parsing jsTemplate Tag
  */
-class jsTemplateTag extends Twig_TokenParser {
+class JSTemplateTag extends Twig_TokenParser {
 
 	/**
 	 * Tag parse
@@ -275,7 +275,6 @@ class jsTemplateTag extends Twig_TokenParser {
 	 * @return string
 	 */
 	public function getTag() {
-
 		return 'JSTemplate';
 	}
 
@@ -284,11 +283,9 @@ class jsTemplateTag extends Twig_TokenParser {
 	 * @param Twig_Token $token
 	 * @return bool
 	 */
-	public function decideIfEnd(Twig_Token $token)
-	{
+	public function decideIfEnd(Twig_Token $token) {
 		return $token->test(array('endJSTemplate'));
 	}
-
 
 }
 

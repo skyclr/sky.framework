@@ -4,7 +4,7 @@
  * Class page
  * Used for creation main page
  */
-class page extends BasePage {
+class Index extends BasePage {
 
 	/**
 	 *  Page title

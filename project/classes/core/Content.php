@@ -50,7 +50,7 @@ class Content {
 	public function __construct() {
 
 		# Make twig extend
-		twig::init();
+		Twig::init();
 
 		# Get request
 		$path = Request::getPath();

@@ -16,7 +16,7 @@ class Twig_Tests_ErrorTest extends \PHPUnit\Framework\TestCase
         $error = new Twig_Error('foo');
         $error->setSourceContext(new Twig_Source('', new SplFileInfo(__FILE__)));
 
-        $this->assertContains('test'.DIRECTORY_SEPARATOR.'Twig'.DIRECTORY_SEPARATOR.'Tests'.DIRECTORY_SEPARATOR.'ErrorTest.php', $error->getMessage());
+        $this->assertContains('test'.DIRECTORY_SEPARATOR. 'Twig' .DIRECTORY_SEPARATOR.'Tests'.DIRECTORY_SEPARATOR.'ErrorTest.php', $error->getMessage());
     }
 
     public function testErrorWithArrayFilename()

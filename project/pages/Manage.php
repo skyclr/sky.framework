@@ -1,12 +1,11 @@
 <?php
 
-require_once \sky\Sky::location("helpers") . "entityBuilder/entityBuilder.php";
 
 /**
  * Class page
  * Used for creation main page
  */
-class page extends BasePage {
+class Manage extends BasePage {
 
 	/**
 	 *  Page title
@@ -18,6 +17,9 @@ class page extends BasePage {
 	 * Page creation method
 	 */
 	function main() {
+
+		/** @noinspection PhpIncludeInspection */
+		require_once \sky\Sky::location("helpers") . "entityBuilder/entityBuilder.php";
 
 		if(empty(\sky\Sky::$config["development"]["managePassword"]))
 			throw new \sky\UserErrorException("No manage password provided, please set it in main.php preferences in [\"development\"][\"managePassword\"]");
