@@ -9,27 +9,29 @@ namespace sky;
 class Network {
 
 	public static
-		$requestTypes = array("POST", "GET", "HEAD"),
-		$socks = array(),
 
 		/**
 		 * List if internal networks
 		 * @var array
 		 */
-		$internalNetworks = array(
+		$internalNetworks = [
 			'10.0.0.0'    => '10.255.255.255',
 			'172.16.0.0'  => '172.31.255.255',
 			'192.168.0.0' => '192.168.255.255',
 			'127.0.0.0'   => '127.0.0.1'
-		),
+		],
 
-		$defaultHeaders = Array(
+		/** @noinspection SpellCheckingInspection
+		 * Default headers to send
+		 * @var array
+		 */
+		$defaultHeaders = [
 			"Accept: image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, application/x-shockwave-flash, application/vnd.ms-excel, application/msword, */*",
 			"Connection: Close",
 			"Accept-Language: en-us",
 			"Accept-Charset: iso-8859-1,*,utf-8",
 			"Pragma: no-cache"
-		);
+		];
 
 	const CURL_SOCKS = "socks";
 	const CURL_REQUEST = "request";
@@ -116,6 +118,7 @@ class Network {
 	private static function compileCurlOptions($url, $options) {
 
 		# Set curl parameters
+		/** @noinspection SpellCheckingInspection */
 		$parameters = [
 			CURLOPT_URL            => $url,
 			CURLOPT_CUSTOMREQUEST  => "GET",
@@ -179,10 +182,10 @@ class Network {
 		$return = array();
 		$data   = explode("\r\n", $data);
 
-		foreach($data as $i => $d) {
-			if(!$i)
+		foreach($data as $lineNumber => $headerText) {
+			if(!$lineNumber)
 				continue;
-			$data = explode(": ", $d, 2);
+			$data = explode(": ", $headerText, 2);
 			if(count($data) == 2)
 				$return[$data[0]] = $data[1];
 		}
