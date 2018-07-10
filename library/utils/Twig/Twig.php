@@ -4,6 +4,7 @@ use sky\Auth;
 use sky\Request;
 use sky\Sky;
 use sky\SystemErrorException;
+require_once "JSTemplateTag.php";
 
 /**
  * Class twig
@@ -243,76 +244,5 @@ class Twig extends Twig_Extension {
 
 		return array("groups" => $columns);
 
-	}
-}
-
-/**
- * Class for parsing jsTemplate Tag
- */
-class JSTemplateTag extends Twig_TokenParser {
-
-	/**
-	 * Tag parse
-	 * @param Twig_Token $token
-	 * @return JSTemplateNode
-	 * @throws Twig_Error_Syntax
-	 */
-	public function parse(Twig_Token $token) {
-		$value = $this->parser->getExpressionParser()->parseExpression();
-		$stream = $this->parser->getStream();
-		$body = $this->parser->subparse(array($this, 'decideIfEnd'));
-		$stream->next()->getValue();
-		$stream->expect(Twig_Token::BLOCK_END_TYPE);
-
-		return new JSTemplateNode($body, $value, $token->getLine(), $this->getTag());
-	}
-
-	/**
-	 * Defines open tag
-	 * @return string
-	 */
-	public function getTag() {
-		return 'JSTemplate';
-	}
-
-	/**
-	 * Defines close tag
-	 * @param Twig_Token $token
-	 * @return bool
-	 */
-	public function decideIfEnd(Twig_Token $token) {
-		return $token->test(array('endJSTemplate'));
-	}
-
-}
-
-/**
- * Class jsTemplate compiler
- */
-class JSTemplateNode extends Twig_Node {
-
-	/**
-	 * @param Twig_Node            $body
-	 * @param Twig_Node_Expression $value
-	 * @param int                  $line
-	 * @param null                 $tag
-	 */
-	public function __construct(Twig_Node $body, Twig_Node_Expression $value, $line, $tag = null) {
-		parent::__construct(array('value' => $value, "body" => $body), array(), $line, $tag);
-	}
-
-	/**
-	 * Compile tag
-	 * @param Twig_Compiler $compiler
-	 */
-	public function compile(Twig_Compiler $compiler) {
-
-		# Compile tag
-		$compiler
-			->write("echo '<script type=\"text/template\" id=\"'; echo")
-			->subcompile($this->getNode('value'))
-			->write(';echo "\">";')
-			->subcompile($this->getNode('body'))
-			->write('echo "</script>";');
 	}
 }
