@@ -3,7 +3,7 @@
 use sky\Sky;
 use sky\SystemErrorException;
 
-class email {
+class Email {
 
 	private
 		$to = [],
@@ -17,7 +17,7 @@ class email {
 
 	/**
 	 * Static constrictor
-	 * @return email
+	 * @return Email
 	 */
 	public static function make() {
 		return new self();
@@ -121,7 +121,7 @@ class email {
 	 * Renders text from twig template
 	 * @param string $name Template name
 	 * @param array $data  Array of data
-	 * @return email
+	 * @return Email
 	 */
 	public function render($name, $data) {
 		return $this->text(\sky\Sky::$twig->render("emails/$name.twig", $data));

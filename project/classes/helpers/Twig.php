@@ -4,7 +4,6 @@ use sky\Auth;
 use sky\Request;
 use sky\Sky;
 use sky\SystemErrorException;
-require_once "JSTemplateTag.php";
 
 /**
  * Class twig
@@ -68,9 +67,6 @@ class Twig extends Twig_Extension {
 		Sky::$twig->addGlobal('preferences', Sky::$config);
 		Sky::$twig->addGlobal('base', Sky::$config['site']['base']);
 
-		# Add tag parser
-		sky::$twig->addTokenParser(new JSTemplateTag());
-
 	}
 
 
@@ -80,7 +76,7 @@ class Twig extends Twig_Extension {
 	 * @return bool
 	 */
 	public static function pageIs($expression) {
-		return Content::getPageClassDirRelative() . Content::getPageClass() == $expression;
+		return PagesControllersManager::getPageClassDirRelative() . PagesControllersManager::getPageClass() == $expression;
 	}
 
 	/**

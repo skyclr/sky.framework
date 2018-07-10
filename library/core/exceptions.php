@@ -114,7 +114,7 @@ class BaseException extends \Exception {
 			return;
 
 		# Email send
-		\email::make()->from("TDS Admin")
+		\Email::make()->from("TDS Admin")
 			->text($this->toHTML())
 			->plainText($this->__toString())
 			->to("am@waperz.com")

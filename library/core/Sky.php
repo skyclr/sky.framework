@@ -110,7 +110,7 @@ class Sky {
 
 				# Log
 				if($type == "console")
-					echo "\e[34mLibrary: init done\e[0m\n";
+					self::consoleLog("Library init done\n", "blue");
 
 			} catch(UserErrorException $e) {}
 
@@ -125,11 +125,11 @@ class Sky {
 			require_once self::location("contentClass");
 
 			# New content
-			new \Content();
+			new \PagesControllersManager();
 
 			# Output rendered page
 			/** @noinspection PhpUndefinedClassInspection */
-			echo \Content::$renderedPage;
+			echo \PagesControllersManager::$renderedPage;
 
 			# No more actions
 			return;
@@ -175,7 +175,7 @@ class Sky {
 
 		# Log
 		if($type == "console")
-			echo "\nLibrary: init composer autoload...";
+			self::consoleLog("Library: init composer autoload...");
 
 		# Include composer auto load
 		/** @noinspection PhpIncludeInspection */
@@ -183,8 +183,8 @@ class Sky {
 
 		# Log
 		if($type == "console") {
-			echo "\e[32mDone\e[0m\n";
-			echo "Library: init twig...";
+			self::consoleLog("Done\n", "green");
+			self::consoleLog("Library: init twig...");
 		}
 
 		# If we use twig templates
@@ -193,14 +193,14 @@ class Sky {
 
 		# Log
 		if($type == "console")
-			echo "\e[32mDone\e[0m\n";
+			self::consoleLog("Done\n", "green");
 
 		# SQL and authentication initialization
 		if(!empty(self::$config["database"]) && (!isset(self::$config["database"]["use"]) || self::$config["database"]["use"] !== false)) {
 
 			# Log
 			if($type == "console")
-				echo "Library: init database connection " . self::$config["database"]["host"] . "...";
+				self::consoleLog("Library: init database connection " . self::$config["database"]["host"] . "...");
 
 			# Init database connection
 			self::$db = new db\DB2(
@@ -211,14 +211,14 @@ class Sky {
 
 			# Log
 			if($type == "console")
-				echo "\e[32mDone\e[0m\n";
+				self::consoleLog("Done\n", "green");
 
 			# If user external configs
 			if(!empty(self::$config["preferences"]["external"])) {
 
 				# Log
 				if($type == "console")
-					echo "Library: get external configs from DB...";
+					self::consoleLog("Library: get external configs from DB...");
 
 				# Get configs
 				if($configs = Sky::$db->make(self::$config["preferences"]["external"])->where("autoload", 1)->select()) {
@@ -232,7 +232,7 @@ class Sky {
 
 				# Log
 				if($type == "console")
-					echo "\e[32mDone\e[0m\n";
+					self::consoleLog("Done\n", "green");
 			}
 
 			# Init authentication
@@ -298,6 +298,14 @@ class Sky {
 			$page = self::$config["site"]["base"] . $page;
         header("Location: $page");
         die('Похоже ваш браузер не поддерживает перенаправления, перейдите на <a href="' . $page . '">эту страницу</a>');
+    }
+
+    public static function consoleLog($text, $color = false, $endColor = "ifColor") {
+		$colors = ["black" => 30, "red" => 31, "green" => 32, "yellow" => 33, "blue" => 34, "purple" => 35, "cyan" => 36, "white" => 37];
+		if($color) echo "\e[" . $colors[$color] . "m";
+		echo $text;
+		if($color && $endColor === "ifColor" || $endColor === true) echo "\e[0m";
+//		echo "\n";
     }
 
 }
