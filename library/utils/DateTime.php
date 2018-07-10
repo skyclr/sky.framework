@@ -46,22 +46,22 @@ class DateTime extends \DateTime {
 	 * Creates new \sky\DateTime form formatted string, add directly because static
 	 * @param string $format Date format
 	 * @param string $time   Date/time to set
-	 * @param \DateTimeZone $timezone
+	 * @param string $errorMessage
+	 * @param \DateTimeZone $timeZone
 	 * @return DateTime
 	 * @throws UserErrorException
-	 * @internal param string $errorMessage
 	 */
-	public static function createFormat($format, $time, \DateTimeZone $timezone = null) {
+	public static function createFormat($format, $time, $errorMessage = "Неверно указана дата", \DateTimeZone $timeZone = null) {
 
 		try {
 
 			# Create real DateTime
-			if(!$date = \DateTime::createFromFormat($format, $time, $timezone))
+			if(!$date = \DateTime::createFromFormat($format, $time, $timeZone))
 				throw new \Exception("False on creation");
 
 			# In case of creation error
 		} catch(\Exception $e) {
-			throw new UserErrorException("Wrong date format : $time");
+			throw new UserErrorException($errorMessage . ": " . $time);
 		}
 
 		return self::make($date->format(self::DATETIME_SQL));
