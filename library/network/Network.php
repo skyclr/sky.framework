@@ -141,6 +141,8 @@ class Network {
 			switch($name) {
 				case self::CURL_SOCKS:
 					$parameters[CURLOPT_PROXYTYPE] = CURLPROXY_SOCKS5;
+					if(!is_array($value) || sizeof($value) < 2)
+						throw new SystemErrorException("CURL_SOCKS must be array: [ip, port]");
 					$parameters[CURLOPT_PROXY]     = $value[0];
 					$parameters[CURLOPT_PROXYPORT] = $value[1];
 					break;

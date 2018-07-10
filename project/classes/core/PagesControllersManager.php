@@ -48,7 +48,7 @@ class PagesControllersManager extends PagesControllersManagerBase {
 	/**
 	 * Makes new page
 	 */
-	public function renderPage() {
+	public function renderPageByURL() {
 
 		try {
 

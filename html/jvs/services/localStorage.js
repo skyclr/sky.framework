@@ -7,55 +7,51 @@ sky.service("localStorage", function({ callbacks }) {
 	 * @returns {*}
 	 * @constructor
 	 */
-	let LocalStorage = this.service = function(options, events) {
+	let LocalStorage = this.service = class {
+		constructor(options, events) {
 
-		/* If already */
-		if(options instanceof LocalStorage)
-			return options;
+			/* If already */
+			if(options instanceof LocalStorage)
+				return options;
 
-		/* Self creating if not in constructor */
-		if(!(this instanceof LocalStorage))
-			return new LocalStorage(options, events);
+			/* Self creating if not in constructor */
+			if(!(this instanceof LocalStorage))
+				return new LocalStorage(options, events);
 
-		/* Options */
-		options = options || {};
+			/* Options */
+			options = options || {};
 
-		/* Set default name */
-		if(!options.name)
-			options.name = "global";
+			/* Set default name */
+			if(!options.name)
+				options.name = "global";
 
-		/* Set prefix */
-		if(!options.prefix)
-			options.prefix = options.name;
+			/* Set prefix */
+			if(!options.prefix)
+				options.prefix = options.name;
 
-		/* Set full name */
-		this.fullName = ["sky", options.name].join("-");
+			/* Set full name */
+			this.fullName = ["sky", options.name].join("-");
 
-		/* Stored item prefix */
-		this.itemPrefix = ["sky", options.prefix].join("-");
+			/* Stored item prefix */
+			this.itemPrefix = ["sky", options.prefix].join("-");
 
-		/* Get events */
-		this.events = events || new callbacks();
+			/* Get events */
+			this.events = events || new callbacks();
 
-		/* Ids list */
-		this.ids = false;
+			/* Ids list */
+			this.ids = false;
 
-		/* Return */
-		return this;
+			/* Return */
+			return this;
 
-	};
-
-	/**
-	 * Extending
-	 */
-	$.extend(LocalStorage.prototype, {
+		}
 
 		/**
 		 * Loads item form database
 		 * @param {*} id Unique id
 		 * @param {function} [onLoad] Calls when load complete
 		 */
-		load: function(id, onLoad) {
+		load(id, onLoad) {
 
 			/* Try to get item from storage */
 			let item = localStorage.getItem([this.itemPrefix, id].join("-"));
@@ -71,13 +67,13 @@ sky.service("localStorage", function({ callbacks }) {
 			/* Return */
 			return item ? $.parseJSON(item) : undefined;
 
-		},
+		}
 
 		/**
 		 * Get all ids from database
 		 * @returns {*}
 		 */
-		getIds: function() {
+		getIds() {
 
 			/* If already stored */
 			if(this.ids instanceof Array)
@@ -99,13 +95,13 @@ sky.service("localStorage", function({ callbacks }) {
 			/* return */
 			return this.ids;
 
-		},
+		}
 
 		/**
 		 * Loads all element from storage
 		 * @param onLoad
 		 */
-		loadAll: function(onLoad) {
+		loadAll(onLoad) {
 
 			/* Item holder */
 			let self = this, items = {};
@@ -131,7 +127,7 @@ sky.service("localStorage", function({ callbacks }) {
 			/* Return */
 			onLoad.call(this, items);
 
-		},
+		}
 
 		/**
 		 * Save data to storage
@@ -139,7 +135,7 @@ sky.service("localStorage", function({ callbacks }) {
 		 * @param data
 		 * @returns {*}
 		 */
-		save: function(id, data) {
+		save(id, data) {
 
 			try {
 
@@ -166,7 +162,7 @@ sky.service("localStorage", function({ callbacks }) {
 			/* Self return */
 			return this;
 
-		},
+		}
 
 		/**
 		 * Saves all
@@ -174,7 +170,7 @@ sky.service("localStorage", function({ callbacks }) {
 		 * @param models
 		 * @returns {*}
 		 */
-		saveAll: function(index, models) {
+		saveAll(index, models) {
 			let self = this;
 
 			/* Go through */
@@ -183,14 +179,14 @@ sky.service("localStorage", function({ callbacks }) {
 			});
 
 			return this;
-		},
+		}
 
 		/**
 		 * Removes from storage
 		 * @param id
 		 * @returns {*}
 		 */
-		remove: function(id) {
+		remove(id) {
 
 			/* Init */
 			let index,
@@ -221,6 +217,6 @@ sky.service("localStorage", function({ callbacks }) {
 			return this;
 
 		}
-	});
+	};
 
 });

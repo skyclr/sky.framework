@@ -143,7 +143,7 @@ class Sky {
 			self::$pagesManager = new \PagesControllersManager();
 
 			# Search and render current page
-			self::$pagesManager->renderPage();
+			self::$pagesManager->renderPageByURL();
 
 			# Output rendered page
 			/** @noinspection PhpUndefinedClassInspection */
