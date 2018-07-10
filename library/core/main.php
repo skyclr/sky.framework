@@ -12,9 +12,6 @@ if(!empty($dev)) {
 	error_reporting(E_ALL);
 }
 
-# Path to include files
-set_include_path(dirname(__FILE__));
-
 # Include preferences
 require __DIR__ . "/../../project/preferences/main.php";
 global $preferences;
@@ -22,6 +19,7 @@ global $preferences;
 # Classes
 require_once __DIR__ . "/exceptions.php";
 require_once __DIR__ . "/Sky.php";
+require_once __DIR__ . "/PagesControllersManagerBase.php";
 require_once __DIR__ . "/../auth/Auth.php";
 require_once __DIR__ . "/../db/DB2.php";
 require_once __DIR__ . "/../utils/DateTime.php";

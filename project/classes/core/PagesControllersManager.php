@@ -11,27 +11,20 @@ require_once "basePage.php";
 /**
  * Content generate class
  */
-class PagesControllersManager {
+class PagesControllersManager extends PagesControllersManagerBase {
 
-	/**
-	 * Rendered page
-	 * @var string
-	 */
-	public static $renderedPage = "";
 
 	/**
 	 * Page object
 	 * @var bool|BasePage
 	 */
-	public static $page = false;
+	public $page;
 
 	/**
 	 * List of pages available without auth
 	 * @var array
 	 */
-	public static $authPages = [''];
-
-	private static $pageNamespace, $pageClass;
+	public $authPages = [''];
 
 	/**
 	 * Make page and resolve addresses
@@ -46,45 +39,16 @@ class PagesControllersManager {
 
 		# Check if available
 		if(!empty(Sky::$config["authenticate"]["use"]) && !Auth::isLoggedIn())
-			foreach(self::$authPages as $page)
+			foreach($this->authPages as $page)
 				if(preg_match("/$page/", $path))
 					Request::setAddress('/login');
 
-		# Make page
-		self::makePage();
-
-	}
-
-	public static function getPageClassDirRelative() {
-		return implode("/", array_slice(Request::getAddress(), 0, -1));
-	}
-
-	public static function getPageClassDir() {
-		return Sky::location("pages") . self::getPageClassDirRelative();
-	}
-
-	public static function getPageClassPath() {
-		return self::getPageClassDir() . self::getPageClassName() . ".php";
-	}
-
-	public static function getPageClass() {
-		if(!self::$pageClass) self::$pageClass = self::getPageClassNamespace() . "\\" . self::getPageClassName();
-		return self::$pageClass;
-	}
-
-	public static function getPageClassName() {
-		return ucfirst(Request::getPageName());
-	}
-
-	public static function getPageClassNamespace() {
-		if(!self::$pageNamespace) self::$pageNamespace = ucfirst(Request::getPageName());
-		return implode("\\", array_slice(Request::getAddress(), 0, -1));
 	}
 
 	/**
 	 * Makes new page
 	 */
-	public static function makePage() {
+	public function renderPage() {
 
 		try {
 
@@ -101,11 +65,11 @@ class PagesControllersManager {
 				return;
 
 			# Create page object
-			self::$page = BasePage::baseInit(self::getPageClass());
+			$this->page = BasePage::baseInit(self::getPageClass());
 
 			# Make templates list
 			$jsTemplates = array();
-			foreach(self::$page->jsTemplates as $template) {
+			foreach($this->page->jsTemplates as $template) {
 				$jsTemplates[] = array(
 					"path" => $template["path"],
 					"date" => $template["date"]
@@ -114,13 +78,13 @@ class PagesControllersManager {
 
 			# Prepare rendering parameters
 			$parameters = array(
-				"page"         => self::$page,
+				"page"         => $this->page,
 				"pathElements" => Request::getAddress(),
 				"jsTemplates"  => $jsTemplates ? json_encode($jsTemplates, true) : "{}"
 			);
 
 			# Render
-			self::$renderedPage = Sky::$twig->render("/shared/" . self::$page->parentTemplate . ".twig", $parameters);
+			$this->renderedPage = Sky::$twig->render("/shared/" . $this->page->parentTemplate . ".twig", $parameters);
 
 		} catch(\sky\System404Exception $e) {
 
@@ -128,7 +92,7 @@ class PagesControllersManager {
 			header("HTTP/1.0 404 Not Found", true, 404);
 
 			# Render 404 page
-			self::$renderedPage = Sky::$twig->render("/system/404.twig", array("page" => Request::getOriginalPath()));
+			$this->renderedPage = Sky::$twig->render("/system/404.twig", array("page" => Request::getOriginalPath()));
 
 		} catch(Exception $e) {
 
@@ -137,10 +101,10 @@ class PagesControllersManager {
 				BaseException::log($e->getMessage());
 
 			# Message
-			self::$renderedPage = Sky::$twig->render("/system/errorPage.twig", array("error" => "Во время работы произошла ошибка (" . $e->getMessage() . "), пожалуйста попробуйте позже"));
+			$this->renderedPage = Sky::$twig->render("/system/errorPage.twig", array("error" => "Во время работы произошла ошибка (" . $e->getMessage() . "), пожалуйста попробуйте позже"));
 
 			# Mark that page was rendered
-			self::$page = true;
+			$this->page = true;
 
 		}
 

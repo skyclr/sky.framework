@@ -165,11 +165,11 @@ abstract class BasePage {
 
 		# Template path
 		if(!$templatePath)
-			$templatePath = Sky::location("templates") . Sky::$config['templates']['pages'] . PagesControllersManager::getPageClassDirRelative() . PagesControllersManager::getPageClassName() . "/" . PagesControllersManager::getPageClassName() . ".twig";
+			$templatePath = Sky::location("templates") . Sky::$config['templates']['pages'] . Sky::$pagesManager->getPageClassDirRelative() . Sky::$pagesManager->getPageClassName() . "/" . Sky::$pagesManager->getPageClassName() . ".twig";
 
 		# Try to find non directory
 		if(!file_exists($templatePath))
-			$templatePath = Sky::location("templates") . Sky::$config['templates']['pages'] . PagesControllersManager::getPageClassDirRelative() . PagesControllersManager::getPageClassName() . ".twig";
+			$templatePath = Sky::location("templates") . Sky::$config['templates']['pages'] . Sky::$pagesManager->getPageClassDirRelative() . Sky::$pagesManager->getPageClassName() . ".twig";
 
 		# Existing check
 		if(!file_exists($templatePath))

@@ -11,7 +11,7 @@ class Sky {
 	/**
 	 * Predefine constants
 	 */
-	const SKY_VERSION	= "3.7";
+	const SKY_VERSION	= "5.4";
     
 	/**
 	 * Database access class 
@@ -23,7 +23,7 @@ class Sky {
 	 * Self link
 	 * @var bool|Sky
 	 */
-	private static $sky	= false;
+	private static $sky;
 	
 	/**
 	 * System preferences
@@ -36,7 +36,13 @@ class Sky {
 	 * @see http://twig.sensiolabs.org/documentation
 	 * @var \Twig_Environment
 	 */
-	public static $twig = false;
+	public static $twig;
+
+	/**
+	 * Manages pages controllers, find, render and etc..
+	 * @var \PagesControllersManagerBase
+	 */
+	public static $pagesManager;
 
 	/**
 	 * Twig loader
@@ -83,6 +89,9 @@ class Sky {
 		# Save preferences
 		self::$config = $preferences;
 
+		# Add library path
+		self::$config["locations"]["library"] = realpath(dirname(__FILE__))."/";
+
 		# Starting of session
 		if($type !== "console") {
 
@@ -98,9 +107,6 @@ class Sky {
 
 			# File auto loader
 			spl_autoload_register(array($this, 'autoLoad'));
-
-			# Add library path
-			self::$config["locations"]["library"] = realpath(dirname(__FILE__))."/";
 
 			# Try to init
 			try {
@@ -125,11 +131,14 @@ class Sky {
 			require_once self::location("contentClass");
 
 			# New content
-			new \PagesControllersManager();
+			self::$pagesManager = new \PagesControllersManager();
+
+			# Search and render current page
+			self::$pagesManager->renderPage();
 
 			# Output rendered page
 			/** @noinspection PhpUndefinedClassInspection */
-			echo \PagesControllersManager::$renderedPage;
+			echo self::$pagesManager->renderedPage;
 
 			# No more actions
 			return;
@@ -277,7 +286,7 @@ class Sky {
 
 			# Replacement paths
 			if($name === "contentClass")
-				return self::location("phpCore") . "content.php";
+				return self::location("phpCore") . "PagesControllersManager.php";
 
 			# Else exception go
 			throw new SystemErrorException("Unknown location requested: " . $name);
