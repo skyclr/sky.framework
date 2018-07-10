@@ -76,7 +76,7 @@ class Twig extends Twig_Extension {
 	 * @return bool
 	 */
 	public static function pageIs($expression) {
-		return PagesControllersManager::getPageClassDirRelative() . PagesControllersManager::getPageClass() == $expression;
+		return Sky::$pagesManager->getPageClassDirRelative() . Sky::$pagesManager->getPageClass() == $expression;
 	}
 
 	/**

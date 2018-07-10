@@ -48,15 +48,15 @@ try {
 
 	# If cant lock process file
 	if(!flock($fp, LOCK_EX | LOCK_NB))
-		die("another process is running\n");
+		Sky::exitLog("Another process is running\n", "red");
 
 	# We're started
-	echo "started\n";
+	Sky::output("Started\n", "green");
 
 	# Get mails files
 	if(!$mails = glob($mailFolder . "*.mail"))
 		if(!$mails = glob($mailNotifyFolder . "*.mail"))
-			die("No mails to proceed");
+			Sky::exitLog("No mails to proceed\n", "yellow");
 
 	# Get only 100
 	if(sizeof($mails) > 100)
@@ -67,18 +67,16 @@ try {
 
 		# Stop processing if too many
 		if($processedMails > $maxMailsAtATime) {
-			echo 'Send limit exceeded: ' . $maxMailsAtATime . "\n";
+			Sky::output("Send limit exceeded: $maxMailsAtATime\n", "red");
 			break;
 		}
 
 		# Console.log
-		echo 'Processing ' . $file . " .. \n";
+		Sky::output("Processing $file\n");
 
 		# Read error
-		if(!$mailData = json_decode(file_get_contents($file), true)) {
-			//baseException::log("Invalid mail contents for a file: " . $file);
+		if(!$mailData = json_decode(file_get_contents($file), true))
 			continue;
-		}
 
 		# Data check
 		if(!is_array($mailData) || !count($mailData) || !isset($mailData['mail'])) {
@@ -145,7 +143,7 @@ try {
 			if(!empty($mailData['attachments']) && is_array($mailData['attachments'])) {
 
 				# Log
-				echo " / attachments\n";
+				Sky::output("Attachments\n");
 
 				# Foreach attach
 				foreach($mailData['attachments'] as $currentAttachment) {
@@ -155,7 +153,7 @@ try {
 						continue;
 
 					# Log
-					echo " attach:" . $currentAttachment['name'] . "\n";
+					Sky::output("attach: {$currentAttachment['name']}\n");
 
 					# Adding attachment
 					$mail->addAttachment($currentAttachment['file'], $currentAttachment['name']);
@@ -167,7 +165,7 @@ try {
 			if(!empty($mailData['embedImages']) && is_array($mailData['embedImages'])) {
 
 				# Log
-				echo " / embedImages\n";
+				Sky::output("embedImages\n");
 
 				# Foreach attach
 				foreach($mailData['embedImages'] as $currentImage) {
@@ -179,7 +177,7 @@ try {
 					}
 
 					# Log
-					echo " embed:" . $currentImage['file'] . "\n";
+					Sky::output("embed: {$currentImage['file']}\n");
 
 					# Adding attachment
 					$mail->addEmbeddedImage($currentImage['file'], $currentImage['cid']);
@@ -190,8 +188,7 @@ try {
 			# Sending
 			if($mail->send()) echo "ok\n";
 			else {
-				echo "Mail send Error: " . $mail->ErrorInfo . "\n";
-				//baseException::log("Mail send Error(): " . $mail->ErrorInfo);
+				Sky::output("Mail send Error: $mail->ErrorInfo \n", "red");
 				continue;
 			}
 
@@ -200,7 +197,7 @@ try {
 
 			# Remove attachments (if any)
 			if(!empty($mailData['attachments']) && is_array($mailData['attachments'])) {
-				echo "    removing attachments\n";
+				Sky::output("Removing attachments: $mail->ErrorInfo \n", "yellow");
 				foreach($mailData['attachments'] as $currentAttachment) {
 					if(file_exists($currentAttachment['file']))
 						unlink($currentAttachment['file']);
@@ -214,16 +211,16 @@ try {
 			$mail->SmtpClose();
 
 		} catch(SystemException $e) {
-			echo "[mailSender]Error: " . $e->getMessage();
+			Sky::output("Error: " . $e->getMessage(). " \n", "red");
 		}
 
 	}
 
 	# Output stats.
-	echo "Tasks processed: " . $processedMails . "\n";
+	Sky::output("Tasks processed: $processedMails\n", "green");
 
 } catch(Exception $e) {
-	echo "Catch exception: " . $e->getMessage() . "\n";
+	Sky::output("Catch exception: " . $e->getMessage(). " \n", "red");
 }
 
 die("Finished");

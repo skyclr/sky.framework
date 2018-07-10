@@ -422,7 +422,7 @@ sky.service("dataOperator", function ({ inputsIO, notifications, templates, util
 					/* Find input */
 					if (field.name[0] === "*") {
 						field.name = field.name.substring(1);
-						field.input = $(self.options.form).find(".selectReplaceChoose[input=" + field.name + "]");
+						field.input = $(self.options.form).find(".selectReplaceChoose[data-input=" + field.name + "]");
 					}
 					else
 						field.input = $(self.options.form).find('[name="' + field.name + '"]');

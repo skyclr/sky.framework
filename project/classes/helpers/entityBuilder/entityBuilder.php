@@ -187,7 +187,7 @@ class entityBuilder {
 		# Expression
 		$expressions .= "\n\t * @permission meta, array, save";
 
-		return $expressions . "\n\t */\n\tpublic \${$field->COLUMN_NAME};\n";
+		return $expressions . "\n\t */\n\t" . "public \${$field->COLUMN_NAME};\n";
 
 	}
 

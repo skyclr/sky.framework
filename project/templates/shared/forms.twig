@@ -1,7 +1,7 @@
 
 {# Draws select replace input #}
 {% macro selectReplace(options, items) %}
-	<a class="selectReplace {{ options.className }} {% if not options.multiple %}single{% endif %}" input="{{ options.name }}" {% if options.validation %}data-validate="{{ options.validation }}"{% endif %} sky-event="click: selectReplace.drop(){% if options.event %}; {{  options.event }}{% endif %}">{{ options.value ? options.value : '' }}</a>
+	<a class="selectReplace {{ options.className }} {% if not options.multiple %}single{% endif %}" data-input="{{ options.name }}" {% if options.validation %}data-validate="{{ options.validation }}"{% endif %} data-event="click: selectReplace.drop(){% if options.event %}; {{  options.event }}{% endif %}">{{ options.value ? options.value : '' }}</a>
 	{% if items is iterable %}
 		{{ _self.selectDropDown(options, items) }}
 	{% endif %}
@@ -11,10 +11,10 @@
 {% macro selectDropDown(options, items) %}
 	<div class="selectReplaceChoose {% if not options.multiple %}single{% endif %}" data-input="{{ options.name }}">
 		{% if options.search %}
-			<div class="search">
+			<label class="search">
 				<span>Фильтр</span>
-				<input type="text" sky-event="keyup: selectReplace.filter"/>
-			</div>
+				<input type="text" data-event="keyup: selectReplace.filter"/>
+			</label>
 		{% endif %}
 		<div class="groups" {% if options.maxHeight %}style="max-height: {{ options.maxHeight }}px"{% endif %}>
 			{% if items.groups %}
@@ -32,8 +32,8 @@
 		{% if options.multiple and not options.noFooter %}
 		<div class="footer">
 			<a href="#" class="button" onclick="$('body').trigger('click'); return false;">Закрыть</a>
-			<a href="#" sky-event="click: selectReplace.selectAll">Выбрать все</a>
-			<a href="#" sky-event="click: selectReplace.unSelectAll">Снять выделение</a>
+			<a href="#" data-event="click: selectReplace.selectAll">Выбрать все</a>
+			<a href="#" data-event="click: selectReplace.unSelectAll">Снять выделение</a>
 		</div>
 		{%  endif %}
 	</div>

@@ -1,6 +1,6 @@
 {# Some elements #}
 {% macro resultMessage(message, id = false) %}
-	<div class="notificationMessage {{ message.type }} {{ message.subtext ? "" : "oneline" }}" {% if id %}id="{{ id }}"{% endif %}>
+	<div class="notificationMessage {{ message.type }} {{ message.subtext ? "" : "oneLine" }}" {% if id %}id="{{ id }}"{% endif %}>
 		<b>{{ message.text|raw }}</b>
 		{{ message.subtext ? message.subtext|raw : "" }}
 	</div>
