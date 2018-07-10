@@ -449,7 +449,7 @@ class Image {
 
 			# Get Created
 			if(!empty($exif["EXIF"]["DateTimeOriginal"])) {
-				$result["created"] = DateTime::createFromFormat("Y:m:d H:i:s", $exif["EXIF"]["DateTimeOriginal"])->format(DateTime::DATETIME_SQL);
+				$result["created"] = DateTime::createFormat("Y:m:d H:i:s", $exif["EXIF"]["DateTimeOriginal"])->format(DateTime::DATETIME_SQL);
 			}
 		} catch(\Exception $e) {
 			#baseException::log("Error in exif data: " . $exif["EXIF"]["DateTimeOriginal"]);

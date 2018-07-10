@@ -51,12 +51,12 @@ class DateTime extends \DateTime {
 	 * @throws UserErrorException
 	 * @internal param string $errorMessage
 	 */
-	public static function createFromFormat($format, $time, \DateTimeZone $timezone = null) {
+	public static function createFormat($format, $time, \DateTimeZone $timezone = null) {
 
 		try {
 
 			# Create real DateTime
-			if(!$date = \DateTime::createFromFormat($format, $time))
+			if(!$date = \DateTime::createFromFormat($format, $time, $timezone))
 				throw new \Exception("False on creation");
 
 			# In case of creation error
@@ -139,7 +139,7 @@ class DateTime extends \DateTime {
 
 	/**
 	 * Get difference between two dates
-	 * @param bool|\DateTime $date Date to take difference, if false now will be taken
+	 * @param bool|\DateTime $date Date to take diffrence, if false now will be taken
 	 * @param bool           $absolute
 	 * @return \DateInterval
 	 */
