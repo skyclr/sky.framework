@@ -12,6 +12,7 @@ class FilterRule {
 	const RULE_MIN_LEN = "minLength";
 	const RULE_PREG = "preg";
 	const RULE_SAME = "same";
+	const RULE_ENUM = "enum";
 
 	const TYPE_POSITIVE = "positive";
 	const TYPE_NUMERIC = "numeric";
@@ -52,12 +53,9 @@ class FilterRule {
 	function check(VarFilter $varFilter, $value) {
 
 		# Check if exists, because this is main for ArrayFilterKey
-		if($varFilter instanceof ArrayFilterKey) {
-			/** @var $varFilter ArrayFilterKey */
-			if($this->error = !$varFilter->exists) {
+		if($varFilter instanceof ArrayFilterKey)
+			if($this->error = !$varFilter->exists)
 				return;
-			}
-		}
 
 		# Array recursive check
 		if(is_array($value) && $varFilter->recursive) {
@@ -79,6 +77,10 @@ class FilterRule {
 			}
 			case self::RULE_MAX: {
 				$this->error = !is_numeric($value) || $value > $this->ruleCondition;
+				break;
+			}
+			case self::RULE_ENUM: {
+				$this->error = is_array($this->ruleCondition) ? !in_array($value, $this->ruleCondition) : $value != $this->ruleCondition;
 				break;
 			}
 			case self::RULE_MIN: {

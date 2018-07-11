@@ -79,6 +79,8 @@ abstract class BaseEntityDocInterface {
 				return $data->key($field['field'])->typeFilter(\sky\FilterRule::TYPE_NUMERIC)->convertedValueOr(\sky\VarFilter::CONVERT_FLOAT, $field["default"]);
 			case 'text':
 				return $data->key($field['field'])->typeFilter(\sky\FilterRule::TYPE_EMPTY_STRING)->convertedValueOr(\sky\VarFilter::CONVERT_TRIM, $field["default"]);
+			case 'enum':
+				return $data->key($field['field'])->filter(\sky\FilterRule::RULE_ENUM, $field['possible'])->convertedValueOr(\sky\VarFilter::CONVERT_TRIM, $field["default"]);
 			default:
 				throw new \sky\SystemErrorDataException("Unknown field type: {$field["type"]}");
 		}
@@ -212,47 +214,27 @@ abstract class BaseEntityDocInterface {
 		foreach($properties as $property) {
 
 			$docComment = $property->getDocComment();
-			$entity     = [];
 
-			# Get entity type
-			if($varType = strpos($docComment, "@entityType")) {
-				$right = substr($docComment, $varType + strlen('@entityType'));
-				preg_match('/^\s+(.*)\s+/', $right, $parts);
-				$entity["type"] = trim($parts[1]);
-			}
+			if($type = self::getDocOptions($docComment, "@entityType", ['(\w*)(\(.*\))?'])) {
 
-			# Get permission
-			if($varPermission = strpos($docComment, "@permission")) {
-				$right = substr($docComment, $varPermission + strlen('@permission'));
-				preg_match('/^\s+(.*)\s+/', $right, $parts);
-				$entity["permission"] = \sky\Vars::trim(explode(",", trim($parts[1])));
-			}
+				# Make entity
+				$entity = [
+					"type"  => $type[1],
+					"name"  => $property->getName(),
+					"field" => $property->getName()
+				];
 
-			# Get permission
-			if($varSaveOption = strpos($docComment, "@saveOption")) {
-				$right = substr($docComment, $varSaveOption + strlen('@saveOption'));
-				preg_match('/^\s+(.*)\s+/', $right, $parts);
-				$entity["saveOption"] = trim($parts[1]);
-			}
+				# Possibles
+				if($entity["type"] == "enum")
+					$entity["possible"] = explode(",", str_replace("'", "", substr($type[2], 1,-1)));
 
-			# Get entity default
-			if($varDefault = strpos($docComment, "@entityDefault")) {
-				$right = substr($docComment, $varDefault + strlen('@entityDefault'));
-				preg_match('/^\s*(\'?([^\n]*)\'?)\s+/', $right, $parts);
-				$entity["default"] = trim($parts[2]);
-				if($entity["default"] == 'null') $entity["default"] = null;
-			}
+				# Save permissions
+				if($permission = self::getDocOptions($docComment, "@permission", ['.*']))
+					$entity["permission"] = \sky\Vars::trim(explode(",", trim($permission[0])));
 
-			# Save to compiled list
-			if($varType) {
-
-				# Get field name
-				if(empty($entity["name"]))
-					$entity["name"] = $property->getName();
-
-				# Get field name
-				if(empty($entity["field"]))
-					$entity["field"] = $property->getName();
+				# Save default
+				if($default = self::getDocOptions($docComment, "@entityDefault", ['\'?([^\n]*)\'?']))
+					$entity["default"] = $default[0] == 'null' ? null : trim($default[0]);
 
 				# Add to list
 				static::$ENTITY_COMPILED_FIELDS[$className][] = $entity;
@@ -260,6 +242,29 @@ abstract class BaseEntityDocInterface {
 			}
 
 		}
+
+	}
+
+	private static function getDocOptions($docComment, $name, $optionsPreg = []) {
+
+		# Get entity default
+		if(!$start = strpos($docComment, $name))
+			return false;
+
+		# Get right part
+		$right = substr($docComment, $start + strlen($name));
+
+		# Compile RegExp
+		$preg = implode(')\s*,\s*(', $optionsPreg);
+
+		# Search
+		preg_match('/^\s(' . $preg . ')\s+/', $right, $parts);
+
+		# Remove global found
+		array_shift($parts);
+
+		# Return
+		return $parts;
 
 	}
 
