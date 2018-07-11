@@ -154,16 +154,10 @@ class Sky {
 
 		}
 		catch(DatabaseException $e) {
-
-			# User info error message
-			$error = "В данный момент мы меняем конфигурацию базы данных. Пожалуйста попробуйте позже";
-
+			$error = "В данный момент мы меняем конфигурацию базы данных. Пожалуйста попробуйте позже"; # User info error message
 		}
 		catch(BaseException $e) {
-
-			# Error
-			$error = "Во время работы произоша системная ошибка";
-
+			$error = "Во время работы произоша системная ошибка"; # Error
 		}
 		catch(\Exception $e) {
 
@@ -192,33 +186,34 @@ class Sky {
 	private function init($type = false) {
 
 		# Log
-		if($type == "console")
-			self::output("Library: init composer autoload...");
+		self::outputConsole("Library: init composer autoload...");
 
 		# Include composer auto load
 		/** @noinspection PhpIncludeInspection */
 		require_once Sky::location("vendor") . 'autoload.php';
 
 		# Log
-		if($type == "console") {
-			self::output("Done\n", "green");
-			self::output("Library: init twig...");
-		}
+		self::outputConsole("Done\n", "green");
 
 		# If we use twig templates
-		if(!empty(self::$config["templates"]))
+		if(!empty(self::$config["templates"])) {
+
+			# Log
+			self::outputConsole("Library: init twig...");
+
+			# Init twig
 			$this->initTwig();
 
-		# Log
-		if($type == "console")
-			self::output("Done\n", "green");
+			# Log
+			self::outputConsole("Done\n", "green");
+		}
+
 
 		# SQL and authentication initialization
 		if(!empty(self::$config["database"]) && (!isset(self::$config["database"]["use"]) || self::$config["database"]["use"] !== false)) {
 
 			# Log
-			if($type == "console")
-				self::output("Library: init database connection " . self::$config["database"]["host"] . "...");
+			self::outputConsole("Library: init database connection " . self::$config["database"]["host"] . "...");
 
 			# Init database connection
 			self::$db = new db\DB2(
@@ -228,15 +223,13 @@ class Sky {
 				self::$config["database"]["password"]);
 
 			# Log
-			if($type == "console")
-				self::output("Done\n", "green");
+			self::outputConsole("Done\n", "green");
 
 			# If user external configs
 			if(!empty(self::$config["preferences"]["external"])) {
 
 				# Log
-				if($type == "console")
-					self::output("Library: get external configs from DB...");
+				self::outputConsole("Library: get external configs from DB...");
 
 				# Get configs
 				if($configs = Sky::$db->make(self::$config["preferences"]["external"])->where("autoload", 1)->select()) {
@@ -247,19 +240,15 @@ class Sky {
 
 				}
 
-
 				# Log
-				if($type == "console")
-					self::output("Done\n", "green");
+				self::outputConsole("Done\n", "green");
+
 			}
 
 			# Init authentication
 			if($type !== "console" && !empty(self::$config["authenticate"])  && (!isset(self::$config["authenticate"]["use"]) || self::$config["authenticate"]["use"] !== false)) {
-				Auth::initialization(
-							self::$config['authenticate']["table"],
-							self::$config['authenticate']["preferences"]);
-
-				new Auth();
+				$auth = Auth::get(self::$config['authenticate']["table"], self::$config['authenticate']["preferences"]);
+				$auth->action(Vars::type());
 			}
 		}
 
@@ -341,6 +330,17 @@ class Sky {
 	public static function exitLog($text, $color = "red", $endColor = "ifColor") {
 		self::output($text, $color, $endColor);
 		exit();
+	}
+
+	/**
+	 * Performs self::output and exit
+	 * @param $text
+	 * @param bool|string $color
+	 * @param string $endColor
+	 */
+	public static function outputConsole($text, $color = "red", $endColor = "ifColor") {
+		if(self::$type == "console")
+			self::output($text, $color, $endColor);
 	}
 
 }

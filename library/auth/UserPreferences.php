@@ -132,5 +132,41 @@ class UserPreferences {
 		
     }
 
+    public function a() {
+
+		# Load preferences
+		try {
+
+			# If we don't use preferences
+			if(empty(Sky::$config["authenticate"]["preferences"]))
+				return;
+
+			# Get user preferences
+			$preferences = Sky::$db->make(Sky::$config["authenticate"]["preferencesTable"])->where("user_id", self::$me["id"])->get(Ret::SINGLE);
+
+			# Save all preferences to storage
+			if($preferences)
+				Auth::$me->setPreferences($preferences);
+
+			# Add user preferences
+			elseif(self::$defaultPreferences) {
+
+				# Save default preferences
+				Sky::$db->make(Sky::$config["authenticate"]["preferencesTable"])->set(self::$defaultPreferences)->set("user_id", self::$me["id"])->insert(true);
+
+				# Save to session
+				Auth::$me->setPreferences(self::$defaultPreferences);
+
+			}
+
+		} catch(BaseException $e) {
+
+			# In case of error
+			self::logout(false);
+			Info::error("Ошибка во время авторизации");
+
+		}
+	}
+
 }
 

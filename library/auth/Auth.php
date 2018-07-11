@@ -22,124 +22,142 @@ class Auth {
 	 */
 	public static $me = false;
 
-	/**
-	 * Default preferences variables
-	 */
-	private static
-		$defaultPreferences = array(),
-		$isInit     		= false;
+	/** Default preferences variables @var array */
+	private $defaultPreferences;
 
-	/**
-	 * Users table name
-	 * @var string
-	 */
-	public static
-		$usersTable	= "users";
+	/** Guest user data @var array */
+	private $guestData;
+
+	/** Cookies path  @var string */
+	private $cookiesPath = "/";
+
+	/** Users table name @var string */
+	private $usersTable;
+
+	/** Users table name @var string */
+	private $authRedirect;
+
+	/** @var Auth */
+	private static $self;
+
+	const OPTION_DEFAULT_USER_PREFERENCES = "default_user_preferences";
+	const OPTION_GUEST_DATA = "guest_data";
+	const OPTION_AUTH_COOKIES_PATH = "auth_cookies_path";
+	const OPTION_AUTH_REDIRECT = "auth_redirect";
+
+	const ACTION_LOGOUT = "logout";
+	const ACTION_LOGIN = "login";
 
 	/**
 	 * This function initialise all authentication instructions
+	 * @param string $action
+	 * @throws DatabaseException
 	 */
-	function __construct() {
+	function action($action) {
 
-		# Logout if type
-		if(Vars::type() == 'logout')
-			self::logout();
+		try {
 
-		# Try to login if type
-		if(Vars::type() == 'login') {
+			# Logout if type
+			if($action === self::ACTION_LOGOUT) {
+				self::logout();
+				return;
+			}
 
-			try {
+			# Try to login if type
+			if($action === self::ACTION_LOGIN) {
+
+				# Username check
+				if(!$username = ud::$post->key("username")->typeFilter(FilterRule::TYPE_EMPTY_STRING)->valueOr(null))
+					throw new UserAuthorisationException("No username provided");
+
+				# Password check
+				if(!$password = ud::$post->key("password")->typeFilter(FilterRule::TYPE_EMPTY_STRING)->valueOr(null))
+					throw new UserAuthorisationException("No password provided");
 
 				# Try to authenticate user
-				if($user = self::authentication()) {
-
-					# Generation of unique ID
-					$uniqueId = md5(date("U") . rand(1000, getrandmax()));
-
-					# Cookies set
-					setcookie('sessionId', $uniqueId, time() + 60 * 60 * 24 * 30, Sky::$config["site"]["base"]);
-					setcookie('autoLogin', 'true', time() + 60 * 60 * 24 * 30, Sky::$config["site"]["base"]);
-					setcookie('username', $user['profileEmail'], time() + 60 * 60 * 24 * 30, Sky::$config["site"]["base"]);
-
-					# Update database
-					Sky::$db->make(self::$usersTable)
-						->where($user['id'])
-						->set("sessionId", $uniqueId)->update();
+				if($user = self::authentication($username, $password)) {
 
 					# If user correct then we authorise him
 					self::authorisation($user);
 
 					# After login redirect
-					if(self::isLoggedIn() && !empty(Sky::$config["authenticate"]["redirect"]))
-						Sky::goToPage(Sky::$config["authenticate"]["redirect"]);
+					if($this->authRedirect)
+						Sky::goToPage($this->authRedirect);
 
-				} else Info::error("Неверная пара логин/пароль" . $user);
-
-			} catch(\Exception $e) {
-				if($e instanceof DatabaseException)
-					throw new DatabaseException("Can't auth user, ".$e->getMessage());
-				Info::error("Ошибка во время аутентификации пользователя");
+				}
 			}
 
-		}
+			# Maybe user loggedIn before
+			if(!self::isLoggedIn())
+				$this->isLoggedInBefore();
 
-		# Maybe user loggedIn before
-		if(!self::isLoggedIn())
-			self::isLoggedInBefore();
+			# Login guest
+			if(!self::isLoggedIn())
+				$this->loginGuest();
 
-		# Login guest
-		if(!self::isLoggedIn())
-			self::loginGuest();
+		} catch(UserException $e) {}
 
 	}
 
 	/**
 	 * Login guest account if it persists in preferences
 	 */
-	static function loginGuest() {
+	function loginGuest() {
 
 		# If no need in guest account
-		if(empty(Sky::$config["authenticate"]["guest"]))
+		if(!$this->guestData)
 			return;
 
 		# Login guest
-		self::$me = new UserController(Sky::$config["authenticate"]["guest"]);
-
-		# Set guest preferences
-		if(!empty(Sky::$config["authenticate"]["preferencesTable"]) && self::$defaultPreferences) {
-
-			# Add to controller
-			Auth::$me->setPreferences(self::$defaultPreferences);
-		}
+		self::$me = new UserController($this->guestData);
 
 	}
 
 	/**
-	 * Initialization of parameters
+	 * Gets auth checker
+	 * @param string $usersTableAddress Name of tables where stores user data
+	 * @param array $options            Array of authentication options
+	 * @return Auth
+	 */
+	public static function get($usersTableAddress = "", $options = []) {
+		if(!self::$self)
+			self::$self = new static($usersTableAddress, $options);
+		return self::$self;
+	}
+
+	/**
+	 * Creates new auth checker
 	 * @param string $usersTableAddress        Name of tables where stores user data
-	 * @param array  $defaultPreferences      Array of default settings which will assign to new users,
-	 *                                        or if any error on get user setting occupied
+	 * @param array  $options     				Array of authentication options
 	 * @throws SystemErrorException
 	 */
-	static function initialization($usersTableAddress, $defaultPreferences) {
+	private function __construct($usersTableAddress, $options = []) {
 
 		# Check
 		VarFilter::check($usersTableAddress)->typeFilter(FilterRule::TYPE_EMPTY_STRING)->exceptionOnError("Bad users table address");
 
 		# Set locals
-		self::$usersTable = $usersTableAddress;
-		self::$isInit	  = true;
+		$this->usersTable = $usersTableAddress;
 
-		# Check preferences
-		if(empty($defaultPreferences) || !is_array($defaultPreferences))
-			return;
-
-		# Set local
-		self::$defaultPreferences = $defaultPreferences;
-
-		# Default preferences set
-		if(empty($_SESSION["preferences"]))
-			$_SESSION["preferences"] = $defaultPreferences;
+		# Set options
+		foreach($options as $name => $value) {
+			switch($name) {
+				case self::OPTION_DEFAULT_USER_PREFERENCES:
+					$this->defaultPreferences = $value;
+					break;
+				case self::OPTION_AUTH_COOKIES_PATH:
+					$this->cookiesPath = $value;
+					break;
+				case self::OPTION_AUTH_REDIRECT:
+					$this->authRedirect = $value;
+					break;
+				case self::OPTION_GUEST_DATA:
+					$this->guestData = $value;
+					break;
+				default:
+					throw new SystemErrorException("Unknown auth option: $name");
+			}
+		}
 
 	}
 
@@ -147,20 +165,18 @@ class Auth {
 	 * This function performs user logout
 	 * @param Boolean $redirect If TRUE after login page will be redirected to root
 	 */
-	static function logout($redirect = true) {
+	function logout($redirect = true) {
 
 		# Unset php cookies data
 		if(isset($_COOKIE['sessionId'])) unset($_COOKIE['sessionId']);
-		if(isset($_COOKIE['username']))  unset($_COOKIE['username']);
 
 		# Destroys session
 		session_unset();
 		session_destroy();
 
 		# Unset user cookies
-		setcookie('sessionId', '', time() - 3600, Sky::$config["site"]["base"]);
-		setcookie('autoLogin', '', time() - 3600, Sky::$config["site"]["base"]);
-		setcookie('username' , '', time() - 3600, Sky::$config["site"]["base"]);
+		setcookie('sessionId', '', time() - 3600, $this->cookiesPath);
+		self::$me = null;
 
 		# Page redirect
 		if($redirect)
@@ -170,97 +186,58 @@ class Auth {
 
 	/**
 	 * This function performs user authorisation on server based on authentication result.
-	 * @param array|bool $user      User information gathered by Auth::authentication.
-	 * @throws SystemErrorException
-	 * @throws DatabaseException
+	 * @param array $user User information gathered by Auth::authentication.
+	 * @param bool $updateSession
+	 * @throws UserAuthorisationException
 	 */
-	static function authorisation($user = false) {
+	function authorisation($user, $updateSession = false) {
 
-		# Check if initialised
-		if(!self::$isInit)
-			throw new SystemErrorException("Auth options not initialized");
+		# Check status
+		if($user["active"] == 0)
+			throw new UserAuthorisationException("Your account is not active");
 
 		# Set me
 		self::$me = new UserController($user);
 
-		# Load preferences
-		try {
+		# Check if need to update session
+		if(!$updateSession)
+			return;
 
-			# If we don't use preferences
-			if(empty(Sky::$config["authenticate"]["preferences"]))
-				return;
+		# Generation of unique ID
+		$uniqueId = Utilities::getRandomString(32);
 
-			# Get user preferences
-			$preferences = Sky::$db->make(Sky::$config["authenticate"]["preferencesTable"])->where("user_id", self::$me["id"])->get(Ret::SINGLE);
+		# Cookies set
+		setcookie('sessionId', $uniqueId, time() + 60 * 60 * 24 * 30, $this->cookiesPath);
 
-			# Save all preferences to storage
-			if($preferences)
-				Auth::$me->setPreferences($preferences);
+		# Update database
+		Sky::$db->make($this->usersTable)
+			->where($user['id'])
+			->set("sessionId", $uniqueId)->update();
 
-			# Add user preferences	
-			elseif(self::$defaultPreferences) {
-
-				# Save default preferences
-				Sky::$db->make(Sky::$config["authenticate"]["preferencesTable"])->set(self::$defaultPreferences)->set("user_id", self::$me["id"])->insert(true);
-
-				# Save to session
-				Auth::$me->setPreferences(self::$defaultPreferences);
-
-			}
-
-		} catch(BaseException $e) {
-
-			# In case of error
-			self::logout(false);
-			Info::error("Ошибка во время авторизации");
-
-		}
 	}
 
 	/**
 	 * This function try to authenticate user, and return user data on success
-	 * @param bool|String $username  Name of user to authenticate
-	 * @param bool|String $password  Password of this user
-	 * @param bool|String $sessionId Session identifier, may be alternative for password
+	 * @param bool|String $username Name of user to authenticate
+	 * @param bool|String $password Password of this user
 	 * @return array|bool
-	 * @throws SystemErrorException
-	 * @throws UserErrorException
+	 * @throws UserAuthorisationException
 	 */
-	static function authentication($username = false, $password = false, $sessionId = false) {
-
-		# Check if initialised
-		if (!self::$isInit)
-			throw new SystemErrorException("Переменные аутентификации не инициализированы");
-
-		# Check is username set
-		if($username === false && is_null($username = ud::$post->key("username")->valueOr('')))
-			return false;
-
-		# Checks if isset password
-		if($password === false && $sessionId === false && is_null($password = ud::$post->key("password")->valueOr('')))
-			return false;
-
-		# Prepare request
-		$request = Sky::$db->make(self::$usersTable)->where("profileEmail", $username);
+	function authentication($username, $password) {
 
 		# Get user by name and password
-		if($password !== false)
-			$user = $request->where(array("password", "md5"), $password)->get(Ret::SINGLE);
+		if(!$user = Sky::$db->make($this->usersTable)->where("profileEmail", $username)->where(array("password", "md5"), $password)->get(Ret::SINGLE))
+			throw new UserAuthorisationException("Wrong username/password pair");
 
-		# Get user by name and unique id
-		else
-			$user = $request->where("sessionId", $sessionId)->get(Ret::SINGLE);
-
-		# If no data gathered
-		if(!$user)
-			return false; # If we didn't get user return false
-
-		# Check status
-		if($user["active"] == 0)
-			throw new UserErrorException("Вы не активировали ваш аккаунт");
-
-		# Return data
+		# return
 		return $user;
+
+	}
+
+	function authenticationBySession($sessionId) {
+
+		# Get user by sessionId
+		return Sky::$db->make($this->usersTable)->where("sessionId", $sessionId)->get(Ret::SINGLE);
 
 	}
 
@@ -269,19 +246,20 @@ class Auth {
 	 * @return bool Returns FALSE if they not set
 	 * @throws DatabaseException
 	 */
-	static function isLoggedInBefore() {
+	private function isLoggedInBefore() {
 
 		# If user data was saved
-		if(!isset($_COOKIE['sessionId']) || !isset($_COOKIE['username']))
+		if(!$sessionId = ud::$cookie->key('sessionId')->typeFilter(FilterRule::TYPE_EMPTY_STRING)->valueOr(null))
 			return false;
 
 		try {
 
 			# We try to authorise user
-			if($user = self::authentication(ud::$cookie->key('username')->valueOr(''), false, ud::$cookie->key('sessionId')->valueOr(''))) {
+			if($user = self::authenticationBySession($sessionId))
 				self::authorisation($user);
-				return true;
-			}
+			else
+				$this->logout(false);
+
 		} catch(\Exception $e) {
 			if($e instanceof DatabaseException)
 				throw new DatabaseException("Can't auth user, ".$e->getMessage());
