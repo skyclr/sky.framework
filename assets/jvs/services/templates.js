@@ -9,7 +9,7 @@ sky.service("templates", function({ localStorage, supported, directives, excepti
 		globals : {},
 
 		/** Local storage support */
-		storage: supported.storage ? localStorage({ name: "jsTemplates" }) : false,
+		storage: supported.localStorage ? localStorage({ name: "jsTemplates" }) : false,
 
 		/**
 		 * Adds new template to list

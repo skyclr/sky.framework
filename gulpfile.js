@@ -61,10 +61,10 @@ gulp.task('js:lib', function() {
  */
 gulp.task('js', function() {
 	gulp.src([
-		'services/*',
+		'services/actions*',
 		'library/servicesInit.js',
-		'actions/*',
-		'directives/*',
+		// 'actions/*',
+		// 'directives/*',
 		'library/projectInit.js'
 	], {cwd: paths.src.jvs})
 		.pipe(sourcemaps.init())
