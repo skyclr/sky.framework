@@ -61,16 +61,17 @@ gulp.task('js:lib', function() {
  */
 gulp.task('js', function() {
 	gulp.src([
-		'services/actions*',
+		'services/templates*',
+		'services/supported*',
 		'library/servicesInit.js',
 		// 'actions/*',
 		// 'directives/*',
 		'library/projectInit.js'
 	], {cwd: paths.src.jvs})
 		.pipe(sourcemaps.init())
-		.pipe(babel({presets: ['env']}))
+		// .pipe(babel({presets: ['env']}))
 		.pipe(concat('project.js'))
-		.pipe(uglify({mangle: false}))
+		// .pipe(uglify({mangle: false}))
 		.pipe(sourcemaps.write('.'))
 		.pipe(gulp.dest(paths.app.jvs));
 });

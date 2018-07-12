@@ -19,7 +19,7 @@ $.extend(sky, {
 	 * @param {*} context Context
 	 * @returns {Function}
 	 */
-	func: function(func, services, context = false) {
+	func: function(func, services = false, context = false) {
 		return function() {
 			try {
 				return services ? sky.services.callWithServices(func, context || this) : func.apply(context || this, arguments);
