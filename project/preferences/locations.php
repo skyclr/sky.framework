@@ -9,7 +9,8 @@ $preferences['locations'] = array("root" => realpath(dirname(__FILE__) . "/../..
  * Contains array of  main locations paths
  */
 $preferences['locations'] += array(
-	"html"    => $preferences['locations']['root'] . "public_html/",
+	"assets"  => $preferences['locations']['root'] . "assets/",
+	"html"    => $preferences['locations']['root'] . "html/",
 	"project" => $preferences['locations']['root'] . "project/",
 	"library" => $preferences['locations']['root'] . "library/",
 );

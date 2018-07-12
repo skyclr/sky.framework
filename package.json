@@ -1,10 +1,33 @@
 {
-  "name": "sky.framwork",
+  "name": "sky.framework",
+  "version": "5.4.0",
+  "description": "Sky framework",
+  "author": "Andrew M",
   "dependencies": {
+    "bower": "*",
+    "babel-core": "*",
+    "babel-preset-env": "*",
     "gulp": "*",
-    "gulp-less": "*",
-    "gulp-concat": "*",
+    "gulp-autoprefixer": "*",
+    "gulp-imagemin": "*",
+    "gulp-minify-css": "*",
     "gulp-clean-css": "*",
-    "gulp-uglifyjs": "*",
-  }
+    "gulp-rigger": "*",
+    "gulp-less": "*",
+    "gulp-sourcemaps": "*",
+    "gulp-uglify": "*",
+    "gulp-concat": "*",
+    "gulp-babel": "*",
+    "imagemin-pngquant": "*",
+    "rimraf": "*"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/skyclr/sky.framework.git"
+  },
+  "bugs": {
+    "url": "https://github.com/skyclr/sky.framework/issues"
+  },
+  "homepage": "https://github.com/skyclr/sky.framework#readme"
 }

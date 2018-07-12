@@ -1,35 +1,41 @@
-/* Gulp modules */
-let gulp 	= require('gulp');
-let less 	= require('gulp-less');
-let concat 	= require('gulp-concat');
-let cleanCSS = require('gulp-clean-css');
-let uglify = require('gulp-uglifyjs');
+'use strict';
 
-/* Paths */
-let htmlPath = './html/';
-let lessFilesPath = htmlPath +'less/';
-let cssFilesPath = htmlPath + 'css/';
-let jvsFilesPath = htmlPath + 'jvs/';
+var gulp        = require('gulp'),
+	prefixer    = require('gulp-autoprefixer'),
+	uglify      = require('gulp-uglify'),
+	less        = require('gulp-less'),
+	concat      = require('gulp-concat'),
+	sourcemaps  = require('gulp-sourcemaps'),
+	cssmin      = require('gulp-minify-css'),
+	cleanCSS    = require('gulp-clean-css'),
+	imagemin    = require('gulp-imagemin'),
+	pngquant    = require('imagemin-pngquant'),
+	rimraf      = require('rimraf'),
+	babel      = require('gulp-babel'),
+	paths       = require("./gulppaths.js");
 
 /**
  * Less compiling task
  */
-gulp.task('less', function () {
+gulp.task('less', function() {
 
-	gulp.src(lessFilesPath + '*.less')
-		.pipe(less({  }))
-		.pipe(cleanCSS({compatibility: 'ie8'}))
-		.pipe(gulp.dest(cssFilesPath));
-	gulp.src(lessFilesPath + 'pages/*.less')
-		.pipe(less({  }))
-		.pipe(cleanCSS({compatibility: 'ie8'}))
-		.pipe(gulp.dest(cssFilesPath));
+	console.log(paths.src.less + '*.less -> ' + paths.app.css);
+	gulp.src(paths.src.less + '*.less')
+		.pipe(less({}))
+		.pipe(cssmin({compatibility: 'ie8'}))
+		.pipe(gulp.dest(paths.app.css));
+
+	console.log(paths.src.less + 'pages/*.less -> ' + paths.app.css);
+	gulp.src(paths.src.less + 'pages/*.less')
+		.pipe(less({}))
+		.pipe(cssmin({compatibility: 'ie8'}))
+		.pipe(gulp.dest(paths.app.css));
 });
 
 /**
  * JS task to perform concatination
  */
-gulp.task('jsLib', function () {
+gulp.task('js:lib', function() {
 	gulp.src([
 		'vendor/jquery.js',
 		'vendor/twig.js',
@@ -38,24 +44,30 @@ gulp.task('jsLib', function () {
 		'library/exceptions.js',
 		'library/services.js',
 		'library/init.js'
-	], { cwd: jvsFilesPath })
+	], {cwd: paths.src.jvs})
+	 	.pipe(sourcemaps.init())
+		// .pipe(babel({presets: ['env']}))
 		.pipe(concat('library.js'))
-		.pipe(uglify(undefined, { mangle: false }))
-		.pipe(gulp.dest(jvsFilesPath));
+		// .pipe(uglify({mangle: false}))
+		.pipe(sourcemaps.write('.'))
+		.pipe(gulp.dest(paths.app.jvs));
 });
 
 /**
  * JS task to perform concatination
  */
-gulp.task('jvs', function () {
+gulp.task('js', function() {
 	gulp.src([
 		'services/*',
 		'library/servicesInit.js',
 		'actions/*',
 		'directives/*',
 		'library/projectInit.js'
-	], { cwd: jvsFilesPath })
+	], {cwd: paths.src.jvs})
+		.pipe(sourcemaps.init())
+		// .pipe(babel({presets: ['env']}))
 		.pipe(concat('project.js'))
-		.pipe(uglify(undefined, { mangle: false }))
-		.pipe(gulp.dest(jvsFilesPath));
+		// .pipe(uglify({mangle: false}))
+		.pipe(sourcemaps.write('.'))
+		.pipe(gulp.dest(paths.app.jvs));
 });
