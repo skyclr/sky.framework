@@ -46,9 +46,12 @@ gulp.task('js:lib', function() {
 		'library/init.js'
 	], {cwd: paths.src.jvs})
 	 	.pipe(sourcemaps.init())
-		// .pipe(babel({presets: ['env']}))
+		.pipe(babel({
+			presets: ['env'],
+			ignore: ['vendor/moment.js']
+		}))
 		.pipe(concat('library.js'))
-		// .pipe(uglify({mangle: false}))
+		.pipe(uglify({mangle: false}))
 		.pipe(sourcemaps.write('.'))
 		.pipe(gulp.dest(paths.app.jvs));
 });
@@ -65,9 +68,20 @@ gulp.task('js', function() {
 		'library/projectInit.js'
 	], {cwd: paths.src.jvs})
 		.pipe(sourcemaps.init())
-		// .pipe(babel({presets: ['env']}))
+		.pipe(babel({presets: ['env']}))
 		.pipe(concat('project.js'))
-		// .pipe(uglify({mangle: false}))
+		.pipe(uglify({mangle: false}))
 		.pipe(sourcemaps.write('.'))
 		.pipe(gulp.dest(paths.app.jvs));
+});
+
+gulp.task('image', function () {
+	gulp.src(paths.src.img + "**/*.*")
+		.pipe(imagemin({
+			progressive: true,
+			svgoPlugins: [{removeViewBox: false}],
+			use: [pngquant()],
+			interlaced: true
+		}))
+		.pipe(gulp.dest(paths.app.img));
 });

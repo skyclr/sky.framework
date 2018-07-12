@@ -20,16 +20,17 @@
     sky.projectDeffered = sky.Promise();
     sky.servicesDeferred = sky.Promise();
 
-    /** Executes specified function after all initializations ready */
+    /** Executes specified function after library ready */
     sky.exec = func => sky.libraryDeferred.done(() => sky.func(func, false)());
 
-    /** Executes specified function after all initializations ready */
+    /** Executes specified function after services ready */
     sky.onServicesInit = func => sky.servicesDeferred.done(() => sky.func(func, true)());
 
-    /** Executes specified function after all initializations ready */
+    /** Executes specified function after all ready */
     sky.onReady = func => sky.projectDeffered.done(() => sky.func(func, true)());
 
     /* Shortcuts */
+	sky.service = (name, service) => service ? sky.exec(() => sky.services.add(name, service)) : sky.services.get(name)
 	sky.action = (name, action) => { sky.onServicesInit(({actions}) => { actions.add(name, action)	}) };
 	sky.directive = (name, options, directive) => { sky.onServicesInit(({directives}) => { directives.add(name, options, directive) }) };
 

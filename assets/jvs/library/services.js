@@ -116,7 +116,4 @@
 
 	};
 
-	// Shortcut
-	sky.service = (name, service) => service ? sky.services.add(name, service) : sky.services.get(name)
-
 })();

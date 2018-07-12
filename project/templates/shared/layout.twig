@@ -62,7 +62,7 @@
 <!-- Globals -->
 <script type="text/javascript">
 
-	sky.onReady(function({ templates }) {
+	sky.onReady(function() {
 
 		/* Save data to page */
 		jQuery.extend(window.page.data, {
@@ -79,10 +79,13 @@
 		});
 
 		/* Extend templates globals */
-		$.extend(templates.globals, {
-			base: window.page.data.base,
-			me  : window.page.data.me
-		});
+		try {
+			let templates = sky.services.get("templates");
+			$.extend(templates.globals, {
+				base: window.page.data.base,
+				me  : window.page.data.me
+			});
+		} catch(e) {}
 
 		if(window.page.history)
 			window.page.history.base = window.page.data.base;
