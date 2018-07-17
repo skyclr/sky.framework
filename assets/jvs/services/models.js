@@ -1,4 +1,4 @@
-sky.service("model", function({ modelsStorage, callbacks }) {
+sky.service("model", [ "modelsStorage", "callbacks" ], function({ modelsStorage, callbacks }) {
 
 	/**
 	 * List of model definitions

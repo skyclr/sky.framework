@@ -7,6 +7,7 @@ namespace sky\fs;
 use sky\images\Image;
 use sky\SystemErrorException;
 use sky\SystemNoticeException;
+use sky\UserException;
 
 /**
  * Class to work with single file
@@ -62,25 +63,21 @@ class File {
 	 */
 	protected $size;
 
-
 	/**
 	 * @param string $path
 	 */
 	public function __construct($path) {
 
-
 		# Save extension
 		$this->extension = self::extension($path);
 		$name = self::name($path);
 
-
 		# Get directory path
 		$this->dirPath = mb_substr($path, 0, -mb_strlen("$name.$this->extension"));
 
-
 		# Sets file name
 		$this->setName($name);
-
+		$this->directory();
 
 		# Get file type
 		foreach($this->filesExtensions as $type => $extensions) {
@@ -125,7 +122,6 @@ class File {
 		if(!$this->directory)
 			$this->directory = new Directory($this->dirPath);
 
-
 		# Return dir
 		return $this->directory;
 
@@ -162,16 +158,13 @@ class File {
 	 */
 	public function delete() {
 
-
 		# If already deleted
 		if(!file_exists($this->path))
 			return false;
 
-
 		# Try to delete
 		if(!@unlink($this->path))
 			throw new SystemErrorException("Невозможно удалить файл " . $this->path);
-
 
 		# Return
 		return true;
@@ -187,20 +180,16 @@ class File {
 	 */
 	public function copy($destination, $overwrite = true) {
 
-
 		# If exists
 		if(!$overwrite && file_exists($destination))
 			throw new SystemNoticeException("File already exists");
 
-
 		# Copy
 		$result = \copy($this->path, $destination);
-
 
 		# Exception if error occupies
 		if($result === false)
 			throw new SystemErrorException("Can't copy file");
-
 
 	}
 
@@ -213,19 +202,36 @@ class File {
 	 */
 	public function move($destination, $overwrite = true) {
 
-
 		# If exists
 		if(!$overwrite && file_exists($destination))
 			throw new SystemNoticeException("File already exists");
 
-
 		# Copy
 		$result = \rename($this->path, $destination);
-
 
 		# Exception if error occupies
 		if($result === false)
 			throw new SystemErrorException("Can't move file");
+
+	}
+
+	/**
+	 * Locks current file with
+	 * @param bool|int $lock Lock, default: LOCK_EX | LOCK_NB
+	 * @return bool
+	 */
+	function lock($lock = false) {
+
+		# Open lock file
+		if(!$fp = fopen($this->path, "a"))
+			return false;
+
+		# If cant lock process file
+		if(!flock($fp, $lock ? $lock : LOCK_EX | LOCK_NB))
+			return false;
+
+		# Success return
+		return true;
 
 	}
 
@@ -239,36 +245,29 @@ class File {
 	 */
 	function write($string, $rewrite = false, $limitSize = false) {
 
-
 		# File size is too big, could not process
 		if(!$rewrite && is_numeric($limitSize) && $limitSize > 0) {
 			if(file_exists($this->path) && filesize($this->path) > ($limitSize * 1024 * 1024))
 				throw new SystemErrorException("File is too big: $this->path for add/write");
 		}
 
-
 		# Opening file
 		if(!$fp = fopen($this->path, ($rewrite ? "w" : "a")))
 			throw new SystemErrorException("Couldn't open the file: $this->path for add/write");
-
 
 		# Locking file
 		if(!flock($fp, LOCK_EX))
 			throw new SystemErrorException("Couldn't lock the file: $this->path");
 
-
 		# Writing file
 		if(fwrite($fp, $string) === FALSE)
 			throw new SystemErrorException("Couldn't write to the file: $this->path");
 
-
 		# Unlocking file
 		flock($fp, LOCK_UN);
 
-
 		# Closing file
 		fclose($fp);
-
 
 		# Return
 		return $this;
@@ -291,22 +290,17 @@ class File {
 	 */
 	public static function name($path) {
 
-
 		# Get extension
 		$extension = self::extension($path);
-
 
 		# Parse
 		preg_match('/(\/*([^\/]+))+/', $path, $matches);
 
-
 		# Get last element
 		$path = $matches[count($matches) - 1];
 
-
 		# Get name without extensions
 		return $extension ? mb_substr($path , 0, -1 * mb_strlen(".$extension")) : $path;
-
 
 	}
 
@@ -378,7 +372,6 @@ class File {
 			}
 		} while($file->exists());
 
-
 		# Return new
 		return $file;
 
@@ -391,44 +384,35 @@ class File {
 	 */
 	public function checkType($fileType) {
 
-
 		# If array of possible types
 		if(is_array($fileType)) {
 
-
 			# Ok flag
 			$ok = false;
-
 
 			# Check each type
 			foreach($fileType as $type)
 				if($this->checkType($type))
 					$ok = true;
 
-
 			# Return
 			return $ok;
 
 		}
 
-
 		# If this type like 'archive'
 		if(in_array($fileType, array_keys($this->filesExtensions))) {
 
-
 			# Get extensions list
 			$extensions = explode(", ", $this->filesExtensions[$fileType]);
-
 
 			# If not valid
 			if(!in_array($this->extension, $extensions))
 				return false;
 
-
 			# If this type like 'png'
 		} elseif($this->extension != $fileType)
 			return false;
-
 
 		# Get file
 		return true;
@@ -440,11 +424,9 @@ class File {
 	 */
 	public function size() {
 
-
 		# If already gained
 		if($this->size)
 			return $this->size;
-
 
 		# Return
 		return $this->size = filesize($this->path);
@@ -467,16 +449,13 @@ class File {
 	 */
 	public function getUnBuffered() {
 
-
 		# Check if file exists
 		if(!file_exists($this->path))
 			throw new SystemErrorException("File does not exists: " . $this->path);
 
-
 		# Read file and write it
 		if(!$file = fopen($this->path, "r"))
 			throw new SystemErrorException("File is not readable: " . $this->path);
-
 
 		# While we read
 		while(!feof($file)) {
@@ -505,6 +484,21 @@ class File {
 	 */
 	public function same() {
 		return clone $this;
+	}
+
+	public function getContent() {
+
+		# Check
+		if(!$this->exists())
+			throw new SystemErrorException("File $this->path isn't exists");
+
+		# Check
+		if(!$this->readable())
+			throw new SystemErrorException("File $this->path isn't readable");
+
+		# Return content
+		return file_get_contents($this->path);
+
 	}
 
 }

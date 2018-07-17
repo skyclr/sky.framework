@@ -1,4 +1,4 @@
-sky.service("history", function ({ callbacks, supported }) {
+sky.service("history", [ "callbacks", "supported" ], function ({ callbacks, supported }) {
 
 
 	/**

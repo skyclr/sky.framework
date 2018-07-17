@@ -1,4 +1,4 @@
-sky.service("dataOperator", function ({ inputsIO, notifications, templates, utils, ajax, actions }) {
+sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils", "ajax", "actions" ], function ({ inputsIO, notifications, templates, utils, ajax, actions }) {
 
 	class searchField {
 		constructor(name, virtual) {

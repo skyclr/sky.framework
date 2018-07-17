@@ -1,4 +1,4 @@
-sky.service("localStorage", function({ callbacks }) {
+sky.service("localStorage", [ "callbacks" ], function({ callbacks }) {
 
 	/**
 	 * Local storage class

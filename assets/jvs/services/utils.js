@@ -1,6 +1,8 @@
 sky.service("utils", function() {
 	$.extend(sky, this.service = {
 
+
+
 		/**
 		 * Checks if object has same data
 		 * @param first

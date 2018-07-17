@@ -1,7 +1,7 @@
 /**
  * Module to work with ajax file upload
  */
-sky.service("ajaxFiles", function({ callbacks, supported, ajaxFilesXHR, ajaxFilesIFrame }) {
+sky.service("ajaxFiles", ["supported", "callbacks", "ajaxFilesXHR", "ajaxFilesIFrame"], function({ callbacks, supported, ajaxFilesXHR, ajaxFilesIFrame }) {
 
 	/**
 	 * Class to work with dynamic file upload

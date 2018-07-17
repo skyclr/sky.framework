@@ -1,7 +1,7 @@
 /**
  * For work with different type of notifications
  */
-sky.service("notifications", function({ stackList, callbacks, visibleCalculator, templates, windows, tips }) {
+sky.service("notifications", [ "stackList", "callbacks", "visibleCalculator", "templates", "windows", "tips" ], function({ stackList, callbacks, visibleCalculator, templates, windows, tips }) {
 
 	let notification = function(options) {
 		/* Self creation */

@@ -1,4 +1,4 @@
-sky.service("tips", function({ stackList, callbacks }) {
+sky.service("tips", ["stackList", "callbacks"], function({ stackList, callbacks }) {
 
     /** Class to work with tips */
     let list = stackList(),

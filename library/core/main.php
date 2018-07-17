@@ -6,15 +6,15 @@ ini_set("max_execution_time", 15);
 mb_internal_encoding("utf-8");
 ini_set("session.gc_maxlifetime", 86400);
 
+# Include preferences
+require __DIR__ . "/../../project/preferences/main.php";
+global $preferences;
+
 # Set errors
 if(!empty($dev)) {
 	ini_set("display_errors", 1);
 	error_reporting(E_ALL);
 }
-
-# Include preferences
-require __DIR__ . "/../../project/preferences/main.php";
-global $preferences;
 
 # Classes
 require_once __DIR__ . "/exceptions.php";

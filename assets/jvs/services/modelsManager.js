@@ -1,4 +1,4 @@
-sky.service("modelsManager", function({callbacks, model}) {
+sky.service("modelsManager", ["callbacks", "model"], function({callbacks, model}) {
 	class Manager {
 		constructor(type, arr) {
 

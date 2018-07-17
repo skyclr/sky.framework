@@ -1,4 +1,4 @@
-sky.service("drag", function({callbacks}) {
+sky.service("drag", ["callbacks"], function({callbacks}) {
 	let self = {
 		bindEvents: (event, events) => {
 			self.bind(event)

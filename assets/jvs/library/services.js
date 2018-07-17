@@ -19,12 +19,13 @@
 			/** Service interface */
 			this.service = service || {};
 
-			/**
-			 * Set or call init function
-			 * @param func
-			 */
-			this.init = func => {
-				if(typeof func === "function") this.initialise.done(sky.func(func, true, this));
+		/**
+		 * Set or call init function
+		 * @param func
+		 * @param {Array} [dependencies]
+		 */
+			this.init = (func, dependencies) => {
+				if(typeof func === "function") this.initialise.done(sky.func(func, dependencies, this));
 				else this.initialise.resolve();
 				return this;
 			};
@@ -49,7 +50,7 @@
 			let str = func.toString();
 
 			/* Check if first is services list */
-			if(str.indexOf('({') < 0) return [];
+			if(str.indexOf('({') < 0) return Object.keys(list);
 
 			/* Get services */
 			let names = str.slice(str.indexOf('({') + 2, str.indexOf('}')).match(/[^\s,]+/g);
@@ -63,11 +64,15 @@
 		 * Calls function with services as params
 		 * @param func Function to call
 		 * @param {*} [context] Context to call
+		 * @param {Array} services Services list
 		 */
-		callWithServices: function(func, context) {
+		callWithServices: function(func, context, services) {
 
 			/* Get services */
-			let servicesList = {}, services = this.functionServices(func);
+			let servicesList = {};
+
+			/* Get from params if none */
+			services = services && (services instanceof Array) ? services : this.functionServices(func);
 
 			/* Go through */
 			$.each(services, function(_, name) { servicesList[name] = sky.services.get(name) });
@@ -96,8 +101,16 @@
 		 * Adds new services
 		 * @param {string} name
 		 * @param {*} [service]
+		 * @param {Array} dependencies
 		 */
-		add: function(name, service = {}) {
+		add: function(name, service = {}, dependencies) {
+
+			/* Change order */
+			if((service instanceof Array) && dependencies) {
+				let tmp = dependencies;
+				dependencies = service;
+				service = tmp;
+			}
 
 			/* Check */
 			if(typeof service !== "object" && typeof service !== "function")
@@ -108,7 +121,7 @@
 
 			/* If services declared with function for local scope and etc */
 			if(typeof service === "function")
-				list[name].init(service);
+				list[name].init(service, dependencies);
 
 			return list[name];
 

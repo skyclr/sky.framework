@@ -1,5 +1,5 @@
 /** Sends file data via HttpRequest */
-sky.service("ajaxFilesXHR", function({supported, ajax, stackList}) {
+sky.service("ajaxFilesXHR", ["supported", "ajax", "stackList"], function({supported, ajax, stackList}) {
 	this.service = class {
 		constructor(options) {
 

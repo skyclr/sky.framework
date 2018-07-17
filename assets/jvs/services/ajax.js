@@ -1,4 +1,4 @@
-sky.service("ajax", function({ callbacks }) {
+sky.service("ajax", ["callbacks"], function({ callbacks }) {
 
 	/**
 	 * Advanced ajax execution

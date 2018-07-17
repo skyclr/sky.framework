@@ -15,14 +15,14 @@ $.extend(sky, {
 	/**
 	 * Return function with try catch wrapper
 	 * @param {function} func Function
-	 * @param {boolean} [services] If true arguments would be filled with services
+	 * @param {boolean|Array} [services] If true arguments would be filled with services
 	 * @param {*} context Context
 	 * @returns {Function}
 	 */
 	func: function(func, services = false, context = false) {
 		return function() {
 			try {
-				return services ? sky.services.callWithServices(func, context || this) : func.apply(context || this, arguments);
+				return services ? sky.services.callWithServices(func, context || this, services) : func.apply(context || this, arguments);
 			} catch(e) {
 				return sky.exceptionHandler(e);
 			}

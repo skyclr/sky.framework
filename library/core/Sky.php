@@ -56,6 +56,10 @@ class Sky {
 	 */
 	private static $type = "web";
 
+	/** Init types */
+	const INIT_TYPE_CONSOLE = "console";
+	const INIT_TYPE_WEB = "web";
+
 	/**
 	 * Automatically load classes
 	 * @param $className
@@ -186,7 +190,7 @@ class Sky {
 	private function init($type = false) {
 
 		# Log
-		self::outputConsole("Library: init composer autoload...");
+		self::outputConsole("Library: init composer autoload... ");
 
 		# Include composer auto load
 		/** @noinspection PhpIncludeInspection */
@@ -199,7 +203,7 @@ class Sky {
 		if(!empty(self::$config["templates"])) {
 
 			# Log
-			self::outputConsole("Library: init twig...");
+			self::outputConsole("Library: init twig... ");
 
 			# Init twig
 			$this->initTwig();
@@ -213,7 +217,7 @@ class Sky {
 		if(!empty(self::$config["database"]) && (!isset(self::$config["database"]["use"]) || self::$config["database"]["use"] !== false)) {
 
 			# Log
-			self::outputConsole("Library: init database connection " . self::$config["database"]["host"] . "...");
+			self::outputConsole("Library: init database connection " . self::$config["database"]["host"] . "... ");
 
 			# Init database connection
 			self::$db = new db\DB2(
@@ -229,7 +233,7 @@ class Sky {
 			if(!empty(self::$config["preferences"]["external"])) {
 
 				# Log
-				self::outputConsole("Library: get external configs from DB...");
+				self::outputConsole("Library: get external configs from DB... ");
 
 				# Get configs
 				if($configs = Sky::$db->make(self::$config["preferences"]["external"])->where("autoload", 1)->select()) {
@@ -338,9 +342,17 @@ class Sky {
 	 * @param bool|string $color
 	 * @param string $endColor
 	 */
-	public static function outputConsole($text, $color = "red", $endColor = "ifColor") {
+	public static function outputConsole($text, $color = false, $endColor = "ifColor") {
 		if(self::$type == "console")
 			self::output($text, $color, $endColor);
+	}
+
+	/**
+	 * Returns init type
+	 * @return bool|string
+	 */
+	public static function getType() {
+		return self::$type;
 	}
 
 }

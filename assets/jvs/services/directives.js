@@ -1,4 +1,4 @@
-sky.service("directives", function ({exceptions}) {
+sky.service("directives", ["exceptions"], function ({exceptions}) {
 
 	let list = {},
 		directives = this.service = {

@@ -61,19 +61,25 @@ gulp.task('js:lib', function() {
  */
 gulp.task('js', function() {
 	gulp.src([
-		'services/templates*',
-		'services/supported*',
+		'services/*',
 		'library/servicesInit.js',
-		// 'actions/*',
-		// 'directives/*',
+		'actions/*',
+		'directives/*',
 		'library/projectInit.js'
 	], {cwd: paths.src.jvs})
 		.pipe(sourcemaps.init())
-		// .pipe(babel({presets: ['env']}))
+		.pipe(babel({presets: ['env']}))
 		.pipe(concat('project.js'))
-		// .pipe(uglify({mangle: false}))
+		.pipe(uglify({mangle: false}))
 		.pipe(sourcemaps.write('.'))
 		.pipe(gulp.dest(paths.app.jvs));
+
+	gulp.src(['pages/*'], {cwd: paths.src.jvs})
+		.pipe(sourcemaps.init())
+		.pipe(babel({presets: ['env']}))
+		.pipe(uglify({mangle: false}))
+		.pipe(sourcemaps.write('.'))
+		.pipe(gulp.dest(paths.app.jvs + "pages/"));
 });
 
 gulp.task('image', function () {

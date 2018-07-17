@@ -1,5 +1,5 @@
 /** Class to work with drop zone for File api */
-sky.service("ajaxFilesDropZone", function({ supported, callbacks }) {
+sky.service("ajaxFilesDropZone", ["supported", "callbacks"], function({ supported, callbacks }) {
 	this.service = class {
 		constructor({ zone, data, url, options }) {
 

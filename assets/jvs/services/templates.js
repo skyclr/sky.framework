@@ -1,4 +1,4 @@
-sky.service("templates", function({ localStorage, supported, directives, exceptions }) {
+sky.service("templates", ["localStorage", "supported", "directives", "exceptions"], function({ localStorage, supported, directives, exceptions }) {
 
 	
 	let templatesList = {},

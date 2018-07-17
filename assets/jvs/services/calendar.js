@@ -1,4 +1,4 @@
-sky.service("calendar", function ({ templates }) {
+sky.service("calendar", [ "templates" ], function ({ templates }) {
 
 	/* This class is for showing calendar to pick date on page */
 	let calendar = {

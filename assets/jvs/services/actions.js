@@ -1,4 +1,4 @@
-sky.service("actions", function ({exceptions}) {
+sky.service("actions", ["exceptions"], function ({exceptions}) {
 
 	let list = {},
 		actions = this.service = {

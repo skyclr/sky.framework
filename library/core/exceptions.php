@@ -64,7 +64,6 @@ class BaseException extends \Exception {
 
 		# Format backtrace
 		foreach($backtrace as $trace) {
-
 			if(isset($trace["file"]) && $trace["file"] == $this->file && $trace["line"] == $this->line) {
 				$trace["line"] = "<b>{$trace["line"]}</b>";
 				$trace["file"] = "<b>{$trace["file"]}</b>";
@@ -104,7 +103,7 @@ class BaseException extends \Exception {
 
 		# If we need to show
 		if(!empty(Sky::$config['development']['traceExceptions']) && Sky::$config['development']['traceExceptions'] == "screen")
-			echo '<pre>' . $this . '</pre>';
+			echo Sky::getType() == Sky::INIT_TYPE_CONSOLE ? "$this\n" : "<pre>$this</pre>\n";
 
 		if(!empty(Sky::$config['development']['noLog']))
 			return;

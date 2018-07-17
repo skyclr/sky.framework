@@ -3,10 +3,8 @@
 # Sky namespace
 namespace sky\fs;
 
-
 # Uses
 use sky\SystemErrorException;
-
 
 /**
  * Class directory
@@ -43,20 +41,16 @@ class Directory {
 	 */
 	public function create() {
 
-
 		# Exists check
 		$exists = file_exists($this->path);
 
-
 		# If already exists but not dir
 		if($exists && !is_dir($this->path))
-			throw new SystemErrorException("Файл $this->path уже существует, и при этом не является директорией");
-
+			throw new SystemErrorException("File \"$this->path\" exists, but it's not a directory");
 
 		# Try to create
 		if(!$exists && !@mkdir($this->path, 0777, true))
-			throw new SystemErrorException("Невозможно создать диретокрию \"$this->path\"");
-
+			throw new SystemErrorException("Can't create directory \"$this->path\"");
 
 		# Self return
 		return $this;
@@ -70,20 +64,16 @@ class Directory {
 	 */
 	public function delete() {
 
-
 		# Check if exists
 		if(!file_exists($this->path))
 			return $this;
 
-
 		# Clear sub items
 		$this->clear();
 
-
 		# Delete dir
 		if(!@rmdir($this->path))
-			throw new SystemErrorException("Невозможно удалить директорию " . $this->path);
-
+			throw new SystemErrorException("Can't remove directory \"$this->path\"");
 
 		# Delete success
 		return $this;
@@ -96,7 +86,6 @@ class Directory {
 	 */
 	public function clear() {
 
-
 		# Delete children
 		foreach($this->read() as $path) {
 			if(is_file($path))
@@ -104,7 +93,6 @@ class Directory {
 			else
 				self::make($path)->delete();
 		}
-
 
 		# Self return
 		return $this;
@@ -118,21 +106,17 @@ class Directory {
 	 */
 	public function read($pattern = "*") {
 
-
 		# Get list
 		if(!is_array($list = glob($this->path . $pattern)))
 			throw new SystemErrorException("Невозможно прочитать директорию " . $this->path);
 
-
 		# Files holder
-		$files = array();
-
+		$files = [];
 
 		# Go through
 		if($list)
 			foreach($list as $path)
 				$files[] = File::make($path);
-
 
 		# Return files
 		return $files;
@@ -157,6 +141,14 @@ class Directory {
 	 */
 	public function exists() {
 		return file_exists($this->path);
+	}
+
+	/**
+	 * @param $name
+	 * @return File
+	 */
+	public function file($name) {
+		return File::make($this->path . "/" . $name);
 	}
 
 }

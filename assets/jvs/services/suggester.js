@@ -14,7 +14,7 @@ sky.onReady(({suggester}) => {
 	});
 });
 
-sky.service("suggester", function({templates}) {
+sky.service("suggester", ["templates"], function({templates}) {
 
 	let render,
 		object,

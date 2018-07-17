@@ -1,4 +1,4 @@
-sky.service("callbacks", function({ callback }) {
+sky.service("callbacks", ["callback"], function({ callback }) {
 
 	/**
 	 *

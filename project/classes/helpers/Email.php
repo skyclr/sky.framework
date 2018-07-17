@@ -9,6 +9,7 @@ class Email {
 		$to = [],
 		$cc = [],
 		$from,
+		$fromName,
 		$subject,
 		$text,
 		$plainText,
@@ -58,11 +59,12 @@ class Email {
 
 	/**
 	 * Adds attachment
-	 * @param $attachment
+	 * @param $path
+	 * @param $name
 	 * @return $this
 	 */
-	public function attachment($attachment) {
-		$this->attachments[] = $attachment;
+	public function attachment($path, $name) {
+		$this->attachments[] = ["file" => $path, "name" => $name];
 		return $this;
 	}
 
@@ -128,6 +130,35 @@ class Email {
 	}
 
 	/**
+	 * Creates new email object from file content
+	 * @param \sky\fs\File $file
+	 * @return static
+	 * @throws SystemErrorException
+	 */
+	public static function fromFile(\sky\fs\File $file) {
+
+		# Read error
+		if(!$mailData = json_decode($file->getContent(), true))
+			throw new SystemErrorException("Wrong mail contents for a file: $file->path");
+
+		# Data check
+		if(!is_array($mailData) || !count($mailData) || !isset($mailData['mail']))
+			throw new SystemErrorException("Wrong mail contents for a file: $file->path");
+
+		$email = new static();
+		$email->from($mailData["from"]);
+		$email->to($mailData["mail"]);
+		$email->subject($mailData["subject"]);
+		$email->cc($mailData["cc"]);
+		$email->text($mailData["message"]);
+		$email->plainText($mailData["plainMessage"]);
+		$email->attachments = $mailData["attachments"];
+		$email->embedImages = $mailData["embedImages"];
+		return $email;
+
+	}
+
+	/**
 	 * Sends email
 	 * @param bool $notify
 	 */
@@ -138,6 +169,10 @@ class Email {
 			# Validate incoming params
 			if(!$this->subject || !$this->text)
 				throw new SystemErrorException('No header or text in message');
+
+			# Validate incoming params
+			if(!$this->from)
+				throw new SystemErrorException('No from name provided');
 
 			# Send mails
 			foreach($this->to as $mailTo) {
@@ -152,7 +187,7 @@ class Email {
 				# Encode message
 				$message = json_encode(
 					array(
-						'from'         => $this->from ? $this->from : Sky::$config["smtp"]["from"],
+						'from'         => $this->from,
 						'mail'         => $mailTo,
 						'subject'      => $this->subject,
 						'cc'           => $this->cc,
@@ -177,9 +212,70 @@ class Email {
 
 		} catch(Exception $e) {
 
-			# No user data provided
-
 		}
+	}
+
+	/**
+	 * Fills PHPMailer parameters
+	 * @param \PHPMailer\PHPMailer\PHPMailer $mail
+	 */
+	public function fillMailer(\PHPMailer\PHPMailer\PHPMailer $mail) {
+
+		# From
+		$mail->setFrom($this->from);
+
+		# CC copy
+		if($this->cc) {
+			foreach($this->cc as $cc)
+				$mail->addCC($cc);
+		}
+
+		# Compiling mail
+		foreach($this->to as $to)
+			$mail->addAddress($to);
+
+		$mail->FromName = $this->fromName;
+		$mail->Subject  = $this->subject;
+
+		# Set content
+		$mail->msgHTML(stripslashes($this->text));
+
+		# Set plain body
+		if(!empty($this->plainText))
+			$mail->AltBody = $this->plainText;
+
+		# Adding attachments
+		if(!empty($this->attachments)) {
+
+			# Foreach attach
+			foreach($this->attachments as $currentAttachment) {
+
+				# File exists?
+				if(!file_exists($currentAttachment['file']))
+					continue;
+
+				# Adding attachment
+				$mail->addAttachment($currentAttachment['file'], $currentAttachment['name']);
+
+			}
+		}
+
+		# Adding attachments
+		if($this->embedImages) {
+
+			# Foreach attach
+			foreach($this->embedImages as $currentImage) {
+
+				# File exists?
+				if(!file_exists($currentImage['file']))
+					continue;
+
+				# Adding attachment
+				$mail->addEmbeddedImage($currentImage['file'], $currentImage['cid']);
+
+			}
+		}
+
 	}
 
 }

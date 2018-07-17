@@ -1,7 +1,7 @@
 /**
  * Holds classes to work with modal/new windows
  */
-sky.service('windows', function ({templates, callbacks, stackList}) {
+sky.service('windows', ["templates", "callbacks", "stackList"], function ({templates, callbacks, stackList}) {
 
 	let tips = false,
 		list = stackList(),
