@@ -2,10 +2,10 @@
 "name" autoescape strategy
 --TEMPLATE--
 {{ br -}}
-{{ include('index.js.twig') -}}
+{{ include('scripts.js.twig') -}}
 {{ include('index.html.twig') -}}
 {{ include('index.txt.twig') -}}
---TEMPLATE(index.js.twig)--
+--TEMPLATE(scripts.js.twig)--
 {{ br -}}
 --TEMPLATE(index.html.twig)--
 {{ br -}}

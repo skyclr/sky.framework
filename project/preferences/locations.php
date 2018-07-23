@@ -56,4 +56,5 @@ $preferences['resources'] = array(
 	"css" => $preferences['site']['base'] . "css/",
 	"img" => $preferences['site']['base'] . "img/",
 	"jvs" => $preferences['site']['base'] . "jvs/",
+	"pages" => $preferences['site']['base'] . "pages/",
 );

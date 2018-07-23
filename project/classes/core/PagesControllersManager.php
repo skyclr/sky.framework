@@ -13,7 +13,6 @@ require_once "basePage.php";
  */
 class PagesControllersManager extends PagesControllersManagerBase {
 
-
 	/**
 	 * Page object
 	 * @var bool|BasePage

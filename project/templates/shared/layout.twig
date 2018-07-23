@@ -13,8 +13,9 @@
 	<link rel="shortcut icon" type="image/png" href="{{ 'icons/favicon.png'|url('img') }}"/>
 	<link rel="stylesheet" type="text/css" href="{{ 'styles.css'|url('css') }}"/>
 
-	{% if (pathElements|join("-") ~ ".css")|url('css')|fileExists('html') %}
-		<link rel="stylesheet" type="text/css" href="{{ (pathElements|join("-") ~ ".css")|url('css') }}"/>
+	{% set pageCSS = pathElements|join("-") ~ "/styles.css")|url('pages') %}
+	{% if pageCSS|fileExists('html') %}
+		<link rel="stylesheet" type="text/css" href="{{ pageCSS }}"/>
 	{% endif %}
 
 	<!-- Core JS raw include -->
@@ -97,8 +98,9 @@
     });
 
 </script>
-{% if ('pages/' ~ pathElements|join("-") ~ ".js")|url('jvs')|fileExists('html') %}
-	<script type="text/javascript" src="{{ ('pages/' ~ pathElements|join("-") ~ ".js")|url('jvs') }}" async></script>
+{% set pageJVS = pathElements|join("-") ~ "/scripts.js")|url('pages') %}
+{% if pageJVS|fileExists('html') %}
+	<script type="text/javascript" src="{{ pageJVS }}" async></script>
 {% endif %}
 
 <!-- JS templates -->
