@@ -64,7 +64,7 @@ class BaseException extends \Exception {
 
 		# Format backtrace
 		foreach($backtrace as $trace) {
-			if(isset($trace["file"]) && $trace["file"] == $this->file && $trace["line"] == $this->line) {
+			if(isset($trace["file"]) && $trace["file"] == $this->file && ($trace["line"] == $this->line || $trace["line"] == $this->line - 1)) {
 				$trace["line"] = "<b>{$trace["line"]}</b>";
 				$trace["file"] = "<b>{$trace["file"]}</b>";
 			}
