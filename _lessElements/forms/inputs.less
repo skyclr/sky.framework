@@ -1,0 +1,60 @@
+@import "variables";
+
+input[type=checkbox], input[type=radio] {
+  margin : (@elementsUpDownPadding + 2) @elementsLeftRightPadding (@elementsUpDownPadding - 2) 2px;
+}
+
+input, select, textarea, .selectReplace {
+  float      : left;
+  display    : block;
+  margin-top : 0;
+}
+
+input[type=password], input[type=text], select, textarea, .selectReplace {
+  padding         : (@elementsUpDownPadding - 1) (@elementsLeftRightPadding - 1) (@elementsUpDownPadding - 1) (@elementsLeftRightPadding - 1);
+  font-size       : @fontSize;
+  display         : block;
+  float           : left;
+  border          : 1px solid #cccccc;
+  margin          : 0;
+  box-shadow      : 0 1px 2px rgba(0, 0, 0, 0.2) inset;
+  outline         : none;
+  background      : white;
+  color           : black !important;
+  text-decoration : none;
+  width           : @inputWidth;
+  &.date, &.datetime {
+    //noinspection CssUnknownTarget
+    background : white url(../img/icons/input.png) 100% -59px no-repeat;
+    cursor     : pointer;
+  }
+  &:focus {
+    border-color : @highlightColor;
+  }
+  &.error {
+    background-color : #ffcccc !important;
+    border-color     : red;
+  }
+  &.half, fieldset.half & {
+    width : (@inputWidth - @elementsLeftRightPadding * 2 - @labelsSpace) / 2;
+  }
+  &.small {
+    width : 40px;
+  }
+}
+
+input[type=password][disabled], input[type=text][disabled], textarea[disabled], .selectReplace.disabled {
+  background : #eeeeee;
+  color      : #999999;
+}
+
+input[type=file] {
+  padding : (@elementsUpDownPadding - 1) (@elementsLeftRightPadding - 1) (@elementsUpDownPadding - 1) (@elementsLeftRightPadding - 1);
+  &.error {
+    color : red;
+  }
+}
+
+textarea {
+  height : 100px;
+}

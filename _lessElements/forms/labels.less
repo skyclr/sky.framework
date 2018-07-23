@@ -1,0 +1,89 @@
+@import "variables";
+label, .label {
+
+  display       : block;
+  overflow      : hidden;
+  margin-bottom : @upDownMargin;
+  > label, > .label {
+    margin-bottom : 0;
+  }
+
+  &.small, fieldset.small > & {
+    .smallNamedLabel()
+  }
+  &.upper, fieldset.upper > & {
+    .upperNamedLabel()
+  }
+
+  &.lined {
+    float        : left;
+    margin-right : 10px;
+  }
+  .button {
+    margin-bottom : 0px;
+  }
+  > span, > a, > div {
+    display   : block;
+    overflow  : hidden;
+    float     : left;
+    font-size : @fontSize;
+    &.name {
+      padding  : @elementsUpDownPadding @elementsLeftRightPadding @elementsUpDownPadding 0;
+      color    : #666666;
+      overflow : hidden;
+      text-align: left;
+      b {
+        font-weight : bold;
+        color       : #000000;
+      }
+    }
+    &.value {
+      padding     : @elementsUpDownPadding @elementsLeftRightPadding @elementsUpDownPadding 0;
+      font-weight : bold;
+    }
+    &.desc {
+      padding   : 10px;
+      font-size : 10px;
+      color     : #777777;
+      .error {
+        display : block;
+        float   : none;
+        clear   : both;
+        color   : #cc0000;
+      }
+    }
+    &.desc.big {
+      font-size : 14px;
+      padding   : @elementsUpDownPadding @elementsLeftRightPadding @elementsUpDownPadding @elementsLeftRightPadding;
+    }
+  }
+}
+
+
+.upperNamedLabel() {
+  > span, > a, > div {
+    &.name {
+      float    : none;
+      padding  : 0 0 5px 0;
+      color    : #666666;
+      overflow : hidden;
+    }
+    &.desc {
+      margin-top : (@upperNameSpacing + @fontSize);
+    }
+  }
+  .button {
+    margin : (@upperNameSpacing + @fontSize) 10px 0 0;
+  }
+  > input[type=checkbox], > input[type=radio] {
+    margin-top : (@upperNameSpacing + @fontSize + @elementsUpDownPadding);
+  }
+}
+
+.smallNamedLabel() {
+  > span, > a, > div {
+    &.name {
+      font-size : 12px;
+    }
+  }
+}

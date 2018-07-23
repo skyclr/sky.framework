@@ -1,0 +1,23 @@
+@import "variables";
+@import "fieldset";
+@import "inputs";
+@import "labels";
+@import "buttons";
+
+form {
+  font-size : @fontSize;
+  overflow  : auto;
+  display   : block;
+  &.disabled input[type=submit] {
+    #buttons.disabled();
+  }
+  h1, h2 {
+    white-space : nowrap;
+    padding     : @upDownMargin @leftRightMargin;
+    background  : #eeee;
+    font-size   : 20px;
+  }
+}
+.button {
+  #buttons.button(@elementsUpDownPadding; @elementsLeftRightPadding; @fontSize, @labelsSpace);
+}

@@ -1,0 +1,45 @@
+#buttons {
+
+  /* Button colors set */
+  .colors(@background; @text; @hover: transparent) {
+    background : @background;
+    color      : @text;
+    &:hover {
+      background : @hover;
+    }
+    &:hover when (@hover = transparent) {
+      background : tint(@background, 30%);
+    }
+  }
+  .disabled() {
+    #buttons.colors(#e6e6e6, #c7c7c7) !important;
+    text-shadow : 0 1px 0 #f3f3f3;
+    cursor      : default;
+  }
+  .button(@UpDownPadding; @leftRightPadding; @fontSize; @spacing: 10; @borderRadius: 5px) {
+    padding            : @UpDownPadding (@leftRightPadding + 5);
+    font-size          : @fontSize;
+    margin-right       : @spacing;
+    border-radius      : @borderRadius;
+    cursor             : pointer;
+    text-align         : center;
+    transition         : background .3s, color .3s;
+    display            : block;
+    float              : left;
+    border             : none;
+    outline            : none;
+    text-decoration    : none;
+    animation          : none;
+    -webkit-animation  : none;
+    -webkit-appearance : none;
+    &.disabled, &[disabled] {
+      #buttons.disabled();
+    }
+    &.file {
+      overflow : hidden;
+      input {
+        margin-top : 100px;
+      }
+    }
+  }
+}

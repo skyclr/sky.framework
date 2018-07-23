@@ -1,13 +1,13 @@
 'use strict';
 
-var gulp        = require('gulp'),
-	prefixer    = require('gulp-autoprefixer'),
+let gulp        = require('gulp'),
+	// prefixer    = require('gulp-autoprefixer'),
 	uglify      = require('gulp-uglify'),
 	less        = require('gulp-less'),
 	concat      = require('gulp-concat'),
-	sourcemaps  = require('gulp-sourcemaps'),
+	sourceMaps  = require('gulp-sourcemaps'),
 	cssmin      = require('gulp-minify-css'),
-	cleanCSS    = require('gulp-clean-css'),
+	// cleanCSS    = require('gulp-clean-css'),
 	imagemin    = require('gulp-imagemin'),
 	pngquant    = require('imagemin-pngquant'),
 	rimraf      = require('rimraf'),
@@ -19,16 +19,18 @@ var gulp        = require('gulp'),
  */
 gulp.task('less', function() {
 
-	console.log(paths.src.less + '*.less -> ' + paths.app.css);
 	gulp.src(paths.src.less + '*.less')
-		.pipe(less({}))
+		.pipe(sourceMaps.init())
+		.pipe(less({ ieCompat: false }))
 		.pipe(cssmin({compatibility: 'ie8'}))
+		.pipe(sourceMaps.write('.'))
 		.pipe(gulp.dest(paths.app.css));
 
-	console.log(paths.src.pages + '*/*.less -> ' + paths.app.pages);
 	gulp.src(paths.src.pages + '*/*.less')
+		.pipe(sourceMaps.init())
 		.pipe(less({}))
 		.pipe(cssmin({compatibility: 'ie8'}))
+		.pipe(sourceMaps.write('.'))
 		.pipe(gulp.dest(paths.app.pages));
 });
 
@@ -45,14 +47,14 @@ gulp.task('js:lib', function() {
 		'library/services.js',
 		'library/init.js'
 	], {cwd: paths.src.jvs})
-	 	.pipe(sourcemaps.init())
+	 	.pipe(sourceMaps.init())
 		.pipe(babel({
 			presets: ['env'],
 			ignore: ['vendor/moment.js']
 		}))
 		.pipe(concat('library.js'))
 		.pipe(uglify({mangle: false}))
-		.pipe(sourcemaps.write('.'))
+		.pipe(sourceMaps.write('.'))
 		.pipe(gulp.dest(paths.app.jvs));
 });
 
@@ -61,24 +63,25 @@ gulp.task('js:lib', function() {
  */
 gulp.task('js', function() {
 	gulp.src([
-		'services/*',
+		'services/**/*.js',
+		'../../_jsServices/**/*.js',
 		'library/servicesInit.js',
-		'actions/*',
-		'directives/*',
+		'actions/*.js',
+		'directives/*.js',
 		'library/projectInit.js'
 	], {cwd: paths.src.jvs})
-		.pipe(sourcemaps.init())
+		.pipe(sourceMaps.init())
 		.pipe(babel({presets: ['env']}))
 		.pipe(concat('project.js'))
 		.pipe(uglify({mangle: false}))
-		.pipe(sourcemaps.write('.'))
+		.pipe(sourceMaps.write('.'))
 		.pipe(gulp.dest(paths.app.jvs));
 
 	gulp.src(['*/*.js'], {cwd: paths.src.pages})
-		.pipe(sourcemaps.init())
+		.pipe(sourceMaps.init())
 		.pipe(babel({presets: ['env']}))
 		.pipe(uglify({mangle: false}))
-		.pipe(sourcemaps.write('.'))
+		.pipe(sourceMaps.write('.'))
 		.pipe(gulp.dest(paths.app.pages));
 });
 

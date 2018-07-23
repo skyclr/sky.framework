@@ -1,0 +1,209 @@
+@highlightColor: #044eb1;
+@highlightAlternative: #5F4B8B;
+/* Calendar styles */
+.calendar {
+	color         : #404040;
+	background    : white;
+	font-size     : 12px;
+	box-shadow    : 0 1px 10px rgba(0, 0, 0, 0.5);
+	z-index       : 2000;
+	border-radius : 25px;
+	overflow      : hidden;
+	.pickedDate {
+		padding    : 10px 25px;
+		color      : black;
+		font-size  : 20px;
+		text-align : left;
+		display: none;
+	}
+	.header {
+		overflow      : auto;
+		padding       : 5px;
+		//border-top    : 1px solid #dcdcdc;
+		border-bottom : 1px solid #dcdcdc;
+		.next {
+			background : data-uri('./calendar.png') 100% -15px no-repeat;
+			width      : 25px;
+			height     : 20px;
+			margin-top: 3px;
+		}
+		.prev {
+			background : data-uri('./calendar.png') 100% 3px no-repeat;
+			width      : 25px;
+			height     : 20px;
+			margin-top: 3px;
+		}
+		.month {
+			padding: 5px;
+			div {
+				cursor     : pointer;
+				text-align : center;
+				color      : black;
+				font-size  : 25px;
+			}
+			.prev {
+				float : left;
+			}
+			.next {
+				float : right;
+			}
+		}
+		.year {
+			display : none;
+			float   : right;
+			div {
+				float   : left;
+				padding : 5px;
+				cursor  : pointer;
+			}
+		}
+	}
+	.week {
+		color     : #adadad;
+		font-size : 11px;
+	}
+	.names {
+		overflow   : auto;
+		text-align : right;
+		padding    : 0 10px;
+		div {
+			display        : inline-block;
+			padding        : 3px 10px 4px 10px;
+			overflow       : hidden;
+			width          : 18px;
+			text-align     : center;
+			margin-right   : 1px;
+			font-size      : 12px;
+			color          : #777777;
+			text-transform : uppercase;
+		}
+		.week {
+			margin-right : 11px;
+			display      : none;
+		}
+	}
+	.separator {
+		display : none;
+	}
+	.dates {
+		padding  : 10px;
+		overflow : hidden;
+		.weeks {
+			float : left;
+			> div {
+				overflow      : hidden;
+				white-space   : nowrap;
+				border-right  : 1px solid #dcdcdc;
+				border-bottom : 1px solid #dcdcdc;
+				&:last-of-type {
+					border-bottom : none;
+					border-right  : none;
+					> div {
+						border-bottom : 1px solid #dcdcdc;
+						&:last-of-type {
+							border-right : 1px solid #dcdcdc;
+						}
+					}
+				}
+				&:first-of-type {
+					text-align : right;
+					> div {
+						border-top : 1px solid #dcdcdc;
+						float      : none;
+					}
+				}
+				> div {
+					overflow    : hidden;
+					float       : left;
+					//margin      : 1px 1px 0 0;
+					padding     : 10px;
+					height      : 18px;
+					width       : 18px;
+					font-size   : 16px;
+					text-align  : center;
+					border-left : 1px solid #dcdcdc;
+					display     : inline-block;
+				}
+			}
+		}
+		.week {
+			float : left;
+			div {
+				padding  : 16px 7px 13px 0;
+				height   : 10px;
+				overflow : hidden;
+				width    : 16px;
+			}
+		}
+		.day.selected {
+			background : @highlightColor !important;
+			color      : white !important;
+		}
+		.day.subSelected {
+			background : #9b7ad1 !important;
+			color      : white !important;
+		}
+		.day:hover {
+			background : #e9e9e9;
+			cursor     : pointer;
+			color      : black;
+		}
+		.weekend {
+			color : darken(saturate(@highlightAlternative, 30%), 20%);
+		}
+	}
+	form {
+		display : block;
+		padding : 0;
+		margin  : 0;
+		border  : 0;
+	}
+	.time {
+		background : #f2f2f2;
+		padding    : 5px 17px;
+		color      : #b0b0b0;
+		font-size  : 11px;
+		overflow   : auto;
+		input {
+			width   : 20px !important;
+			margin  : 0 5px !important;
+			padding : 3px !important;
+			border  : 1px solid #d0d0d0;
+			display : inline;
+			&:focus {
+				border-color : #b0b0b0;
+			}
+		}
+		* {
+			float   : left;
+			display : block;
+			padding : 6px 0;
+		}
+		.accept {
+			float : right;
+		}
+	}
+	.fastLinks {
+		color      : #9b9b9b;
+		font-size  : 20px;
+		overflow   : auto;
+		padding    : 5px 17px 15px 17px;
+		text-align : center;
+		a {
+			color           : @highlightColor;
+			text-decoration : none;
+		}
+	}
+}
+
+@media only screen and (max-device-width : 900px) {
+	//.calendar {
+	//  position  : fixed;
+	//  left      : 0;
+	//  top       : 0;
+	//  margin    : 0 !important;
+	//  width     : 100%;
+	//  height    : 100%;
+	//  font-size : 18px;
+	//}
+}

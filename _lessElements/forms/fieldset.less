@@ -1,0 +1,32 @@
+@import "variables";
+fieldset {
+  padding       : @upDownMargin @leftRightMargin 0;
+  border        : none;
+  overflow      : hidden;
+  &.subset {
+    background : #eeeeee;
+    margin     : 0 15px 15px;
+  }
+  h4 {
+    margin : 0 0 10px 0;
+  }
+  &.white {
+    background : #ffffff;
+  }
+  &.submit {
+    border-top : 1px solid #ddd;
+    &.white {
+      background : white;
+    }
+  }
+  .button {
+    margin : 0 @labelsSpace @upDownMargin 0;
+  }
+  &.lined {
+    padding-right : 0;
+    > label, > .label, .subset > label, .subset > .label {
+      float        : left;
+      margin-right : @labelsSpace;
+    }
+  }
+}
