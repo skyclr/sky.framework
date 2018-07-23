@@ -53,10 +53,10 @@ sky.service("callback", function() {
 		removeByContext: function(context) {
 
 			/* Find listener */
-			$.each(this.functions, function(i, current) {
-				if(current.context === context)
+			let i;
+			for(i in this.functions)
+				if(this.functions[i].context === context)
 					this.functions.splice(i, 1);
-			}.bind(this));
 
 			/* Self return */
 			return this;
@@ -70,10 +70,10 @@ sky.service("callback", function() {
 		removeByCallback: function(func) {
 
 			/* Find listener */
-			$.each(this.functions, function(i, current) {
-				if(current.func === func)
+			let i;
+			for(i in this.functions)
+				if(this.functions[i].func === func)
 					this.functions.splice(i, 1);
-			}.bind(this));
 
 			/* Self return */
 			return this;
@@ -86,9 +86,8 @@ sky.service("callback", function() {
 		 * @param {Array} args Arguments
 		 */
 		fire: function(context, args) {
-			$.each(this.functions, function(_, func) {
+			for(let func of this.functions)
 				func.func.apply(func.context || context, args);
-			});
 		},
 
 		/**

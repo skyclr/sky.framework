@@ -1,7 +1,5 @@
 sky.service("utils", function() {
-	$.extend(sky, this.service = {
-
-
+	this.service = {
 
 		/**
 		 * Checks if object has same data
@@ -57,8 +55,8 @@ sky.service("utils", function() {
 		},
 
 		encode: function(rawStr) {
-			return rawStr.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
-				return '&#'+i.charCodeAt(0)+';';
+			return rawStr.replace(/[\u00A0-\u9999<>&]/gim, function(i) {
+				return '&#' + i.charCodeAt(0) + ';';
 			});
 		},
 
@@ -72,13 +70,13 @@ sky.service("utils", function() {
 			return '<script type="application/json"' + (inputName ? (' input-name="' + inputName + '"') : "") + '>' + sky.encode(JSON.stringify(data)) + '</script>';
 		},
 
-		prepareSelectData: function(items, func, { columnSplitOn = 6, maxColumns = 4 }) {
+		prepareSelectData: function(items, func, {columnSplitOn = 6, maxColumns = 4}) {
 
-			let index = 0,
+			let index        = 0,
+				columns      = [],
+				columnsCount = items.length / columnSplitOn,
 				groupHolder,
-				compiled,
-				columns = [],
-				columnsCount = items.length / columnSplitOn;
+				compiled;
 
 			if(columnsCount < 1)
 				columnsCount = 1;
@@ -87,10 +85,10 @@ sky.service("utils", function() {
 
 			let perColumn = Math.ceil(items.length / columnsCount);
 
-			$.each(items, function(_, item) {
-				if(compiled = func({ item, index, column: columns.length })) {
+			for(let item of items) {
+				if(compiled = func({item, index, column: columns.length})) {
 
-					if (index % perColumn === 0) {
+					if(index % perColumn === 0) {
 						groupHolder = [];
 						columns.push(groupHolder);
 					}
@@ -98,10 +96,10 @@ sky.service("utils", function() {
 					groupHolder.push(compiled);
 					index++;
 				}
-			});
+			}
 
 			return index === 0 ? [] : {groups: columns}
 
 		}
-	});
+	}
 });

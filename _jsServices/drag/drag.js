@@ -11,15 +11,16 @@ sky.service("drag", ["callbacks"], function({callbacks}) {
 			// Get original event
 			event = event.originalEvent || event;
 
+			// Init vars
+			let started = false,
+				callbacks = callbacks();
+
 			// Check button
 			if(event.button && event.button !== 1)
-				return;
+				return callbacks;
 
 			// Stop default action
 			event.preventDefault();
-
-			let started = false,
-				callbacks = callbacks();
 
 			$(document).on("mousemove.drag", function(event) {
 

@@ -114,7 +114,7 @@ sky.service("actions", ["exceptions"], function ({exceptions}) {
 		/* Get string */
 		let skyEvent = this.getAttribute("data-event");
 
-		/* If no such string */
+		/* If no such event in data-event attribute */
 		if (skyEvent.indexOf(event.type) === -1)
 			return;
 
@@ -124,18 +124,14 @@ sky.service("actions", ["exceptions"], function ({exceptions}) {
 			return;
 		}
 
-		/* Split */
-		let list = skyEvent.split(";"), i;
-
-		/* Go through */
-		for (i = 0; i < list.length; i++) {
+		skyEvent.split(";").map(eventString => {
 
 			/* Get elements */
-			let parts = list[i].match(/(\w+):(.*)/);
+			let parts = eventString.match(/(\w+):(.*)/);
 
 			/* Wrong */
 			if (parts.length !== 3)
-				throw new exceptions.system.Error("Wrong action format in data-event: " + list[i]);
+				throw new exceptions.system.Error("Wrong action format in data-event: " + eventString);
 
 			/* Get elements */
 			let name = parts[1].trim(),
@@ -143,31 +139,19 @@ sky.service("actions", ["exceptions"], function ({exceptions}) {
 
 			/* Another event */
 			if (name !== event.type)
-				continue;
+				return;
 
 			/* No default go */
 			if (event.target === self.get(0))
 				event.preventDefault();
 
 			/* Passed data */
-			if (data)
-				event.data = data;
-
-			/* Get action data */
-			let actionData = self.data("skyActionData");
-
-			/* Save */
-			if (actionData)
-				event.data = actionData;
-
-			/* Dump action */
-			if (action === "false")
-				continue;
+			event.data = data;
 
 			/* Perform action */
 			actions.perform(this, event, action);
 
-		}
+		});
 
 	});
 

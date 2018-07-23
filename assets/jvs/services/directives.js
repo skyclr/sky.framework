@@ -38,9 +38,8 @@ sky.service("directives", ["exceptions"], function ({exceptions}) {
 				let attributes = {};
 
 				/* Copy them to list */
-				$.each(element.get(0).attributes, function (_, attr) {
+				for(let attr of element.get(0).attributes)
 					attributes[attr.nodeName] = attr.nodeValue;
-				});
 
 				/* Return */
 				return attributes;

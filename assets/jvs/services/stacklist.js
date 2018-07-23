@@ -11,13 +11,13 @@ sky.service("stackList", function() {
 		this.last = function() {
 
 			/* Holder */
-			let last = false;
+			let last;
 
 			/* Apply for windows */
-			$.each(elements, function (_, element) { last = element });
+			for(let element of elements) last = element;
 
 			/* Return */
-			return last;
+			return last || false;
 
 		};
 
@@ -29,12 +29,11 @@ sky.service("stackList", function() {
 
 		this.remove = function(element) {
 			/* Apply for windows */
-			$.each(elements, function (index, current) {
-				if(element === current) {
+			for(let index in elements)
+				if(elements.hasOwnProperty(index) && elements[index] === element) {
 					delete elements[index];
 					total--;
 				}
-			});
 		};
 
 		this.total = function() {

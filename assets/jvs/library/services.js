@@ -75,8 +75,9 @@
 			services = services && (services instanceof Array) ? services : this.functionServices(func);
 
 			/* Go through */
-			$.each(services, function(_, name) { servicesList[name] = sky.services.get(name) });
+			services.map(name => { servicesList[name] = sky.services.get(name) });
 
+			/* Return */
 			return func.call(context || window, servicesList);
 
 		},
