@@ -25,11 +25,11 @@ gulp.task('less', function() {
 		.pipe(cssmin({compatibility: 'ie8'}))
 		.pipe(gulp.dest(paths.app.css));
 
-	console.log(paths.src.less + 'pages/*.less -> ' + paths.app.css);
-	gulp.src(paths.src.less + 'pages/*.less')
+	console.log(paths.src.pages + '*/*.less -> ' + paths.app.pages);
+	gulp.src(paths.src.pages + '*/*.less')
 		.pipe(less({}))
 		.pipe(cssmin({compatibility: 'ie8'}))
-		.pipe(gulp.dest(paths.app.css));
+		.pipe(gulp.dest(paths.app.pages));
 });
 
 /**
@@ -74,12 +74,12 @@ gulp.task('js', function() {
 		.pipe(sourcemaps.write('.'))
 		.pipe(gulp.dest(paths.app.jvs));
 
-	gulp.src(['pages/*'], {cwd: paths.src.jvs})
+	gulp.src(['*/*.js'], {cwd: paths.src.pages})
 		.pipe(sourcemaps.init())
 		.pipe(babel({presets: ['env']}))
 		.pipe(uglify({mangle: false}))
 		.pipe(sourcemaps.write('.'))
-		.pipe(gulp.dest(paths.app.jvs + "pages/"));
+		.pipe(gulp.dest(paths.app.pages));
 });
 
 gulp.task('image', function () {

@@ -97,7 +97,7 @@ class PagesControllersManager extends PagesControllersManagerBase {
 
 			# Log if needed
 			if(!($e instanceof BaseException))
-				BaseException::log($e->getMessage());
+				BaseException::log($e->getMessage() . " at " . $e->getFile() . "(" . $e->getLine() . ")");
 
 			# Message
 			$this->renderedPage = Sky::$twig->render("/system/errorPage.twig", array("error" => "Во время работы произошла ошибка (" . $e->getMessage() . "), пожалуйста попробуйте позже"));

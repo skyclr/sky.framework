@@ -13,7 +13,7 @@
 	<link rel="shortcut icon" type="image/png" href="{{ 'icons/favicon.png'|url('img') }}"/>
 	<link rel="stylesheet" type="text/css" href="{{ 'styles.css'|url('css') }}"/>
 
-	{% set pageCSS = pathElements|join("-") ~ "/styles.css")|url('pages') %}
+	{% set pageCSS = (pathElements|join("-") ~ "/styles.css")|url('pages') %}
 	{% if pageCSS|fileExists('html') %}
 		<link rel="stylesheet" type="text/css" href="{{ pageCSS }}"/>
 	{% endif %}
@@ -98,7 +98,7 @@
     });
 
 </script>
-{% set pageJVS = pathElements|join("-") ~ "/scripts.js")|url('pages') %}
+{% set pageJVS = (pathElements|join("-") ~ "/scripts.js")|url('pages') %}
 {% if pageJVS|fileExists('html') %}
 	<script type="text/javascript" src="{{ pageJVS }}" async></script>
 {% endif %}

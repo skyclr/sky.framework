@@ -144,17 +144,10 @@ class Twig extends Twig_Extension {
 	 */
 	public static function filterUrl($expression, $type = "page") {
 
-		switch($type) {
-			case "jvs":
-				return Sky::$config["resources"]["jvs"] . $expression;
-			case "css":
-				return Sky::$config["resources"]["css"] . $expression;
-			case "img":
-				return Sky::$config["resources"]["img"] . $expression;
-			default:
-				return Sky::$config['site']['base'] . $expression;
-		}
+		if(isset(Sky::$config["resources"][$type]))
+			return Sky::$config["resources"][$type] . $expression;
 
+		return Sky::$config['site']['base'] . $expression;
 	}
 
 	public static function filterJson($expression) {
