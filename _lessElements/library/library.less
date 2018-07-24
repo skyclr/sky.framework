@@ -1,0 +1,62 @@
+@import "../fontAwesome/variables";
+#library {
+  .colors() {
+    @base: #00f;
+  }
+  .fa-icons() {
+    &::before {
+      font-family : "FontAwesome";
+      content     : @fa-var-question;
+    }
+    &.delay::before {
+      content : @fa-var-clock-o;
+    }
+    &.activate::before, &.events::before {
+      content : @fa-var-star;
+    }
+    &.delete::before {
+      content : @fa-var-times;
+    }
+    &.edit::before {
+      content : @fa-var-cog;
+    }
+    &.download::before {
+      content : @fa-var-download;
+    }
+    &.plane::before {
+      content : @fa-var-plane;
+    }
+    &.block::before {
+      content : @fa-var-lock;
+    }
+    &.check::before {
+      content : @fa-var-check;
+    }
+    &.trace::before {
+      content : @fa-var-link;
+    }
+    &.money::before {
+      content : @fa-var-dollar;
+    }
+    &.messages::before {
+      content : @fa-var-comment;
+    }
+    &.bank::before {
+      content : @fa-var-bank;
+    }
+    &.hide::before {
+      content : @fa-var-eye-slash;
+    }
+    &.copy::before {
+      content : @fa-var-files-o;
+    }
+    &.repeat::before {
+      content : @fa-var-repeat;
+    }
+    &.info::before {
+      content : @fa-var-info-circle;
+    }
+  }
+}
+@library_colors_base: #00f;
+@library_colors_additional: #00f;

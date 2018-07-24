@@ -1,0 +1,222 @@
+@import "../fontAwesome/variables";
+@import "../library/library";
+.listTable {
+  font-size       : 12px;
+  width           : 100%;
+  border-collapse : collapse;
+  th {
+    border-top    : 1px solid #e5e5e5;
+    border-bottom : 1px solid #e5e5e5;
+    border-left   : 1px solid #e5e5e5;
+    padding       : 5px 5px 5px 15px;
+    color         : #666;
+    &:first-of-type {
+      border-left : none;
+    }
+    &.right {
+      padding-right : 15px;
+      text-align    : right;
+      float         : none !important;
+    }
+    a.desc::after {
+      font-family     : "FontAwesome", sans-serif;
+      content         : @fa-var-long-arrow-down;
+      color           : #999;
+      padding-left    : 5px;
+      text-decoration : none !important;
+      display         : inline-block;
+    }
+    a.asc::after {
+      font-family     : "FontAwesome", sans-serif;
+      content         : @fa-var-long-arrow-up;
+      color           : #999;
+      padding-left    : 5px;
+      text-decoration : none !important;
+      display         : inline-block;
+    }
+  }
+  td {
+    font-size : 12px;
+    color     : #333;
+    padding   : 10px 5px 10px 15px;
+    &.noPadding {
+      padding : 0;
+    }
+    &.noTopPadding {
+      padding-top    : 0;
+      padding-bottom : 0;
+    }
+    &.highlight {
+      background  : #00b050 !important;
+      text-shadow : 0 1px 0 #06793A;
+      color       : white;
+    }
+    &.center {
+      text-align : center;
+    }
+    &.right {
+      padding-right : 15px;
+      text-align    : right;
+      float         : none !important;
+    }
+    &.statusMark {
+      width : 20px;
+      &:before {
+        font-family : "FontAwesome", sans-serif;
+        font-size   : 18px;
+      }
+      &.active:before {
+        color   : #6DB569;
+        content : @fa-var-check;
+      }
+      &.block:before {
+        color   : #FF453F;
+        content : @fa-var-lock;
+      }
+      &.new:before {
+        color   : #ffac00;
+        content : @fa-var-plus;
+      }
+      &.autobuy:before {
+        color   : red;
+        content : @fa-var-dollar;
+      }
+      &.wait:before {
+        color   : #ffac00;
+        content : @fa-var-clock-o;
+      }
+      &.warning:before {
+        color   : red;
+        content : @fa-var-exclamation;
+      }
+    }
+    &.operations {
+      padding    : 0 0 0 15px;
+      text-align : right;
+      > a {
+        width           : 17px;
+        text-align      : center;
+        display         : inline-block;
+        padding         : 15px;
+        color           : #b3b3b3;
+        font-size       : 18px;
+        line-height     : 17px;
+        position        : relative;
+        text-decoration : none;
+        .notify {
+          color         : white;
+          background    : red;
+          font-size     : 10px;
+          min-width     : 11px;
+          line-height   : 11px;
+          min-height    : 9px;
+          padding       : 3px;
+          display       : block;
+          position      : absolute;
+          top           : 5px;
+          border-radius : 10px;
+          right         : 4px;
+          text-align    : center;
+        }
+        &:hover {
+          background : @library_colors_base;
+          color      : white !important;
+        }
+        #library.fa-icons();
+      }
+    }
+    > input {
+      margin : 0;
+    }
+  }
+  tr {
+    *.bordered {
+      td {
+        border-right : 1px solid #e5e5e5;
+        &:last-of-type {
+          border : none;
+        }
+      }
+    }
+    &.statusGreen td {
+      background : #c9ffc6 !important;
+    }
+    &.statusGreen:nth-child(2+2n) td {
+      background : #a8dea5 !important;
+    }
+    &.statusRed td {
+      background : #FFC6C6 !important;
+    }
+    &.statusRed:nth-child(2+2n) td {
+      background : #ffaea9 !important;
+    }
+    &.statusBlue td {
+      background : #C6F1FF !important;
+    }
+    &.statusBlue:nth-child(2+2n) td {
+      background : #b6e2ff !important;
+    }
+    tr:nth-of-type(2n+1) {
+      td {
+        background : #f5f5f5;
+      }
+    }
+    &.mainRow {
+      background : orange;
+      td {
+        color     : white;
+        font-size : 18px;
+        &.operations a {
+          padding : 17px;
+          &::before {
+            color : white;
+          }
+        }
+      }
+      &.total {
+        td {
+          background : #4f72c1;
+        }
+      }
+    }
+  }
+  .footer {
+    td {
+      background : #d4efca !important;
+      color      : #3b692a;
+    }
+    &.bordered td {
+      border-color : #C6E6BB !important;
+    }
+  }
+  &.lined {
+    td {
+      border-right  : 1px solid white;
+      border-bottom : 1px solid white;
+    }
+  }
+  &.small {
+    td {
+      font-size : 12px;
+      padding   : 10px;
+      &.first {
+        padding-left : 15px;
+      }
+    }
+    th {
+      &.first {
+        padding-left : 15px;
+      }
+      padding : 10px;
+    }
+  }
+  tr.small td {
+    padding : 10px 15px;
+    &.operations {
+      padding : 0 7px 0 15px;
+      > a {
+        padding : 10px;
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+@import "../fontAwesome/variables";
+.slideShowTip {
+  position      : absolute;
+  background    : rgba(0, 0, 0, 0.7);
+  color         : white;
+  font          : 30px "FontAwesome";
+  padding       : 20px 30px;
+  top           : 80%;
+  left          : 50%;
+  border-radius : 10px;
+  &.play:before {
+    content : @fa-var-play;
+  }
+  &.pause:before {
+    content : @fa-var-pause;
+  }
+  &.forward:before {
+    content : @fa-var-forward;
+  }
+  &.backward:before {
+    content : @fa-var-backward;
+  }
+}
