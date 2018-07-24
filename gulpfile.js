@@ -21,14 +21,14 @@ gulp.task('less', function() {
 
 	gulp.src(paths.src.less + '*.less')
 		.pipe(sourceMaps.init())
-		.pipe(less({ ieCompat: false }))
+		.pipe(less({ ieCompat: false, relativeUrls: true }))
 		.pipe(cssmin({compatibility: 'ie8'}))
 		.pipe(sourceMaps.write('.'))
 		.pipe(gulp.dest(paths.app.css));
 
 	gulp.src(paths.src.pages + '*/*.less')
 		.pipe(sourceMaps.init())
-		.pipe(less({}))
+		.pipe(less({ ieCompat: false, relativeUrls: true }))
 		.pipe(cssmin({compatibility: 'ie8'}))
 		.pipe(sourceMaps.write('.'))
 		.pipe(gulp.dest(paths.app.pages));
@@ -37,7 +37,7 @@ gulp.task('less', function() {
 /**
  * JS task to perform concatination
  */
-gulp.task('js:lib', function() {
+gulp.task('js:library', function() {
 	gulp.src([
 		'vendor/jquery.js',
 		'vendor/twig.js',
@@ -61,7 +61,7 @@ gulp.task('js:lib', function() {
 /**
  * JS task to perform concatination
  */
-gulp.task('js', function() {
+gulp.task('js:project', function() {
 	gulp.src([
 		'services/**/*.js',
 		'../../_jsServices/**/*.js',

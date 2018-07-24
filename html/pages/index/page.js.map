@@ -1,0 +1,1 @@
+{"version":3,"sources":["index/page.js"],"names":["sky","onReady","_ref","ajax","console","log"],"mappings":"aAAAA,IAAIC,QAAQ,SAAAC,MAAmB,IAARC,KAAQD,KAARC,KACtBC,QAAQC,IAAIF","file":"page.js","sourcesContent":["sky.onReady(function({ ajax }) {\n\tconsole.log(ajax);\n});"]}

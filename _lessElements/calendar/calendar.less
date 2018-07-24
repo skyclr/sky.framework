@@ -21,17 +21,17 @@
 		padding       : 5px;
 		//border-top    : 1px solid #dcdcdc;
 		border-bottom : 1px solid #dcdcdc;
-		.next {
+		.next, .prev  {
 			background : data-uri('./calendar.png') 100% -15px no-repeat;
 			width      : 25px;
 			height     : 20px;
 			margin-top: 3px;
 		}
+		.next {
+			background-position: 100% -15px;
+		}
 		.prev {
-			background : data-uri('./calendar.png') 100% 3px no-repeat;
-			width      : 25px;
-			height     : 20px;
-			margin-top: 3px;
+			background-position: 100% 3px;
 		}
 		.month {
 			padding: 5px;

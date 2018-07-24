@@ -1,10 +1,8 @@
 @mainColor: #006fff;
 body {
-  background: #222 url(../../img/backgrounds/noise.png);
+  background: #222 data-uri('../../img/backgrounds/noise.png');
   text-align: center;
   font-family : sans-serif;
-}
-* {
   font-size: 18px;
   color: white;
 }
@@ -18,7 +16,7 @@ h1 {
   content    : "";
   width      : 120px;
   height     : 120px;
-  background : url(../../img/icons/sky.png) 0 0 no-repeat;
+  background : data-uri('../../img/icons/sky.png') 0 0 no-repeat;
 }
 .info {
   display: block;
@@ -34,6 +32,7 @@ h1 {
   border-radius: 5px;
   text-decoration: none;
   cursor: pointer;
+  float: none;
 }
 input[type=text], select {
   width: 180px;

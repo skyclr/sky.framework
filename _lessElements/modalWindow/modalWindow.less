@@ -1,0 +1,55 @@
+@import "../fontAwesome/variables";
+.windowShadow {
+  position                : fixed;
+  top                     : 0;
+  left                    : 0;
+  width                   : 100%;
+  height                  : 100%;
+  background              : rgba(0, 0, 0, .8);
+  z-index                 : 5000;
+  display                 : flex;
+  justify-content         : center;
+  overflow                : auto;
+  //noinspection CssUnknownProperty
+  backdrop-filter         : blur(20px);
+  -webkit-backdrop-filter : blur(20px);
+  &.locked .windowHolder .close {
+    display : none;
+  }
+  .windowHolder {
+    margin   : auto;
+    padding  : 25px 70px;
+    position : relative;
+    .windowData {
+      background : white;
+      box-shadow : 0 5px 20px rgba(0, 0, 0, 0.2);
+      //padding       : 25px;
+    }
+    > .close {
+      float  : right;
+      cursor : pointer;
+      &::before {
+        font-family : "FontAwesome", sans-serif;
+        content     : @fa-var-times;
+        position    : absolute;
+        margin-left : 15px;
+        margin-top  : -15px;
+        display     : block;
+        padding     : 10px;
+        font-size   : 30px;
+        color       : #bbbbbb;
+      }
+    }
+  }
+}
+
+@keyframes modalAppear {
+  from {
+    opacity     : 0;
+    padding-top : 0;
+  }
+  to {
+    opacity     : 1;
+    padding-top : 25px;
+  }
+}

@@ -1,0 +1,84 @@
+@import "../fontAwesome/variables";
+.ajaxLoading {
+  padding       : 30px;
+  height        : 70px;
+  width         : 70px;
+  text-align    : center;
+  font-size     : 70px;
+  background    : white;
+  border-radius : 100px;
+  margin        : auto;
+  div {
+    font-family : 'FontAwesome', sans-serif;
+    color       : #ff5434;
+    &:before {
+      content     : @fa-var-gear;
+      width       : 70px;
+      height      : 70px;
+      display     : block;
+      line-height : 70px;
+    }
+  }
+  span {
+    display         : none;
+    font-family     : 'FontAwesome', sans-serif;
+    color           : #ff5434;
+    text-decoration : none;
+    cursor          : pointer;
+    &:before {
+      content : @fa-var-times;
+    }
+  }
+  &.cancelable:hover {
+    div {
+      display : none;
+    }
+    span {
+      display : block;
+    }
+  }
+  //	-webkit-animation                 : rocket 5s;
+  //	animation                         : rocket 5s;
+  //	animation-iteration-count         : infinite;
+  //	-webkit-animation-iteration-count : infinite;
+
+  &.fixed {
+    position    : fixed;
+    margin-left : -65px;
+    margin-top  : -65px;
+    left        : 50%;
+    top         : 50%;
+  }
+}
+
+.rocketFrames() {
+  0% {
+    color : #ff5434;
+  }
+  50% {
+    color : #ff0054;
+  }
+  100% {
+    color : #ff5434;
+  }
+}
+
+@-webkit-keyframes rocket {
+  .rocketFrames;
+}
+
+@-moz-keyframes rocket {
+  .rocketFrames;
+}
+
+@-ms-keyframes rocket {
+  .rocketFrames;
+}
+
+@-o-keyframes rocket {
+  .rocketFrames;
+}
+
+@keyframes rocket {
+  .rocketFrames;
+}

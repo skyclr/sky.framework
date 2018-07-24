@@ -1,0 +1,86 @@
+.notificationMessage {
+  background    : #ffdfdf;
+  color         : #661f1f;
+  margin-bottom : 1px;
+  font-size     : 14px;
+  border-left   : 60px solid #ebb2b2;
+  min-height    : 60px;
+  overflow      : visible;
+  b {
+    text-align  : left;
+    font-weight : normal;
+    display     : block;
+    padding     : 20px 15px;
+  }
+  &::before {
+    font-family : "FontAwesome", sans-serif;
+    content     : @fa-var-times-circle;
+    font-size   : 40px;
+    height      : 40px;
+    width       : 40px;
+    text-align  : center;
+    display     : block;
+    float       : left;
+    //position    : absolute;
+    margin-left : -60px;
+    padding     : 10px;
+    color       : #faecec;
+  }
+  &.notice {
+    border-color : #eea915;
+    background   : #f8e9ce;
+    color        : #b18a2d;
+    &::before {
+      content    : @fa-var-warning;
+      color      : #f8e9ce;
+      background : #dec17b;
+    }
+  }
+  &.good, &.success {
+    border-color : #daf2d9;
+    background   : #e9f2e2;
+    color        : #318311;
+    &::before {
+      content    : @fa-var-check-circle;
+      color      : #e9f2e2;
+      background : #9dcc83;
+    }
+  }
+}
+
+.resultMessage {
+  margin : 25px;
+  text-align : center;
+  h3 {
+    font-size  : 26px;
+    padding    : 5px 0 0;
+    color      : @highlightAlternative;
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+  p {
+  }
+}
+
+.slideShowTip {
+  position      : absolute;
+  background    : rgba(0, 0, 0, 0.7);
+  color         : white;
+  font          : 30px "FontAwesome";
+  padding       : 20px 30px;
+  top           : 80%;
+  left          : 50%;
+  border-radius : 10px;
+  &.play:before {
+    content : @fa-var-play;
+  }
+  &.pause:before {
+    content : @fa-var-pause;
+  }
+  &.forward:before {
+    content : @fa-var-forward;
+  }
+  &.backward:before {
+    content : @fa-var-backward;
+  }
+}

@@ -1,0 +1,73 @@
+@triangleFile : 'triangles.svg';
+@triangleHeight : image-height(@triangleFile);
+.tip {
+  position  : absolute;
+  z-index   : 10000;
+  font-size : 14px !important;
+  color     : #777777;
+  overflow  : visible !important;
+  .tipContent {
+    background : white;
+    padding    : 7px 10px;
+    box-shadow : 0 0 10px rgba(0, 0, 0, 0.5);
+    overflow   : auto;
+    color      : #000000;
+  }
+  p {
+    font-size : 12px;
+    padding   : 8px 12px;
+    margin    : 0;
+  }
+  h2 {
+    background    : white;
+    border-bottom : 1px solid #dddddd;
+  }
+  h3 {
+    font-size  : 12px;
+    padding    : 10px;
+    background : #eeeeee;
+  }
+  &.menu {
+    border-radius : 0;
+    box-shadow    : none;
+    > .tipContent {
+      overflow      : hidden;
+      border-radius : 5px;
+      background    : white;
+      padding       : 0;
+    }
+    &:before {
+      content    : "";
+      display    : block;
+      position   : absolute;
+      background : data-uri(@triangleFile) 50% 0 no-repeat;
+    }
+    &.bottom {
+      padding : @triangleHeight/2 0 0;
+      &::before {
+        height              : image-height(@triangleFile) / 2;
+        width               : 100%;
+        background-position : 50% 0;
+        top                 : 0;
+      }
+    }
+    &.top {
+      padding : 0 0 @triangleHeight/2;
+      &::before {
+        height              : image-height(@triangleFile) / 2;
+        width               : 100%;
+        background-position : 50% 100%;
+        bottom              : 0;
+      }
+    }
+    &.left {
+      padding : 0 @triangleHeight/2 0 0;
+      &::before {
+        width               : image-height(@triangleFile) / 2;
+        background-position : 100% 50%;
+        right               : 0;
+        height              : 100%;
+      }
+    }
+  }
+}
