@@ -1,4 +1,4 @@
-sky.services.add("pagination", ["templates", "stackList"], function({ templates, stackList }) {
+sky.service("pagination", ["templates", "stackList"], function({ templates, stackList }) {
 
 	let list = stackList();
 

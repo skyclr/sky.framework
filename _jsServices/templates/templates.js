@@ -179,9 +179,12 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 
 
 	/* Save templates files data */
-	if(window.page.data.templates && supported.localStorage) {
-		for(let template of window.page.data.templates)
-			$.cookie("storedTemplates-" + template.path, template.date);
-	}
+	sky.onReady(() => {
+		if(window.page.data.templates && supported.localStorage) {
+			$.each(window.page.data.templates, function(_, template) {
+				$.cookie("storedTemplates-" + template.path, template.date);
+			});
+		}
+	});
 
 });

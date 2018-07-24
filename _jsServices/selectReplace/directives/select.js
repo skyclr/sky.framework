@@ -9,7 +9,7 @@ sky.directive(".selectReplaceChoose", function(popup, attrs) {
             defaultAllValue = replace.text() || "Все";
 
 		replace.data("addItem", function(item) {
-			var newInput = sky.templates.renderByText("{% skyImport forms as forms %}{{ forms.selectReplaceGroup(items, options) }}", { items: [item], options: {
+			let newInput = sky.templates.renderByText("{% skyImport forms as forms %}{{ forms.selectReplaceGroup(items, options) }}", { items: [item], options: {
 				name: replace.attr("input"),
 				multiple:  !replace.hasClass("single")
 			}});
@@ -28,7 +28,7 @@ sky.directive(".selectReplaceChoose", function(popup, attrs) {
 			children = false;
 
 			/* Get checked */
-			var filtered = inputs.filter(":checked").each(function() {
+			let filtered = inputs.filter(":checked").each(function() {
 				current = $(this);
 				current.closest("label").addClass("selected");
 				val = (val && val + ", ") + current.next().text();
@@ -66,12 +66,12 @@ sky.directive(".selectReplaceChoose", function(popup, attrs) {
 
 	});
 
-
-$(document)
+sky.onReady(() = {
+	$(document)
 	.on("click touchstart", function(event) {
 
 		/* Get element */
-		var element = $(event.target || event.srcElement);
+		let element = $(event.target || event.srcElement);
 
 
 		/* If click in replace we should not hide it */
@@ -81,43 +81,5 @@ $(document)
 		/* Hide all */
 		$(".selectReplaceChoose").addClass('hidden');
 
-	}).on("change", ".specialSelect input", function(event) {
-		var root = $(this).closest(".specialSelect");
-		root.find(".selected").removeClass("selected");
-		root.find("input").each(function() {
-			var self = $(this);
-
-			if(self.is(":checked"))
-				self.parent().addClass("selected");
-
-		});
-
-		//root.closest("form").trigger("submit");
-
-	}).on("mouseover", ".selectReplaceChoose label", function() {
-
-		var label = $(this);
-		var originalTip = label.find(".checkItemTip");
-
-		if(originalTip.length && !label.data("tip")) {
-			var popup = label.closest(".selectReplaceChoose");
-			var tip = originalTip.clone().removeClass("hidden").appendTo("body");
-			tip.css({
-				left: popup.offset().left,
-				top: popup.offset().top + popup.outerHeight() + 5
-			});
-			label.data("tip", tip);
-		}
-
-	}).on("mouseout", ".selectReplaceChoose label", function() {
-
-		var label = $(this);
-
-		if(label.data("tip")) {
-			label.data("tip").remove();
-			label.removeData("tip");
-		}
-
 	})
-
-;
+});

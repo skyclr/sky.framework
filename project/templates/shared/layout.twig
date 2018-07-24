@@ -8,24 +8,19 @@
 	<meta name="description" content="" />
 	<meta name="keywords" content="" />
 	<title>{{ preferences.site.name }}{% if page.title %} : {{ page.title }}{% endif %}</title>
-
-	<!-- Styles -->
 	<link rel="shortcut icon" type="image/png" href="{{ 'icons/favicon.png'|url('img') }}"/>
+
+	<!-- Project CSS -->
 	<link rel="stylesheet" type="text/css" href="{{ 'styles.css'|url('css') }}"/>
 
 	{% set pageCSS = (pathElements|join("-") ~ "/page.css")|url('pages') %}
-	{% if pageCSS|fileExists('html') %}
-		<link rel="stylesheet" type="text/css" href="{{ pageCSS }}"/>
+
+	{% if pageCSS|fileExists('html') %}<!-- Page CSS -->
+	<link rel="stylesheet" type="text/css" href="{{ pageCSS }}"/>
 	{% endif %}
 
 	<!-- Core JS raw include -->
 	<script type="text/javascript">{{ (preferences.locations.assets ~ "/jvs/library/core.js")|includeRawFullPath }}</script>
-
-	<!-- Library -->
-	<script type="text/javascript" src="{{ 'library.js'|url('jvs') }}" async></script>
-
-	<!-- Project specific -->
-	<script type="text/javascript" src="{{ 'project.js'|url('jvs') }}" async></script>
 
 	<!-- Mobile -->
 	<meta name="viewport" content="initial-scale=0.7, user-scalable=1" />
@@ -98,9 +93,16 @@
     });
 
 </script>
+
+<!-- Library JS -->
+<script type="text/javascript" src="{{ 'library.js'|url('jvs') }}" async></script>
+
+<!-- Project JS -->
+<script type="text/javascript" src="{{ 'project.js'|url('jvs') }}" async></script>
+
 {% set pageJVS = (pathElements|join("-") ~ "/page.js")|url('pages') %}
-{% if pageJVS|fileExists('html') %}
-	<script type="text/javascript" src="{{ pageJVS }}" async></script>
+{% if pageJVS|fileExists('html') %}<!-- Page JS -->
+<script type="text/javascript" src="{{ pageJVS }}" async></script>
 {% endif %}
 
 <!-- JS templates -->

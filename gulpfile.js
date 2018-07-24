@@ -40,6 +40,7 @@ gulp.task('less', function() {
 gulp.task('js:library', function() {
 	gulp.src([
 		'vendor/jquery.js',
+		'vendor/jquery.cookie.js',
 		'vendor/twig.js',
 		'vendor/moment.js',
 		'library/main.js',
