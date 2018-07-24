@@ -46,7 +46,7 @@ sky.service("localStorage", [ "callbacks" ], function({ callbacks }) {
 			try {
 
 				/* Save */
-				let items = this.getItems();
+				let items = this.getItems() || {};
 
 				/* Add item */
 				items[id] = data;

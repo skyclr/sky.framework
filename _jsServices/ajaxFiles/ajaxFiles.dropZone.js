@@ -11,8 +11,8 @@ sky.service("ajaxFilesDropZone", ["supported", "callbacks"], function({ supporte
 			this.url       = url;
 			this.files     = [];
 
-			/* If no XHR supported, no file drip needed */
-			if(!supported.XHRIsSupported) {
+			/* If no XHR supported, no file drop needed */
+			if(!supported.XHRUpload) {
 				this.callbacks.fire("nonSupported");
 				return this;
 			}

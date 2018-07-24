@@ -9,7 +9,7 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 		globals : {},
 
 		/** Local storage support */
-		storage: supported.localStorage ? localStorage({ name: "jsTemplates" }) : false,
+		storage: supported.localStorage ? new localStorage({ name: "jsTemplates" }) : false,
 
 		/**
 		 * Adds new template to list
@@ -19,7 +19,7 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 			templatesList[options.name] = options.template;
 			if(this.storage) {
 				this.storage.save(options.name, options.template);
-				//$.cookie("storedTemplates-" + options.name, options.date);
+				$.cookie("storedTemplates-" + options.name, options.date);
 			}
 		},
 
@@ -170,11 +170,18 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 
 	};
 
-	sky.directives.add('script[type="text/template"]', function(template, attrs) {
-		sky.templates.add({
+	sky.directive('script[type="text/template"]', function(template, attrs) {
+		Templates.add({
 			name        : attrs.id,
 			template    : template.html()
 		});
 	});
+
+
+	/* Save templates files data */
+	if(window.page.data.templates && supported.localStorage) {
+		for(let template of window.page.data.templates)
+			$.cookie("storedTemplates-" + template.path, template.date);
+	}
 
 });
