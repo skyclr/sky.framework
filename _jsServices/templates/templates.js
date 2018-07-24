@@ -18,7 +18,7 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 		add: function(options) {
 			templatesList[options.name] = options.template;
 			if(this.storage) {
-				this.storage.save(options.name, templatesList[options.name]);
+				this.storage.save(options.name, options.template);
 				//$.cookie("storedTemplates-" + options.name, options.date);
 			}
 		},
@@ -173,7 +173,7 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 	/**
 	 * Load templates on ready
 	 */
-	$(document).on("ready", sky.func(function() {
+	$(document).onReady(sky.func(function() {
 
 		/* Find templates and save them */
 		$('script[type="text/template"]').each(function() {
