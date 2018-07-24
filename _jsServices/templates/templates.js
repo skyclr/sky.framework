@@ -170,28 +170,11 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 
 	};
 
-	/**
-	 * Load templates on ready
-	 */
-	$(document).onReady(sky.func(function() {
-
-		/* Find templates and save them */
-		$('script[type="text/template"]').each(function() {
-			let self = $(this);
-			Templates.add({
-				name        : self.attr('id'),
-				template    : self.html()
-				//dependencies: self.attr('dependencies') ? self.attr('dependencies').replace(" ", "").split(",") : false
-			});
+	sky.directives.add('script[type="text/template"]', function(template, attrs) {
+		sky.templates.add({
+			name        : attrs.id,
+			template    : template.html()
 		});
-
-		/* Save templates files data */
-		if(window.page.data["templates"] && Templates.storage) {
-			$.each(window.page.data["templates"], function() {
-				$.cookie("storedTemplates-" + this.path, this.date);
-			});
-		}
-
-	}));
+	});
 
 });
