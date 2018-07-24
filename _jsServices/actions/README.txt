@@ -7,10 +7,10 @@ Multiple callbacks separated by semicolon
 For declarative way you should define actions list with namespace.
 Example:
 sky.action("myActions", {
-	action: function(element, event) {
-		event.preventDefault();
-		alert("Hello world");
-	}
+  action: function(element, event) {
+    event.preventDefault();
+    alert("Hello world");
+  }
 });
 
 and then you may user it like
