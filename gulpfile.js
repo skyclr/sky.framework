@@ -63,6 +63,7 @@ gulp.task('js:library', function() {
  * JS task to perform concatination
  */
 gulp.task('js:project', function() {
+
 	gulp.src([
 		'services/**/*.js',
 		'../../_jsServices/**/*.js',

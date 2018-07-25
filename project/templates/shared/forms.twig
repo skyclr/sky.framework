@@ -1,14 +1,16 @@
-
+{% macro test() %}test{% endmacro %}
 {# Draws select replace input #}
 {% macro selectReplace(options, items) %}
+    {% import _self as forms %}
 	<a class="selectReplace {{ options.className }} {% if not options.multiple %}single{% endif %}" data-input="{{ options.name }}" {% if options.validation %}data-validate="{{ options.validation }}"{% endif %} data-event="click: selectReplace.drop(){% if options.event %}; {{  options.event }}{% endif %}">{{ options.value ? options.value : '' }}</a>
 	{% if items is iterable %}
-		{{ _self.selectDropDown(options, items) }}
+		{{ forms.selectDropDown(options, items) }}
 	{% endif %}
 {% endmacro %}
 
 {# Draws select replace drop down menu #}
 {% macro selectDropDown(options, items) %}
+    {% import _self as forms %}
 	<div class="selectReplaceChoose {% if not options.multiple %}single{% endif %}" data-input="{{ options.name }}">
 		{% if options.search %}
 			<label class="search">
@@ -20,12 +22,12 @@
 			{% if items.groups %}
 				{% for group in items.groups %}
 					<div class="column">
-						{{ _self.selectReplaceGroup(group, options) }}
+						{{ forms.selectReplaceGroup(group, options) }}
 					</div>
 				{% endfor %}
 			{% else %}
 				<div class="column" style="float: none;">
-					{{ _self.selectReplaceGroup(items, options) }}
+					{{ forms.selectReplaceGroup(items, options) }}
 				</div>
 			{% endif %}
 		</div>

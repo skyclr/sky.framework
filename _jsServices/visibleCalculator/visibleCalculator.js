@@ -118,42 +118,36 @@ sky.service("visibleCalculator", function() {
 				leftDifference = popupOffset.left - replaceOffset.left,
 				topDifference  = popupOffset.top - replaceOffset.top,
 				middle         = false,
-				visible        = this.calculate();
+				visible        = this.calculate(),
+				top = 0, left = 0;
 
 			// Drop down
 			if(visible.bottom + popupHeight >= visible.windowHeight)
-				popup.css("marginTop", topDifference + visible.realHeight + 1);
+				top = topDifference + visible.realHeight + 1;
 			// Drop up
 			else if(visible.top > popupHeight)
-				popup.css("marginTop", -topDifference - 1);
+				top = -topDifference - 1;
 			// Drop left
 			else {
-				popup.css("marginTop", -topDifference - (popupHeight - visible.realHeight) / 2);
+				top = -topDifference - (popupHeight - visible.realHeight) / 2;
 				middle = true;
 			}
-
-
+			
 			/* Set position */
 			if(!middle) {
 				if(visible.windowWidth > visible.left + popupWidth)
-					popup.css("marginLeft", leftDifference);
+					left = leftDifference;
 				else
-					popup.css("marginLeft", leftDifference - popupWidth + visible.width);
+					left = leftDifference - popupWidth + visible.width;
 			} else {
-
-				if(win.width() > selfOffset.left + popupWidth + selfWidth)
-					popup.css({
-						marginLeft: selfOffset.left - popupOffset.left + selfWidth
-					});
+				if(win.width() > replaceOffset.left + popupWidth + visible.width)
+					left = replaceOffset.left - popupOffset.left + visible.width;
 				else
-					popup.css({
-						marginLeft: selfOffset.left - popupOffset.left - popupWidth
-					});
-
+					left = replaceOffset.left - popupOffset.left - popupWidth;
 			}
 
+			return { top, left };
+			
 		}
 	}
-
-})
-;
+});

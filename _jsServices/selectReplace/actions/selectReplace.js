@@ -105,20 +105,20 @@ sky.action("selectReplace", function({ visibleCalculator }) {
 
             /* Get drop */
             let popup = replace.next(),
-                dropOffset = (new visibleCalculator).getDropOffset(replace, popup);
+                dropOffset = (new visibleCalculator(replace)).getDropOffset(replace, popup.removeClass('hidden'));
 
-			/* If visible just hide */
-			if(dropOffset) {
-				popup.removeClass('hidden').css({ marginLeft: dropOffset.left, margintop: dropOffset.top });
+            if(dropOffset) return;
 
-				if(replace.outerWidth() > popup.outerWidth())
-					popup.css("width", replace.outerWidth());
+			popup.css({ marginLeft: dropOffset.left, marginTop: dropOffset.top });
 
-                /* Search focus */
-				if (popup.find(".search").length)
-					popup.find(".search input").val('').focus();
+			if(replace.outerWidth() > popup.outerWidth())
+				popup.css("width", replace.outerWidth());
 
-            }
+			/* Search focus */
+			if (popup.find(".search").length)
+				popup.find(".search input").val('').focus();
+
+
 
         },
 

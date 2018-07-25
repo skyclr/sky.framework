@@ -11,13 +11,13 @@ sky.service("stackList", function() {
 		this.last = function() {
 
 			/* Holder */
-			let last;
+			let last = false;
 
 			/* Apply for windows */
-			for(let element of elements) last = element;
+			this.each(element => { last = element });
 
 			/* Return */
-			return last || false;
+			return last;
 
 		};
 
@@ -45,8 +45,10 @@ sky.service("stackList", function() {
 		};
 
 		this.each = function(callback) {
-			for(let single of elements)
+			$.each(elements, (_, single) => {
 				callback.apply(single, single);
+			});
+
 		};
 
 	}
