@@ -23,12 +23,13 @@ a {
       text-decoration : underline;
     }
   }
-  &[sky-tip] {
-    border-bottom : 1px dashed @library_colors_interactive;
-    &:hover {
-      border          : none;
-      text-decoration : none;
-    }
+}
+[data-tip], [data-tip-text], [data-tip-hover] {
+  color              : @library_colors_interactive;
+  border-bottom : 1px dashed @library_colors_interactive;
+  &:hover {
+    border          : none;
+    text-decoration : none;
   }
 }
 

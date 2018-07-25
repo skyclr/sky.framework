@@ -327,7 +327,7 @@ Twig.extend(function(Twig) {
 
 	/* Exceptions remake */
 	Twig.log.error = function(text) {
-		throw new sky.exception.system.Error(text);
+		throw new sky.exceptions.system.Error(text);
 	};
 
 	/* Special import tag */
@@ -346,7 +346,7 @@ Twig.extend(function(Twig) {
 		/* Runs on matched tokens when the template is loaded. (once per template) */
 		compile: function(token) {
 
-			var expression = token.match[1].trim(),
+			let expression = token.match[1].trim(),
 				contextName = token.match[2].trim();
 
 			delete token.match;
@@ -361,11 +361,11 @@ Twig.extend(function(Twig) {
 		},
 		parse  : function(token, context, chain) {
 
-			var template = sky.templates.load(token.expression),
+			let template = sky.service("templates").load(token.expression),
 				compiled = new Twig.Template({ data: template });
 
 			compiled.options = {};
-			context[token.contextName] = compiled.render({ globals: sky.templates.globals }, { output: 'macros' });
+			context[token.contextName] = compiled.render({ globals: sky.service("templates").globals }, { output: 'macros' });
 
 			return {
 				chain : false,

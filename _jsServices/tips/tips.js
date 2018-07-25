@@ -4,16 +4,20 @@ sky.service("tips", ["stackList", "callbacks"], function({ stackList, callbacks 
     let list = stackList(),
         tips = this.service = {
 
-        /**
-         * Hides all visible tips
-         * @param withoutAutoHide
-         */
-        hideAll: function(withoutAutoHide) {
+			/**
+			 * Hides all visible tips
+			 * @param withoutAutoHide
+			 * @param caller
+			 */
+        hideAll: function(withoutAutoHide, caller) {
 
             /* Hide all tips */
-            $.each(list.elements(), function(_, tip) {
-                if(withoutAutoHide || tip.autoHide)
-                    this.hide();
+            list.each((tip) => {
+                if(withoutAutoHide)
+					tip.hide();
+                else if(tip.autoHide && (!caller || !caller.closest(tip.tip).length && !caller.closest(tip.holder))) {
+					tip.hide();
+                }
             });
 
         },
@@ -63,6 +67,9 @@ sky.service("tips", ["stackList", "callbacks"], function({ stackList, callbacks 
             /* Auto construct */
             if(!(this instanceof tips.Tip))
                 return new tips.Tip(object, { autoHide, create, close, ajax, highlight });
+
+            /* Add to list */
+			list.add(this);
 
             /* Manual create tip by create function */
             if(typeof create === "function") {
@@ -116,7 +123,7 @@ sky.service("tips", ["stackList", "callbacks"], function({ stackList, callbacks 
 
             /* Add to list */
             this.tip.css("display", "none");
-			list.add(this);
+
             return this;
 
         }

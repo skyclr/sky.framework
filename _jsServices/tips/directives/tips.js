@@ -6,7 +6,7 @@ sky.directive("[data-tip]", function(button, attributes) {
 		event   = "click: tips.showTip('" + tipName + "')";
 
 	// Set new
-	events = events ? event : events + "; " + event;
+	events = events ? events + "; " + event: event;
 
 	// Add
 	button.attr("data-event", events).addClass("dashed");
@@ -20,7 +20,7 @@ sky.directive("[data-tip-text]", function(button, attributes) {
 		event   = "click: tips.showTipWithText('" + tipText + "')";
 
 	// Set new
-	events = events ? event : events + "; " + event;
+	events = events ? events + "; " + event: event;
 
 	// Add
 	button.attr("data-event", events).addClass("dashed");

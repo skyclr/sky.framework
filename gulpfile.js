@@ -43,6 +43,7 @@ gulp.task('js:library', function() {
 		'vendor/jquery.cookie.js',
 		'vendor/twig.min.js',
 		'vendor/moment.js',
+		'vendor/extends.js',
 		'library/main.js',
 		'library/exceptions.js',
 		'library/services.js',

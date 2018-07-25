@@ -74,17 +74,31 @@
 			<h2>Test form</h2>
 			<fieldset class="">
 				<div class="label">
-					<span class="name" data-tip-hover="Tip test">Select example</span>
-                    {{ forms.selectReplace({ name: 'text', multiple: true }, [
+					<span class="name"><span data-tip-hover="Tip test">Select example</span></span>
+                    {{ forms.selectReplace({ name: 'text', multiple: true, value: "All" }, [
                     { value: 1, html: "First" },
                     { value: 2, html: "Second" },
                     ]) }}
 					<span class="desc">example description</span>
 				</div>
+				{% verbatim %}
+					{% skyImport forms as forms %}
+					<div class="label">
+						<span class="name"><a href="#" data-event="click: page.showMenu">Another example</a></span>
+						{{ forms.selectReplace({ name: 'text2', value: 'Pick value' }, [
+						{ value: 1, html: "First" },
+						{ value: 2, html: "Second" },
+						]) }}
+						<span class="desc">another example description</span>
+					</div>
+				{% endverbatim %}
 			</fieldset>
 			<fieldset class="submit">
 				<input type="submit" class="button">
 			</fieldset>
 		</form>
+	</template>
+	<template id="page-menu">
+		<p>Page menu</p>
 	</template>
 {% endblock %}

@@ -1,5 +1,14 @@
-sky.action("tips", ({actions, tips}) => {
-	var self = {
+sky.action("tips", ({ tips }) => {
+
+	// Get
+	let body = $('body'),
+		events  = body.attr("data-event") || "",
+		event   = "click: tips.hideTips";
+
+	// Add
+	body.attr("data-event", events ? events + "; " + event: event);
+
+	let self = {
 
 		showTip: function(button, _, name) {
 
@@ -42,16 +51,7 @@ sky.action("tips", ({actions, tips}) => {
 		},
 
 		hideTips: function(element, event) {
-			let target;
-
-			if(event && event.target) {
-				target = $(event.target);
-				if(target.is("[tip]") || target.is("[tip-text]") || target.closest(".tipContent").length)
-					return;
-			}
-
-			tips.hideAll();
-
+			tips.hideAll(false, $(event.target));
 		},
 
 		/**

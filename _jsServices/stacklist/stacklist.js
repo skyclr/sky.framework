@@ -24,7 +24,7 @@ sky.service("stackList", function() {
 		this.add = function(element) {
 			lastId++;
 			total++;
-			element[lastId] = element;
+			elements[lastId] = element;
 		};
 
 		this.remove = function(element) {
@@ -46,7 +46,7 @@ sky.service("stackList", function() {
 
 		this.each = function(callback) {
 			$.each(elements, (_, single) => {
-				callback.apply(single, single);
+				callback.apply(single, [single]);
 			});
 
 		};
