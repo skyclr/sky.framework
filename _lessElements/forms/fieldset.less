@@ -1,6 +1,6 @@
 @import "variables";
 fieldset {
-  padding       : @upDownMargin @leftRightMargin 0;
+  padding       : @upDownMargin 0 0 @leftRightMargin;
   border        : none;
   overflow      : hidden;
   &.subset {
@@ -19,7 +19,7 @@ fieldset {
       background : white;
     }
   }
-  .button {
+  > .button {
     margin : 0 @labelsSpace @upDownMargin 0;
   }
   &.lined {

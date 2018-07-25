@@ -107,7 +107,8 @@ sky.action("selectReplace", function({ visibleCalculator }) {
             let popup = replace.next(),
                 dropOffset = (new visibleCalculator(replace)).getDropOffset(replace, popup.removeClass('hidden'));
 
-            if(dropOffset) return;
+            /* If cant calculate offset */
+            if(!dropOffset) return;
 
 			popup.css({ marginLeft: dropOffset.left, marginTop: dropOffset.top });
 
@@ -117,8 +118,6 @@ sky.action("selectReplace", function({ visibleCalculator }) {
 			/* Search focus */
 			if (popup.find(".search").length)
 				popup.find(".search input").val('').focus();
-
-
 
         },
 

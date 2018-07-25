@@ -51,18 +51,40 @@
 		<br>
 		<br>
 	</div>
-	<form action="">
-		<fieldset>
+	<form action="" style="background: #fff;border-radius: 10px; margin: 25px;" data-event="submit: page.submit">
+		<fieldset class="">
 			<div class="label">
-				{#{{ formsNew.test() }}#}
+				<span class="name">Select example</span>
 				{{ forms.selectReplace({ name: 'text', multiple: true }, [
 					{ value: 1, html: "First" },
 					{ value: 2, html: "Second" },
 				]) }}
+				<span class="desc">example description</span>
 			</div>
+		</fieldset>
+		<fieldset class="submit">
+			<input type="submit" class="button">
 		</fieldset>
 	</form>
 	<span class="info">Database: {{ preferences.database.use ? "Yes" : "No" }}</span>
 	<span class="info">Auth: {{ preferences.authentication.use ? "Yes" : "No" }}</span>
 	<a href="/manage" class="button">Entity builder</a>
+	<template id="page-window">
+		<form action="">
+			<h2>Test form</h2>
+			<fieldset class="">
+				<div class="label">
+					<span class="name" data-tip-hover="Tip test">Select example</span>
+                    {{ forms.selectReplace({ name: 'text', multiple: true }, [
+                    { value: 1, html: "First" },
+                    { value: 2, html: "Second" },
+                    ]) }}
+					<span class="desc">example description</span>
+				</div>
+			</fieldset>
+			<fieldset class="submit">
+				<input type="submit" class="button">
+			</fieldset>
+		</form>
+	</template>
 {% endblock %}

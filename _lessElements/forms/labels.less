@@ -1,4 +1,5 @@
 @import "variables";
+
 label, .label {
 
   display       : block;
@@ -7,7 +8,6 @@ label, .label {
   > label, > .label {
     margin-bottom : 0;
   }
-
   &.small, fieldset.small > & {
     .smallNamedLabel()
   }
@@ -28,10 +28,11 @@ label, .label {
     float     : left;
     font-size : @fontSize;
     &.name {
-      padding  : @elementsUpDownPadding @elementsLeftRightPadding @elementsUpDownPadding 0;
-      color    : #666666;
-      overflow : hidden;
-      text-align: left;
+      .calculateElementPadding(@fontSize);
+      margin-right : @labelsSpace;
+      color        : #666666;
+      overflow     : hidden;
+      text-align   : left;
       b {
         font-weight : bold;
         color       : #000000;
@@ -42,9 +43,9 @@ label, .label {
       font-weight : bold;
     }
     &.desc {
-      padding   : 10px;
-      font-size : 10px;
-      color     : #777777;
+      .calculateElementPadding(12px);
+      margin-right : @labelsSpace;
+      color        : #777777;
       .error {
         display : block;
         float   : none;
@@ -59,7 +60,6 @@ label, .label {
   }
 }
 
-
 .upperNamedLabel() {
   > span, > a, > div {
     &.name {
@@ -67,9 +67,6 @@ label, .label {
       padding  : 0 0 5px 0;
       color    : #666666;
       overflow : hidden;
-    }
-    &.desc {
-      margin-top : (@upperNameSpacing + @fontSize);
     }
   }
   .button {

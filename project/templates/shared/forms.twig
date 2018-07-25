@@ -11,7 +11,7 @@
 {# Draws select replace drop down menu #}
 {% macro selectDropDown(options, items) %}
     {% import _self as forms %}
-	<div class="selectReplaceChoose {% if not options.multiple %}single{% endif %}" data-input="{{ options.name }}">
+	<div class="selectReplaceChoose hidden {% if not options.multiple %}single{% endif %}" data-input="{{ options.name }}">
 		{% if options.search %}
 			<label class="search">
 				<span>Фильтр</span>

@@ -1,53 +1,67 @@
-@mainColor: #006fff;
+@mainColor : #006fff;
 body {
-  background: #222 data-uri('../../img/backgrounds/noise.png');
-  text-align: center;
+  background  : #222222 data-uri('../../img/backgrounds/noise.png');
   font-family : sans-serif;
-  font-size: 18px;
-  color: white;
+  font-size   : 18px;
 }
+.mainPageHolder {
+  text-align  : center;
+  color       : white;
+}
+
 h1 {
-  display: block;
-  font-size   : 32px;
+  display   : block;
+  font-size : 32px;
 }
+
 .logo {
-  margin: 50px auto 25px;
-  display: block;
+  margin     : 50px auto 25px;
+  display    : block;
   content    : "";
   width      : 120px;
   height     : 120px;
   background : data-uri('../../img/icons/sky.png') 0 0 no-repeat;
 }
+
 .info {
-  display: block;
-  margin-top: 10px;
+  display    : block;
+  margin-top : 10px;
 }
-.button, input[type=text], select {
-  display: block;
-  margin: 10px auto;
-  background: @mainColor;
-  width: 200px;
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  text-decoration: none;
-  cursor: pointer;
-  float: none;
+
+.content {
+  > .button,  > input[type=text],  > select {
+    display         : block;
+    margin          : 10px auto;
+    background      : @mainColor;
+    width           : 200px;
+    padding         : 10px;
+    border          : none;
+    border-radius   : 5px;
+    text-decoration : none;
+    cursor          : pointer;
+    float           : none;
+  }
+  > .button {
+    color: white;
+  }
 }
+
 input[type=text], select {
-  width: 180px;
-  background: white;
-  color: black;
+  width      : 180px;
+  background : white;
+  color      : black;
 }
+
 select {
-  width: 200px;
-  -webkit-appearance: none;
+  width              : 200px;
+  -webkit-appearance : none;
 }
+
 input[type=submit].info {
-  max-width: 400px;
-  margin: 10px auto;
-  background: transparent;
-  color: white;
-  border: none;
-  cursor: pointer;
+  max-width  : 400px;
+  margin     : 10px auto;
+  background : transparent;
+  color      : white;
+  border     : none;
+  cursor     : pointer;
 }

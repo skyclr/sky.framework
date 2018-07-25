@@ -1,0 +1,39 @@
+@import "library";
+
+.hidden {
+  display : none !important;
+}
+
+h1, h2 {
+  color          : @library_colors_highlight;
+  padding        : 0 0 15px 0;
+  margin         : 0;
+  font-size      : 28px;
+  font-weight    : bold;
+  text-transform : uppercase;
+}
+
+a {
+  color              : @library_colors_interactive;
+  text-decoration    : none;
+  -webkit-transition : color 500ms ease;
+  @media (hover) {
+    &:hover {
+      color           : lighten(@library_colors_interactive, 20%);
+      text-decoration : underline;
+    }
+  }
+  &[sky-tip] {
+    border-bottom : 1px dashed @library_colors_interactive;
+    &:hover {
+      border          : none;
+      text-decoration : none;
+    }
+  }
+}
+
+p {
+  font-size   : 14px;
+  line-height : 150%;
+  padding     : 15px 25px;
+}

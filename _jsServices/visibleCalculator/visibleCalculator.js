@@ -1,6 +1,6 @@
 sky.service("visibleCalculator", function() {
 
-	let Calculator = this.service = class {
+	let Calculator = class {
 
 		constructor(holder, minHeight, scrollable) {
 
@@ -10,8 +10,8 @@ sky.service("visibleCalculator", function() {
 
 			/* Re get holder */
 			this.holder = $(holder);
-			this.scrollable = scrollable;
-			this.minHeight = minHeight;
+			this.scrollable = scrollable || $('body');
+			this.minHeight = minHeight || 0;
 
 			/* Init */
 			this.init();
@@ -48,6 +48,7 @@ sky.service("visibleCalculator", function() {
 					width       : this.holderRect.width,
 					height      : this.holderRect.height,
 					realHeight  : this.holderRect.height,
+					bottom		: 0,
 					scrollTop   : scrollTop,
 					scrollLeft  : 0,
 					windowHeight: windowHeight,
@@ -122,7 +123,7 @@ sky.service("visibleCalculator", function() {
 				top = 0, left = 0;
 
 			// Drop down
-			if(visible.bottom + popupHeight >= visible.windowHeight)
+			if(visible.bottom + popupHeight <= visible.windowHeight)
 				top = topDifference + visible.realHeight + 1;
 			// Drop up
 			else if(visible.top > popupHeight)
@@ -136,9 +137,9 @@ sky.service("visibleCalculator", function() {
 			/* Set position */
 			if(!middle) {
 				if(visible.windowWidth > visible.left + popupWidth)
-					left = leftDifference;
+					left = -leftDifference;
 				else
-					left = leftDifference - popupWidth + visible.width;
+					left = -leftDifference - popupWidth + visible.width;
 			} else {
 				if(win.width() > replaceOffset.left + popupWidth + visible.width)
 					left = replaceOffset.left - popupOffset.left + visible.width;
@@ -149,5 +150,6 @@ sky.service("visibleCalculator", function() {
 			return { top, left };
 			
 		}
-	}
+	};
+	this.service = Calculator;
 });

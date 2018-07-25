@@ -41,7 +41,7 @@ gulp.task('js:library', function() {
 	gulp.src([
 		'vendor/jquery.js',
 		'vendor/jquery.cookie.js',
-		'vendor/twig.js',
+		'vendor/twig.min.js',
 		'vendor/moment.js',
 		'library/main.js',
 		'library/exceptions.js',
@@ -54,7 +54,7 @@ gulp.task('js:library', function() {
 			ignore: ['vendor/moment.js']
 		}))
 		.pipe(concat('library.js'))
-		.pipe(uglify({mangle: false}))
+		// .pipe(uglify({mangle: false}))
 		.pipe(sourceMaps.write('.'))
 		.pipe(gulp.dest(paths.app.jvs));
 });
@@ -75,14 +75,14 @@ gulp.task('js:project', function() {
 		.pipe(sourceMaps.init())
 		.pipe(babel({presets: ['env']}))
 		.pipe(concat('project.js'))
-		.pipe(uglify({mangle: false}))
+		// .pipe(uglify({mangle: false}))
 		.pipe(sourceMaps.write('.'))
 		.pipe(gulp.dest(paths.app.jvs));
 
 	gulp.src(['*/*.js'], {cwd: paths.src.pages})
 		.pipe(sourceMaps.init())
 		.pipe(babel({presets: ['env']}))
-		.pipe(uglify({mangle: false}))
+		// .pipe(uglify({mangle: false}))
 		.pipe(sourceMaps.write('.'))
 		.pipe(gulp.dest(paths.app.pages));
 });

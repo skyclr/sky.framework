@@ -170,7 +170,7 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 
 	};
 
-	sky.directive('script[type="text/template"]', function(template, attrs) {
+	sky.directive('script[type="text/template"], template', function(template, attrs) {
 		Templates.add({
 			name        : attrs.id,
 			template    : template.html()

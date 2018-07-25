@@ -7,3 +7,7 @@
 @fontSize : 16px;
 @upperNameSpacing : 5px;
 @inputWidth: 250px;
+.calculateElementPadding(@font-size: 16px) {
+  padding: (@elementsUpDownPadding + (@fontSize - @font-size)/2) 0 (@elementsUpDownPadding + (@fontSize - @font-size)/2) 0;
+  font-size: @font-size;
+}
