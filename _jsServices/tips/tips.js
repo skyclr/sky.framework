@@ -15,7 +15,7 @@ sky.service("tips", ["stackList", "callbacks"], function({ stackList, callbacks 
             list.each((tip) => {
                 if(withoutAutoHide)
 					tip.hide();
-                else if(tip.autoHide && (!caller || !caller.closest(tip.tip).length && !caller.closest(tip.holder))) {
+                else if(tip.autoHide && (!caller || !caller.closest(tip.tip).length && !caller.closest(tip.holder).length)) {
 					tip.hide();
                 }
             });
