@@ -66,9 +66,8 @@ sky.directive(".selectReplaceChoose", function(popup, attrs) {
 
 	});
 
-sky.onReady(() = {
-	$(document)
-	.on("click touchstart", function(event) {
+sky.onReady(() => {
+	$(document).on("click touchstart", function(event) {
 
 		/* Get element */
 		let element = $(event.target || event.srcElement);

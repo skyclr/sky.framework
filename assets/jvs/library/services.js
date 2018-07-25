@@ -8,32 +8,32 @@
 	 */
 	let base = function(service, name) {
 
-			this.name = name;
+		this.name = name;
 
-			/** Init flag */
-			this.initialise = sky.Promise();
+		/** Init flag */
+		this.initialise = sky.Promise();
 
-			/** Options */
-			this.options = {};
+		/** Options */
+		this.options = {};
 
-			/** Service interface */
-			this.service = service || {};
+		/** Service interface */
+		this.service = service || {};
 
 		/**
 		 * Set or call init function
 		 * @param func
 		 * @param {Array} [dependencies]
 		 */
-			this.init = (func, dependencies) => {
-				if(typeof func === "function") this.initialise.done(sky.func(func, dependencies, this));
-				else this.initialise.resolve();
-				return this;
-			};
-
+		this.init = (func, dependencies) => {
+			if(typeof func === "function") this.initialise.done(sky.func(func, dependencies, this));
+			else this.initialise.resolve();
+			return this;
 		};
-	let list = { exceptions: new base(sky.exceptions) };
 
-		/**
+	};
+	let list = {exceptions: new base(sky.exceptions)};
+
+	/**
 	 * Init service
 	 * @type {{add: add}}
 	 */
@@ -47,10 +47,11 @@
 		functionServices: function(func) {
 
 			/* Get arguments list */
-			let str = func.toString();
+			let str   = func.toString(),
+				start = str.indexOf('({');
 
 			/* Check if first is services list */
-			if(str.indexOf('({') < 0) return Object.keys(list);
+			if(start < 0 || start > str.indexOf('(')) return Object.keys(list);
 
 			/* Get services */
 			let names = str.slice(str.indexOf('({') + 2, str.indexOf('}')).match(/[^\s,]+/g);
@@ -75,7 +76,9 @@
 			services = services && (services instanceof Array) ? services : this.functionServices(func);
 
 			/* Go through */
-			services.map(name => { servicesList[name] = sky.services.get(name) });
+			services.map(name => {
+				servicesList[name] = sky.services.get(name)
+			});
 
 			/* Return */
 			return func.call(context || window, servicesList);

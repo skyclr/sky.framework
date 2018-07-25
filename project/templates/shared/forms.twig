@@ -42,26 +42,23 @@
 {# Draws select replace group #}
 {% macro selectReplaceGroup(items, options) %}
 	{% for i, item in items %}
+        {% set value = item.value ? item.value : item %}
+        {% set html = item.html ? item.html : item %}
+		{% set checked = 	(not (options.selected is null) and (value == options.selected or value in options.selected)) or
+							(options.selected is null and item.checked) or
+							(not options.selected is null and item.value == options.selected) or
+							(not options.selected is null and options.selected is iterable and item.value in options.selected) or
+							(options.checkAll) %}
+        {% if i|isString and not item.value %}{% set value = i %}{% endif %}
 		<label data-event="mouseover: selectReplace.showTip; mouseout: selectReplace.hideTip">
-		{% if item.value or item.html %}
-			<input {% if options.selected is null and item.checked %}checked="checked"
-				   {% elseif not options.selected is null and item.value == options.selected %}checked="checked"
-				   {% elseif not options.selected is null and options.selected is iterable %}
-						{% if item.value in options.selected %}checked="checked"{% endif %}
-				   {% elseif options.checkAll %}checked="checked"{% endif %} type="{{ options.multiple ? 'checkbox' : 'radio' }}" name="{{ options.name }}" value="{{ item.value }}"/>
+			<input type="{{ options.multiple ? 'checkbox' : 'radio' }}"
+				   name="{{ options.name }}"
+				   value="{{ item.value }}"
+				   data-event="change: selectReplace.change" {% if checked %}checked="checked"{% endif %} />
 			<span class="name">{% if item.raw  %}{{ item.html|raw }}{%  else  %}{{ item.html }}{% endif %}</span>
 			{% if item.tip %}
-				<div class="hidden checkItemTip">
-					{{ item.tip|raw }}
-				</div>
+				<div class="hidden checkItemTip">{{ item.tip|raw }}</div>
 			{% endif %}
-		{% else %}
-			{% set value = item %}
-			{% set html = item %}
-			{% if i|isString %}{% set value = i %}{% endif %}
-			<input {% if (not (options.selected is null) and (value == options.selected or value in options.selected)) or options.checkAll %}checked="checked"{% endif %} type="{{ options.multiple ? 'checkbox' : 'radio' }}" name="{{ options.name }}" value="{{ value }}"/>
-			<span class="name">{{ html }}</span>
-		{% endif %}
 		</label>
 	{% endfor %}
 {% endmacro %}

@@ -1,0 +1,123 @@
+@import "../library/library";
+.selectReplace {
+  overflow      : hidden !important;
+  cursor        : pointer;
+  white-space   : nowrap;
+  background    : white;
+  //background    : white url(../img/icons/input.png) 100% -30px no-repeat !important;
+  width         : auto !important;
+  min-width     : 226px;
+  padding-right : 30px  !important;
+  &.single {
+    background-position : 100% 0;
+  }
+  &.half {
+    min-width : 120px;
+  }
+  &:hover {
+    text-decoration   : none;
+    -webkit-animation : none;
+    animation         : none;
+  }
+}
+
+.selectReplaceChoose {
+  display    : none;
+  box-shadow : 0 0 10px rgba(0, 0, 0, 0.4);
+  background : white;
+  position   : absolute;
+  z-index    : 3000;
+  .groups {
+    overflow   : auto;
+    overflow-y: scroll;
+    max-height : 500px;
+  }
+  .group {
+    overflow : auto;
+  }
+  .search {
+    overflow   : hidden;
+    padding    : 10px;
+    background : #eee;
+    float      : none;
+    span {
+      color     : black;
+      padding   : 8px 8px 8px 7px;
+      overflow  : hidden;
+      display   : block;
+      float     : left;
+      font-size : 14px;
+    }
+    input {
+      width : 150px;
+    }
+  }
+  .column {
+    &:last-of-type {
+      border: none;
+    }
+    border-right: 1px solid #eee;
+    float : left;
+    vertical-align : top;
+  }
+  label {
+    margin  : 0;
+    padding : 8px;
+    cursor  : pointer;
+    &:hover {
+      background : #eee;
+    }
+  }
+  input[type=checkbox] {
+    margin  : 3px 8px 0 0;
+    display : block;
+    float   : left;
+  }
+  .name {
+    color       : black !important;
+    //float       : none;
+    white-space : nowrap;
+    overflow    : hidden;
+    padding     : 0 !important;
+    .icon, .fa {
+      float        : right;
+      padding-left : 5px;
+    }
+  }
+  &.single {
+    label {
+      &.selected {
+        background : @library_colors_base;
+        cursor     : default;
+        span.name {
+          color : white !important;
+        }
+      }
+    }
+    input {
+      display : none;
+    }
+    .search input {
+      display : block;
+    }
+  }
+  .footer {
+    padding    : 10px;
+    font-size  : 12px;
+    border-top : 1px solid #eee;
+    .button {
+      float: none;
+      display: none;
+    }
+    a {
+      padding-right : 10px;
+    }
+  }
+}
+
+.checkItemTip {
+  position   : absolute;
+  background : #ffffff;
+  padding    : 15px;
+  box-shadow : 0 0 10px rgba(0, 0, 0, 0.4);
+}
