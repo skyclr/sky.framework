@@ -28,7 +28,9 @@ sky.action("selectReplace", function({ visibleCalculator }) {
             }));
 
         /* Hide */
-        for(let input of inputs) {
+        inputs.each((_, input) => {
+
+        	input = $(input);
 
             if(input.parent().hasClass('hidden'))
                 return;
@@ -40,7 +42,7 @@ sky.action("selectReplace", function({ visibleCalculator }) {
                 else input.parent().show();
             } catch(e) {}
 
-        }
+        });
     };
 
     return {

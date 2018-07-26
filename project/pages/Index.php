@@ -16,6 +16,7 @@ class index extends BasePage {
 	 * Page creation method
 	 */
 	function main() {
+		\sky\Info::success("Sky framework works, good job!");
 		$this->renderContent();
 	}
 }

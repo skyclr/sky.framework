@@ -23,7 +23,7 @@ class PagesControllersManager extends PagesControllersManagerBase {
 	 * List of pages available without auth
 	 * @var array
 	 */
-	public $authPages = [''];
+	public $authPages = [];
 
 	/**
 	 * Make page and resolve addresses

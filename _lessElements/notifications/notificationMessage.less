@@ -1,11 +1,11 @@
 @import "../fontAwesome/variables";
+
 .notificationMessage {
   background    : #ffdfdf;
   color         : #661f1f;
   margin-bottom : 1px;
   font-size     : 14px;
-  border-left   : 60px solid #ebb2b2;
-  min-height    : 60px;
+  border-left   : 56px solid #ebb2b2;
   overflow      : visible;
   b {
     text-align  : left;
@@ -16,35 +16,32 @@
   &::before {
     font-family : "FontAwesome", sans-serif;
     content     : @fa-var-times-circle;
-    font-size   : 40px;
-    height      : 40px;
-    width       : 40px;
-    text-align  : center;
-    display     : block;
-    float       : left;
-    //position    : absolute;
-    margin-left : -60px;
-    padding     : 10px;
-    color       : #faecec;
+    font-size: 37px;
+    line-height: 40px;
+    width: 56px;
+    margin-left: -56px;
+    text-align: center;
+    display: block;
+    position: absolute;
+    padding: 8px 0 0;
+    color: #faecec;
   }
   &.notice {
-    border-color : #eea915;
+    border-color : #dec17b;
     background   : #f8e9ce;
     color        : #b18a2d;
     &::before {
-      content    : @fa-var-warning;
-      color      : #f8e9ce;
-      background : #dec17b;
+      content : @fa-var-warning;
+      color   : #f8e9ce;
     }
   }
   &.good, &.success {
-    border-color : #daf2d9;
+    border-color : #9dcc83;
     background   : #e9f2e2;
     color        : #318311;
     &::before {
-      content    : @fa-var-check-circle;
-      color      : #e9f2e2;
-      background : #9dcc83;
+      content : @fa-var-check-circle;
+      color   : #e9f2e2;
     }
   }
 }

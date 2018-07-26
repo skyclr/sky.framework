@@ -4170,7 +4170,7 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 			data = jQuery.extend(true, data, { globals: this.globals });
 
 			/* Render */
-			var temp = $('<div/>').append(twig({ data: text }).render(data));
+			var temp = $('<div/>').append(Twig.twig({ data: text }).render(data));
 
 			/* Parse directives */
 			if (!noDirectives) directives.parse(temp);
@@ -4203,7 +4203,7 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 			this.load(name);
 
 			/* Compile */
-			var compiled = twig({ id: name, data: templatesList[name] });
+			var compiled = Twig.twig({ id: name, data: templatesList[name] });
 
 			/* Check */
 			if (!compiled) throw new exceptions.system.Error('Error during compiling template "' + name + '"');
@@ -5566,37 +5566,18 @@ sky.action("selectReplace", function (_ref) {
         }));
 
         /* Hide */
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
+        inputs.each(function (_, input) {
 
-        try {
-            for (var _iterator = inputs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                var input = _step.value;
+            input = $(input);
 
+            if (input.parent().hasClass('hidden')) return;
 
-                if (input.parent().hasClass('hidden')) return;
+            var inputHtml = input.next().html().toLowerCase();
 
-                var inputHtml = input.next().html().toLowerCase();
-
-                try {
-                    if (!inputHtml.match(expression) && !inputHtml.match(expressionInvert)) input.parent().hide();else input.parent().show();
-                } catch (e) {}
-            }
-        } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
-        } finally {
             try {
-                if (!_iteratorNormalCompletion && _iterator.return) {
-                    _iterator.return();
-                }
-            } finally {
-                if (_didIteratorError) {
-                    throw _iteratorError;
-                }
-            }
-        }
+                if (!inputHtml.match(expression) && !inputHtml.match(expressionInvert)) input.parent().hide();else input.parent().show();
+            } catch (e) {}
+        });
     };
 
     return {

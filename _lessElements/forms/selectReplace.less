@@ -26,6 +26,9 @@
   overflow      : auto;
   &.single {
     label {
+      &:hover {
+        background : #eee;
+      }
       &.selected {
         background : @library_colors_interactive;
         cursor     : default;
@@ -42,6 +45,7 @@
     }
     .groups {
       padding-top: 0 !important;
+      background: #fff;
     }
     .groups .name {
       padding-left  : 15px !important;
@@ -68,7 +72,6 @@
     overflow-y : scroll;
     max-height : 500px;
     display    : flex;
-    padding-top: 10px;
     label {
       padding  : 10px;
       position : relative;
@@ -97,9 +100,6 @@
       margin     : 5px 0 0 0;
       padding    : 8px;
       cursor     : pointer;
-      &:hover {
-        background : #eeeeee;
-      }
     }
     input[type=checkbox] + .name::before {
       width: 14px;

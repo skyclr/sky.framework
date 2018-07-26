@@ -1,30 +1,38 @@
 {% extends "/shared/basePage.twig" %}
 {% import "shared/forms.twig" as forms %}
+{% import "shared/elements.twig" as elements %}
 
 {% block content %}
 	<div class="logo"></div>
-	<h1>
-		Sky framework works, good job! <br>
-	</h1>
 
-	<form action="" style="background: #fff;border-radius: 10px; margin: 25px;" data-event="submit: page.submit">
-		<fieldset class="">
-			<div class="label">
-				<span class="name">Select example</span>
-				{{ forms.selectReplace({ name: 'text', multiple: true, search: true }, [
-					{ value: 1, html: "First" },
-					{ value: 2, html: "Second" },
-				]) }}
-				<span class="desc">example description</span>
-			</div>
+	<div style="max-width: 300px;margin: auto;">
+	<!-- Output page information -->
+    {% for message in resultMessages %}
+        {{ elements.resultMessage(message) }}
+    {% endfor %}
+	</div>
+	{% if preferences.authenticate.use %}
+	<form action="" method="post" style="background: #fff;border-radius: 10px; margin: 25px auto;width: 250px;" data-event="submit: shared.validForm">
+		<input type="hidden" name="action" value="login">
+		<fieldset class="upper">
+			<label>
+				<span class="name">Login</span>
+				<input type="text" name="username" value="{{ post.username }}" data-validate="required">
+			</label>
+			<label>
+				<span class="name">Password</span>
+				<input type="password" name="password" data-validate="required">
+			</label>
 		</fieldset>
 		<fieldset class="submit">
 			<input type="submit" class="button">
 		</fieldset>
 	</form>
-	<span class="info">Database: {{ preferences.database.use ? "Yes" : "No" }}</span>
-	<span class="info">Auth: {{ preferences.authentication.use ? "Yes" : "No" }}</span>
+	{% endif %}
+	<a href="#" class="button" data-event="click: page.submit">Modal example</a>
 	<a href="/manage" class="button">Entity builder</a>
+	<span class="info">Database: {{ preferences.database.use ? "Yes" : "No" }}</span>
+	<span class="info">Auth: {{ preferences.authenticate.use ? "Yes" : "No" }}</span>
 	<template id="page-window">
 		<form action="">
 			<h2>Test form</h2>
@@ -48,6 +56,11 @@
 						<span class="desc">another example description</span>
 					</div>
 				{% endverbatim %}
+				<label>
+					<span class="name">Checkboxes</span>
+					<input type="checkbox">
+					<span class="desc">Yes i want em</span>
+				</label>
 			</fieldset>
 			<fieldset class="submit">
 				<input type="submit" class="button">

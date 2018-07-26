@@ -1,7 +1,7 @@
 {# Some elements #}
 {% macro resultMessage(message, id = false) %}
 	<div class="notificationMessage {{ message.type }} {{ message.subtext ? "" : "oneLine" }}" {% if id %}id="{{ id }}"{% endif %}>
-		<b>{{ message.text|raw }}</b>
+		<b>{{ message.text|raw }}&nbsp;</b>
 		{{ message.subtext ? message.subtext|raw : "" }}
 	</div>
 {% endmacro %}

@@ -91,7 +91,7 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 			data = jQuery.extend(true, data, { globals: this.globals });
 
 			/* Render */
-			let temp = $('<div/>').append(twig({ data: text }).render(data));
+			let temp = $('<div/>').append(Twig.twig({ data: text }).render(data));
 
 			/* Parse directives */
 			if(!noDirectives)
@@ -127,7 +127,7 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 			this.load(name);
 
 			/* Compile */
-			let compiled = twig({ id: name, data: templatesList[name] });
+			let compiled = Twig.twig({ id: name, data: templatesList[name] });
 
 			/* Check */
 			if(!compiled)

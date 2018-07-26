@@ -252,7 +252,7 @@ class Sky {
 			# Init authentication
 			if($type !== "console" && !empty(self::$config["authenticate"])  && (!isset(self::$config["authenticate"]["use"]) || self::$config["authenticate"]["use"] !== false)) {
 				$auth = Auth::get(self::$config['authenticate']["table"], self::$config['authenticate']["preferences"]);
-				$auth->action(Vars::type());
+				$auth->action(Vars::action());
 			}
 		}
 

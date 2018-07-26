@@ -105,32 +105,32 @@ class Vars {
     }
 
 	/**
-	 * Returns POST or GET type variable
-	 * @param array|bool $availableTypes is set search type value in this array and return false on no entry
-	 * @return string|bool String of type or may return FALSE if no set or not in array
+	 * Returns POST or GET action variable
+	 * @param array|bool $availableActions is set search action value in this array and return false on no entry
+	 * @return string|bool String of action or may return FALSE if no set or not in array
 	 */
-    public static function type($availableTypes = false) {
+    public static function action($availableActions = false) {
 
 		# If no get
-		if (!isset($_GET['type'])) {
+		if (!isset($_GET['action'])) {
 			
 			# The we'll search post
-            if (isset($_POST['type'])) $type = $_POST['type'];
-            else $type = false;
+            if (isset($_POST['action'])) $action = $_POST['action'];
+            else $action = false;
         }
-        else $type = $_GET['type'];
+        else $action = $_GET['action'];
 
 		# If no correction
-        if ($availableTypes === false) 
-			return $type;
+        if ($availableActions === false)
+			return $action;
 
         # If AT not an array
-        if (!is_array($availableTypes) && $type == $availableTypes) 
-			return $type;
+        if (!is_array($availableActions) && $action == $availableActions)
+			return $action;
 
 		# If in array
-        if(in_array($type, $availableTypes)) 
-			return $type;
+        if(in_array($action, $availableActions))
+			return $action;
 
         # If no match
         return false;

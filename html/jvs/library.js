@@ -2407,1863 +2407,1778 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-/**
- * Twig.js 0.8.3
- *
- * @copyright 2011-2015 John Roepke and the Twig.js Contributors
- * @license   Available under the BSD 2-Clause License
- * @link      https://github.com/justjohn/twig.js
- */
-var Twig = function (Twig) {
-  Twig.VERSION = "0.8.4";return Twig;
-}(Twig || {});var Twig = function (Twig) {
-  "use strict";
-  Twig.trace = false;Twig.debug = false;Twig.cache = true;Twig.placeholders = { parent: "{{|PARENT|}}" };Twig.indexOf = function (arr, searchElement) {
-    if (Array.prototype.hasOwnProperty("indexOf")) {
-      return arr.indexOf(searchElement);
-    }if (arr === void 0 || arr === null) {
-      throw new TypeError();
-    }var t = Object(arr);var len = t.length >>> 0;if (len === 0) {
-      return -1;
-    }var n = 0;if (arguments.length > 0) {
-      n = Number(arguments[1]);if (n !== n) {
-        n = 0;
-      } else if (n !== 0 && n !== Infinity && n !== -Infinity) {
-        n = (n > 0 || -1) * Math.floor(Math.abs(n));
-      }
-    }if (n >= len) {
-      return -1;
-    }var k = n >= 0 ? n : Math.max(len - Math.abs(n), 0);for (; k < len; k++) {
-      if (k in t && t[k] === searchElement) {
-        return k;
-      }
-    }if (arr == searchElement) {
-      return 0;
-    }return -1;
-  };Twig.forEach = function (arr, callback, thisArg) {
-    if (Array.prototype.forEach) {
-      return arr.forEach(callback, thisArg);
-    }var T, k;if (arr == null) {
-      throw new TypeError(" this is null or not defined");
-    }var O = Object(arr);var len = O.length >>> 0;if ({}.toString.call(callback) != "[object Function]") {
-      throw new TypeError(callback + " is not a function");
-    }if (thisArg) {
-      T = thisArg;
-    }k = 0;while (k < len) {
-      var kValue;if (k in O) {
-        kValue = O[k];callback.call(T, kValue, k, O);
-      }k++;
-    }
-  };Twig.merge = function (target, source, onlyChanged) {
-    Twig.forEach(Object.keys(source), function (key) {
-      if (onlyChanged && !(key in target)) {
-        return;
-      }target[key] = source[key];
-    });return target;
-  };Twig.Error = function (message) {
-    this.message = message;this.name = "TwigException";this.type = "TwigException";
-  };Twig.Error.prototype.toString = function () {
-    var output = this.name + ": " + this.message;return output;
-  };Twig.log = { trace: function trace() {
-      if (Twig.trace && console) {
-        console.log(Array.prototype.slice.call(arguments));
-      }
-    }, debug: function debug() {
-      if (Twig.debug && console) {
-        console.log(Array.prototype.slice.call(arguments));
-      }
-    } };if (typeof console !== "undefined") {
-    if (typeof console.error !== "undefined") {
-      Twig.log.error = function () {
-        console.error.apply(console, arguments);
-      };
-    } else if (typeof console.log !== "undefined") {
-      Twig.log.error = function () {
-        console.log.apply(console, arguments);
-      };
-    }
-  } else {
-    Twig.log.error = function () {};
-  }Twig.ChildContext = function (context) {
-    var ChildContext = function ChildContext() {};ChildContext.prototype = context;return new ChildContext();
-  };Twig.token = {};Twig.token.type = { output: "output", logic: "logic", comment: "comment", raw: "raw" };Twig.token.definitions = [{ type: Twig.token.type.raw, open: "{% raw %}", close: "{% endraw %}" }, { type: Twig.token.type.raw, open: "{% verbatim %}", close: "{% endverbatim %}" }, { type: Twig.token.type.output, open: "{{", close: "}}" }, { type: Twig.token.type.logic, open: "{%", close: "%}" }, { type: Twig.token.type.comment, open: "{#", close: "#}" }];Twig.token.strings = ['"', "'"];Twig.token.findStart = function (template) {
-    var output = { position: null, def: null },
-        i,
-        token_template,
-        first_key_position;for (i = 0; i < Twig.token.definitions.length; i++) {
-      token_template = Twig.token.definitions[i];first_key_position = template.indexOf(token_template.open);Twig.log.trace("Twig.token.findStart: ", "Searching for ", token_template.open, " found at ", first_key_position);if (first_key_position >= 0 && (output.position === null || first_key_position < output.position)) {
-        output.position = first_key_position;output.def = token_template;
-      }
-    }return output;
-  };Twig.token.findEnd = function (template, token_def, start) {
-    var end = null,
-        found = false,
-        offset = 0,
-        str_pos = null,
-        str_found = null,
-        pos = null,
-        end_offset = null,
-        this_str_pos = null,
-        end_str_pos = null,
-        i,
-        l;while (!found) {
-      str_pos = null;str_found = null;pos = template.indexOf(token_def.close, offset);if (pos >= 0) {
-        end = pos;found = true;
-      } else {
-        throw new Twig.Error("Unable to find closing bracket '" + token_def.close + "'" + " opened near template position " + start);
-      }if (token_def.type === Twig.token.type.comment) {
-        break;
-      }l = Twig.token.strings.length;for (i = 0; i < l; i += 1) {
-        this_str_pos = template.indexOf(Twig.token.strings[i], offset);if (this_str_pos > 0 && this_str_pos < pos && (str_pos === null || this_str_pos < str_pos)) {
-          str_pos = this_str_pos;str_found = Twig.token.strings[i];
-        }
-      }if (str_pos !== null) {
-        end_offset = str_pos + 1;end = null;found = false;while (true) {
-          end_str_pos = template.indexOf(str_found, end_offset);if (end_str_pos < 0) {
-            throw "Unclosed string in template";
-          }if (template.substr(end_str_pos - 1, 1) !== "\\") {
-            offset = end_str_pos + 1;break;
-          } else {
-            end_offset = end_str_pos + 1;
-          }
-        }
-      }
-    }return end;
-  };Twig.tokenize = function (template) {
-    var tokens = [],
-        error_offset = 0,
-        found_token = null,
-        end = null;while (template.length > 0) {
-      found_token = Twig.token.findStart(template);Twig.log.trace("Twig.tokenize: ", "Found token: ", found_token);if (found_token.position !== null) {
-        if (found_token.position > 0) {
-          tokens.push({ type: Twig.token.type.raw, value: template.substring(0, found_token.position) });
-        }template = template.substr(found_token.position + found_token.def.open.length);error_offset += found_token.position + found_token.def.open.length;end = Twig.token.findEnd(template, found_token.def, error_offset);Twig.log.trace("Twig.tokenize: ", "Token ends at ", end);tokens.push({ type: found_token.def.type, value: template.substring(0, end).trim() });if (found_token.def.type === "logic" && template.substr(end + found_token.def.close.length, 1) === "\n") {
-          end += 1;
-        }template = template.substr(end + found_token.def.close.length);error_offset += end + found_token.def.close.length;
-      } else {
-        tokens.push({ type: Twig.token.type.raw, value: template });template = "";
-      }
-    }return tokens;
-  };Twig.compile = function (tokens) {
-    try {
-      var output = [],
-          stack = [],
-          intermediate_output = [],
-          token = null,
-          logic_token = null,
-          unclosed_token = null,
-          prev_token = null,
-          prev_template = null,
-          tok_output = null,
-          type = null,
-          open = null,
-          next = null;while (tokens.length > 0) {
-        token = tokens.shift();Twig.log.trace("Compiling token ", token);switch (token.type) {case Twig.token.type.raw:
-            if (stack.length > 0) {
-              intermediate_output.push(token);
-            } else {
-              output.push(token);
-            }break;case Twig.token.type.logic:
-            logic_token = Twig.logic.compile.apply(this, [token]);type = logic_token.type;open = Twig.logic.handler[type].open;next = Twig.logic.handler[type].next;Twig.log.trace("Twig.compile: ", "Compiled logic token to ", logic_token, " next is: ", next, " open is : ", open);if (open !== undefined && !open) {
-              prev_token = stack.pop();prev_template = Twig.logic.handler[prev_token.type];if (Twig.indexOf(prev_template.next, type) < 0) {
-                throw new Error(type + " not expected after a " + prev_token.type);
-              }prev_token.output = prev_token.output || [];prev_token.output = prev_token.output.concat(intermediate_output);intermediate_output = [];tok_output = { type: Twig.token.type.logic, token: prev_token };if (stack.length > 0) {
-                intermediate_output.push(tok_output);
-              } else {
-                output.push(tok_output);
-              }
-            }if (next !== undefined && next.length > 0) {
-              Twig.log.trace("Twig.compile: ", "Pushing ", logic_token, " to logic stack.");if (stack.length > 0) {
-                prev_token = stack.pop();prev_token.output = prev_token.output || [];prev_token.output = prev_token.output.concat(intermediate_output);stack.push(prev_token);intermediate_output = [];
-              }stack.push(logic_token);
-            } else if (open !== undefined && open) {
-              tok_output = { type: Twig.token.type.logic, token: logic_token };if (stack.length > 0) {
-                intermediate_output.push(tok_output);
-              } else {
-                output.push(tok_output);
-              }
-            }break;case Twig.token.type.comment:
-            break;case Twig.token.type.output:
-            Twig.expression.compile.apply(this, [token]);if (stack.length > 0) {
-              intermediate_output.push(token);
-            } else {
-              output.push(token);
-            }break;}Twig.log.trace("Twig.compile: ", " Output: ", output, " Logic Stack: ", stack, " Pending Output: ", intermediate_output);
-      }if (stack.length > 0) {
-        unclosed_token = stack.pop();throw new Error("Unable to find an end tag for " + unclosed_token.type + ", expecting one of " + unclosed_token.next);
-      }return output;
-    } catch (ex) {
-      Twig.log.error("Error compiling twig template " + this.id + ": " + ex.message);if (ex.stack) {
-        Twig.log.error(ex.stack);
-      } else {
-        Twig.log.error(ex.toString());
-      }if (this.options.rethrow) throw ex;
-    }
-  };Twig.parse = function (tokens, context) {
-    try {
-      var output = [],
-          chain = true,
-          that = this;Twig.forEach(tokens, function parseToken(token) {
-        Twig.log.debug("Twig.parse: ", "Parsing token: ", token);switch (token.type) {case Twig.token.type.raw:
-            output.push(Twig.filters.raw(token.value));break;case Twig.token.type.logic:
-            var logic_token = token.token,
-                logic = Twig.logic.parse.apply(that, [logic_token, context, chain]);if (logic.chain !== undefined) {
-              chain = logic.chain;
-            }if (logic.context !== undefined) {
-              context = logic.context;
-            }if (logic.output !== undefined) {
-              output.push(logic.output);
-            }break;case Twig.token.type.comment:
-            break;case Twig.token.type.output:
-            Twig.log.debug("Twig.parse: ", "Output token: ", token.stack);output.push(Twig.expression.parse.apply(that, [token.stack, context]));break;}
-      });return Twig.output.apply(this, [output]);
-    } catch (ex) {
-      Twig.log.error("Error parsing twig template " + this.id + ": " + ex.message);if (ex.stack) {
-        Twig.log.error(ex.stack);
-      } else {
-        Twig.log.error(ex.toString());
-      }if (this.options.rethrow) throw ex;if (Twig.debug) {
-        return ex.toString();
-      }
-    }
-  };Twig.prepare = function (data) {
-    var tokens, raw_tokens;Twig.log.debug("Twig.prepare: ", "Tokenizing ", data);raw_tokens = Twig.tokenize.apply(this, [data]);Twig.log.debug("Twig.prepare: ", "Compiling ", raw_tokens);tokens = Twig.compile.apply(this, [raw_tokens]);Twig.log.debug("Twig.prepare: ", "Compiled ", tokens);return tokens;
-  };Twig.output = function (output) {
-    if (!this.options.autoescape) {
-      return output.join("");
-    }var escaped_output = [];Twig.forEach(output, function (str) {
-      if (str && !str.twig_markup) {
-        str = Twig.filters.escape(str);
-      }escaped_output.push(str);
-    });return Twig.Markup(escaped_output.join(""));
-  };Twig.Templates = { registry: {} };Twig.validateId = function (id) {
-    if (id === "prototype") {
-      throw new Twig.Error(id + " is not a valid twig identifier");
-    } else if (Twig.Templates.registry.hasOwnProperty(id)) {
-      throw new Twig.Error("There is already a template with the ID " + id);
-    }return true;
-  };Twig.Templates.save = function (template) {
-    if (template.id === undefined) {
-      throw new Twig.Error("Unable to save template with no id");
-    }Twig.Templates.registry[template.id] = template;
-  };Twig.Templates.load = function (id) {
-    if (!Twig.Templates.registry.hasOwnProperty(id)) {
-      return null;
-    }return Twig.Templates.registry[id];
-  };Twig.Templates.loadRemote = function (location, params, callback, error_callback) {
-    var id = params.id,
-        method = params.method,
-        async = params.async,
-        precompiled = params.precompiled,
-        template = null;if (async === undefined) async = true;if (id === undefined) {
-      id = location;
-    }params.id = id;if (Twig.cache && Twig.Templates.registry.hasOwnProperty(id)) {
-      if (callback) {
-        callback(Twig.Templates.registry[id]);
-      }return Twig.Templates.registry[id];
-    }if (method == "ajax") {
-      if (typeof XMLHttpRequest == "undefined") {
-        throw new Twig.Error("Unsupported platform: Unable to do remote requests " + "because there is no XMLHTTPRequest implementation");
-      }var xmlhttp = new XMLHttpRequest();xmlhttp.onreadystatechange = function () {
-        var data = null;if (xmlhttp.readyState == 4) {
-          if (xmlhttp.status == 200) {
-            Twig.log.debug("Got template ", xmlhttp.responseText);if (precompiled === true) {
-              data = JSON.parse(xmlhttp.responseText);
-            } else {
-              data = xmlhttp.responseText;
-            }params.url = location;params.data = data;template = new Twig.Template(params);if (callback) {
-              callback(template);
-            }
-          } else {
-            if (error_callback) {
-              error_callback(xmlhttp);
-            }
-          }
-        }
-      };xmlhttp.open("GET", location, async);xmlhttp.send();
-    } else {
-      (function () {
-        var fs = require("fs"),
-            path = require("path"),
-            data = null,
-            loadTemplateFn = function loadTemplateFn(err, data) {
-          if (err) {
-            if (error_callback) {
-              error_callback(err);
-            }return;
-          }if (precompiled === true) {
-            data = JSON.parse(data);
-          }params.data = data;params.path = location;template = new Twig.Template(params);if (callback) {
-            callback(template);
-          }
-        };if (async === true) {
-          fs.stat(location, function (err, stats) {
-            if (err || !stats.isFile()) throw new Twig.Error("Unable to find template file " + location);fs.readFile(location, "utf8", loadTemplateFn);
-          });
-        } else {
-          if (!fs.statSync(location).isFile()) throw new Twig.Error("Unable to find template file " + location);data = fs.readFileSync(location, "utf8");loadTemplateFn(undefined, data);
-        }
-      })();
-    }if (async === false) {
-      return template;
-    } else {
-      return true;
-    }
-  };function is(type, obj) {
-    var clas = Object.prototype.toString.call(obj).slice(8, -1);return obj !== undefined && obj !== null && clas === type;
-  }Twig.Template = function (params) {
-    var data = params.data,
-        id = params.id,
-        blocks = params.blocks,
-        macros = params.macros || {},
-        base = params.base,
-        path = params.path,
-        url = params.url,
-        options = params.options;this.id = id;this.base = base;this.path = path;this.url = url;this.macros = macros;this.options = options;this.reset(blocks);if (is("String", data)) {
-      this.tokens = Twig.prepare.apply(this, [data]);
-    } else {
-      this.tokens = data;
-    }if (id !== undefined) {
-      Twig.Templates.save(this);
-    }
-  };Twig.Template.prototype.reset = function (blocks) {
-    Twig.log.debug("Twig.Template.reset", "Reseting template " + this.id);this.blocks = {};this.importedBlocks = [];this.originalBlockTokens = {};this.child = { blocks: blocks || {} };this.extend = null;
-  };Twig.Template.prototype.render = function (context, params) {
-    params = params || {};var output, url;this.context = context || {};this.reset();if (params.blocks) {
-      this.blocks = params.blocks;
-    }if (params.macros) {
-      this.macros = params.macros;
-    }output = Twig.parse.apply(this, [this.tokens, this.context]);if (this.extend) {
-      var ext_template;if (this.options.allowInlineIncludes) {
-        ext_template = Twig.Templates.load(this.extend);if (ext_template) {
-          ext_template.options = this.options;
-        }
-      }if (!ext_template) {
-        url = relativePath(this, this.extend);ext_template = Twig.Templates.loadRemote(url, { method: this.url ? "ajax" : "fs", base: this.base, async: false, id: url, options: this.options });
-      }this.parent = ext_template;return this.parent.render(this.context, { blocks: this.blocks });
-    }if (params.output == "blocks") {
-      return this.blocks;
-    } else if (params.output == "macros") {
-      return this.macros;
-    } else {
-      return output;
-    }
-  };Twig.Template.prototype.importFile = function (file) {
-    var url, sub_template;if (!this.url && !this.path && this.options.allowInlineIncludes) {
-      sub_template = Twig.Templates.load(file);sub_template.options = this.options;if (sub_template) {
-        return sub_template;
-      }throw new Twig.Error("Didn't find the inline template by id");
-    }url = relativePath(this, file);sub_template = Twig.Templates.loadRemote(url, { method: this.url ? "ajax" : "fs", base: this.base, async: false, options: this.options, id: url });return sub_template;
-  };Twig.Template.prototype.importBlocks = function (file, override) {
-    var sub_template = this.importFile(file),
-        context = this.context,
-        that = this,
-        key;override = override || false;sub_template.render(context);Twig.forEach(Object.keys(sub_template.blocks), function (key) {
-      if (override || that.blocks[key] === undefined) {
-        that.blocks[key] = sub_template.blocks[key];that.importedBlocks.push(key);
-      }
-    });
-  };Twig.Template.prototype.compile = function (options) {
-    return Twig.compiler.compile(this, options);
-  };Twig.Markup = function (content) {
-    if (typeof content === "string" && content.length > 0) {
-      content = new String(content);content.twig_markup = true;
-    }return content;
-  };function relativePath(template, file) {
-    var base,
-        base_path,
-        sep_chr = "/",
-        new_path = [],
-        val;if (template.url) {
-      if (typeof template.base !== "undefined") {
-        base = template.base + (template.base.charAt(template.base.length - 1) === "/" ? "" : "/");
-      } else {
-        base = template.url;
-      }
-    } else if (template.path) {
-      var path = require("path"),
-          sep = path.sep || sep_chr,
-          relative = new RegExp("^\\.{1,2}" + sep.replace("\\", "\\\\"));file = file.replace(/\//g, sep);if (template.base !== undefined && file.match(relative) == null) {
-        file = file.replace(template.base, "");base = template.base + sep;
-      } else {
-        base = template.path;
-      }base = base.replace(sep + sep, sep);sep_chr = sep;
-    } else {
-      throw new Twig.Error("Cannot extend an inline template.");
-    }base_path = base.split(sep_chr);base_path.pop();base_path = base_path.concat(file.split(sep_chr));while (base_path.length > 0) {
-      val = base_path.shift();if (val == ".") {} else if (val == ".." && new_path.length > 0 && new_path[new_path.length - 1] != "..") {
-        new_path.pop();
-      } else {
-        new_path.push(val);
-      }
-    }return new_path.join(sep_chr);
-  }return Twig;
-}(Twig || {});(function () {
-  "use strict";
-  if (!String.prototype.trim) {
-    String.prototype.trim = function () {
-      return this.replace(/^\s+|\s+$/g, "");
-    };
-  }if (!Object.keys) Object.keys = function (o) {
-    if (o !== Object(o)) {
-      throw new TypeError("Object.keys called on non-object");
-    }var ret = [],
-        p;for (p in o) {
-      if (Object.prototype.hasOwnProperty.call(o, p)) ret.push(p);
-    }return ret;
-  };
-})();var Twig = function (Twig) {
-  Twig.lib = {};var sprintfLib = function () {
-    var re = { not_string: /[^s]/, number: /[diefg]/, json: /[j]/, not_json: /[^j]/, text: /^[^\x25]+/, modulo: /^\x25{2}/, placeholder: /^\x25(?:([1-9]\d*)\$|\(([^\)]+)\))?(\+)?(0|'[^$])?(-)?(\d+)?(?:\.(\d+))?([b-gijosuxX])/, key: /^([a-z_][a-z_\d]*)/i, key_access: /^\.([a-z_][a-z_\d]*)/i, index_access: /^\[(\d+)\]/, sign: /^[\+\-]/ };function sprintf() {
-      var key = arguments[0],
-          cache = sprintf.cache;if (!(cache[key] && cache.hasOwnProperty(key))) {
-        cache[key] = sprintf.parse(key);
-      }return sprintf.format.call(null, cache[key], arguments);
-    }sprintf.format = function (parse_tree, argv) {
-      var cursor = 1,
-          tree_length = parse_tree.length,
-          node_type = "",
-          arg,
-          output = [],
-          i,
-          k,
-          match,
-          pad,
-          pad_character,
-          pad_length,
-          is_positive = true,
-          sign = "";for (i = 0; i < tree_length; i++) {
-        node_type = get_type(parse_tree[i]);if (node_type === "string") {
-          output[output.length] = parse_tree[i];
-        } else if (node_type === "array") {
-          match = parse_tree[i];if (match[2]) {
-            arg = argv[cursor];for (k = 0; k < match[2].length; k++) {
-              if (!arg.hasOwnProperty(match[2][k])) {
-                throw new Error(sprintf("[sprintf] property '%s' does not exist", match[2][k]));
-              }arg = arg[match[2][k]];
-            }
-          } else if (match[1]) {
-            arg = argv[match[1]];
-          } else {
-            arg = argv[cursor++];
-          }if (get_type(arg) == "function") {
-            arg = arg();
-          }if (re.not_string.test(match[8]) && re.not_json.test(match[8]) && get_type(arg) != "number" && isNaN(arg)) {
-            throw new TypeError(sprintf("[sprintf] expecting number but found %s", get_type(arg)));
-          }if (re.number.test(match[8])) {
-            is_positive = arg >= 0;
-          }switch (match[8]) {case "b":
-              arg = arg.toString(2);break;case "c":
-              arg = String.fromCharCode(arg);break;case "d":case "i":
-              arg = parseInt(arg, 10);break;case "j":
-              arg = JSON.stringify(arg, null, match[6] ? parseInt(match[6]) : 0);break;case "e":
-              arg = match[7] ? arg.toExponential(match[7]) : arg.toExponential();break;case "f":
-              arg = match[7] ? parseFloat(arg).toFixed(match[7]) : parseFloat(arg);break;case "g":
-              arg = match[7] ? parseFloat(arg).toPrecision(match[7]) : parseFloat(arg);break;case "o":
-              arg = arg.toString(8);break;case "s":
-              arg = (arg = String(arg)) && match[7] ? arg.substring(0, match[7]) : arg;break;case "u":
-              arg = arg >>> 0;break;case "x":
-              arg = arg.toString(16);break;case "X":
-              arg = arg.toString(16).toUpperCase();break;}if (re.json.test(match[8])) {
-            output[output.length] = arg;
-          } else {
-            if (re.number.test(match[8]) && (!is_positive || match[3])) {
-              sign = is_positive ? "+" : "-";arg = arg.toString().replace(re.sign, "");
-            } else {
-              sign = "";
-            }pad_character = match[4] ? match[4] === "0" ? "0" : match[4].charAt(1) : " ";pad_length = match[6] - (sign + arg).length;pad = match[6] ? pad_length > 0 ? str_repeat(pad_character, pad_length) : "" : "";output[output.length] = match[5] ? sign + arg + pad : pad_character === "0" ? sign + pad + arg : pad + sign + arg;
-          }
-        }
-      }return output.join("");
-    };sprintf.cache = {};sprintf.parse = function (fmt) {
-      var _fmt = fmt,
-          match = [],
-          parse_tree = [],
-          arg_names = 0;while (_fmt) {
-        if ((match = re.text.exec(_fmt)) !== null) {
-          parse_tree[parse_tree.length] = match[0];
-        } else if ((match = re.modulo.exec(_fmt)) !== null) {
-          parse_tree[parse_tree.length] = "%";
-        } else if ((match = re.placeholder.exec(_fmt)) !== null) {
-          if (match[2]) {
-            arg_names |= 1;var field_list = [],
-                replacement_field = match[2],
-                field_match = [];if ((field_match = re.key.exec(replacement_field)) !== null) {
-              field_list[field_list.length] = field_match[1];while ((replacement_field = replacement_field.substring(field_match[0].length)) !== "") {
-                if ((field_match = re.key_access.exec(replacement_field)) !== null) {
-                  field_list[field_list.length] = field_match[1];
-                } else if ((field_match = re.index_access.exec(replacement_field)) !== null) {
-                  field_list[field_list.length] = field_match[1];
-                } else {
-                  throw new SyntaxError("[sprintf] failed to parse named argument key");
-                }
-              }
-            } else {
-              throw new SyntaxError("[sprintf] failed to parse named argument key");
-            }match[2] = field_list;
-          } else {
-            arg_names |= 2;
-          }if (arg_names === 3) {
-            throw new Error("[sprintf] mixing positional and named placeholders is not (yet) supported");
-          }parse_tree[parse_tree.length] = match;
-        } else {
-          throw new SyntaxError("[sprintf] unexpected placeholder");
-        }_fmt = _fmt.substring(match[0].length);
-      }return parse_tree;
-    };var vsprintf = function vsprintf(fmt, argv, _argv) {
-      _argv = (argv || []).slice(0);_argv.splice(0, 0, fmt);return sprintf.apply(null, _argv);
-    };function get_type(variable) {
-      return Object.prototype.toString.call(variable).slice(8, -1).toLowerCase();
-    }function str_repeat(input, multiplier) {
-      return Array(multiplier + 1).join(input);
-    }return { sprintf: sprintf, vsprintf: vsprintf };
-  }();var sprintf = sprintfLib.sprintf;var vsprintf = sprintfLib.vsprintf;Twig.lib.sprintf = sprintf;Twig.lib.vsprintf = vsprintf;(function () {
-    var shortDays = "Sun,Mon,Tue,Wed,Thu,Fri,Sat".split(",");var fullDays = "Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday".split(",");var shortMonths = "Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec".split(",");var fullMonths = "January,February,March,April,May,June,July,August,September,October,November,December".split(",");function getOrdinalFor(intNum) {
-      return (intNum = Math.abs(intNum) % 100) % 10 == 1 && intNum != 11 ? "st" : intNum % 10 == 2 && intNum != 12 ? "nd" : intNum % 10 == 3 && intNum != 13 ? "rd" : "th";
-    }function getISO8601Year(aDate) {
-      var d = new Date(aDate.getFullYear() + 1, 0, 4);if ((d - aDate) / 864e5 < 7 && (aDate.getDay() + 6) % 7 < (d.getDay() + 6) % 7) return d.getFullYear();if (aDate.getMonth() > 0 || aDate.getDate() >= 4) return aDate.getFullYear();return aDate.getFullYear() - ((aDate.getDay() + 6) % 7 - aDate.getDate() > 2 ? 1 : 0);
-    }function getISO8601Week(aDate) {
-      var d = new Date(getISO8601Year(aDate), 0, 4);d.setDate(d.getDate() - (d.getDay() + 6) % 7);return parseInt((aDate - d) / 6048e5) + 1;
-    }Twig.lib.formatDate = function (date, format) {
-      if (typeof format !== "string" || /^\s*$/.test(format)) return date + "";var jan1st = new Date(date.getFullYear(), 0, 1);var me = date;return format.replace(/[dDjlNSwzWFmMntLoYyaABgGhHisuU]/g, function (option) {
-        switch (option) {case "d":
-            return ("0" + me.getDate()).replace(/^.+(..)$/, "$1");case "D":
-            return shortDays[me.getDay()];case "j":
-            return me.getDate();case "l":
-            return fullDays[me.getDay()];case "N":
-            return (me.getDay() + 6) % 7 + 1;case "S":
-            return getOrdinalFor(me.getDate());case "w":
-            return me.getDay();case "z":
-            return Math.ceil((jan1st - me) / 864e5);case "W":
-            return ("0" + getISO8601Week(me)).replace(/^.(..)$/, "$1");case "F":
-            return fullMonths[me.getMonth()];case "m":
-            return ("0" + (me.getMonth() + 1)).replace(/^.+(..)$/, "$1");case "M":
-            return shortMonths[me.getMonth()];case "n":
-            return me.getMonth() + 1;case "t":
-            return new Date(me.getFullYear(), me.getMonth() + 1, -1).getDate();case "L":
-            return new Date(me.getFullYear(), 1, 29).getDate() == 29 ? 1 : 0;case "o":
-            return getISO8601Year(me);case "Y":
-            return me.getFullYear();case "y":
-            return (me.getFullYear() + "").replace(/^.+(..)$/, "$1");case "a":
-            return me.getHours() < 12 ? "am" : "pm";case "A":
-            return me.getHours() < 12 ? "AM" : "PM";case "B":
-            return Math.floor(((me.getUTCHours() + 1) % 24 + me.getUTCMinutes() / 60 + me.getUTCSeconds() / 3600) * 1e3 / 24);case "g":
-            return me.getHours() % 12 != 0 ? me.getHours() % 12 : 12;case "G":
-            return me.getHours();case "h":
-            return ("0" + (me.getHours() % 12 != 0 ? me.getHours() % 12 : 12)).replace(/^.+(..)$/, "$1");case "H":
-            return ("0" + me.getHours()).replace(/^.+(..)$/, "$1");case "i":
-            return ("0" + me.getMinutes()).replace(/^.+(..)$/, "$1");case "s":
-            return ("0" + me.getSeconds()).replace(/^.+(..)$/, "$1");case "u":
-            return me.getMilliseconds();case "U":
-            return me.getTime() / 1e3;}
-      });
-    };
-  })();Twig.lib.strip_tags = function (input, allowed) {
-    allowed = (((allowed || "") + "").toLowerCase().match(/<[a-z][a-z0-9]*>/g) || []).join("");var tags = /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi,
-        commentsAndPhpTags = /<!--[\s\S]*?-->|<\?(?:php)?[\s\S]*?\?>/gi;return input.replace(commentsAndPhpTags, "").replace(tags, function ($0, $1) {
-      return allowed.indexOf("<" + $1.toLowerCase() + ">") > -1 ? $0 : "";
-    });
-  };Twig.lib.parseISO8601Date = function (s) {
-    var re = /(\d{4})-(\d\d)-(\d\d)T(\d\d):(\d\d):(\d\d)(\.\d+)?(Z|([+-])(\d\d):(\d\d))/;var d = [];d = s.match(re);if (!d) {
-      throw "Couldn't parse ISO 8601 date string '" + s + "'";
-    }var a = [1, 2, 3, 4, 5, 6, 10, 11];for (var i in a) {
-      d[a[i]] = parseInt(d[a[i]], 10);
-    }d[7] = parseFloat(d[7]);var ms = Date.UTC(d[1], d[2] - 1, d[3], d[4], d[5], d[6]);if (d[7] > 0) {
-      ms += Math.round(d[7] * 1e3);
-    }if (d[8] != "Z" && d[10]) {
-      var offset = d[10] * 60 * 60 * 1e3;if (d[11]) {
-        offset += d[11] * 60 * 1e3;
-      }if (d[9] == "-") {
-        ms -= offset;
-      } else {
-        ms += offset;
-      }
-    }return new Date(ms);
-  };Twig.lib.strtotime = function (text, now) {
-    var parsed,
-        match,
-        today,
-        year,
-        date,
-        days,
-        ranges,
-        len,
-        times,
-        regex,
-        i,
-        fail = false;if (!text) {
-      return fail;
-    }text = text.replace(/^\s+|\s+$/g, "").replace(/\s{2,}/g, " ").replace(/[\t\r\n]/g, "").toLowerCase();match = text.match(/^(\d{1,4})([\-\.\/\:])(\d{1,2})([\-\.\/\:])(\d{1,4})(?:\s(\d{1,2}):(\d{2})?:?(\d{2})?)?(?:\s([A-Z]+)?)?$/);if (match && match[2] === match[4]) {
-      if (match[1] > 1901) {
-        switch (match[2]) {case "-":
-            {
-              if (match[3] > 12 || match[5] > 31) {
-                return fail;
-              }return new Date(match[1], parseInt(match[3], 10) - 1, match[5], match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1e3;
-            }case ".":
-            {
-              return fail;
-            }case "/":
-            {
-              if (match[3] > 12 || match[5] > 31) {
-                return fail;
-              }return new Date(match[1], parseInt(match[3], 10) - 1, match[5], match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1e3;
-            }}
-      } else if (match[5] > 1901) {
-        switch (match[2]) {case "-":
-            {
-              if (match[3] > 12 || match[1] > 31) {
-                return fail;
-              }return new Date(match[5], parseInt(match[3], 10) - 1, match[1], match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1e3;
-            }case ".":
-            {
-              if (match[3] > 12 || match[1] > 31) {
-                return fail;
-              }return new Date(match[5], parseInt(match[3], 10) - 1, match[1], match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1e3;
-            }case "/":
-            {
-              if (match[1] > 12 || match[3] > 31) {
-                return fail;
-              }return new Date(match[5], parseInt(match[1], 10) - 1, match[3], match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1e3;
-            }}
-      } else {
-        switch (match[2]) {case "-":
-            {
-              if (match[3] > 12 || match[5] > 31 || match[1] < 70 && match[1] > 38) {
-                return fail;
-              }year = match[1] >= 0 && match[1] <= 38 ? +match[1] + 2e3 : match[1];return new Date(year, parseInt(match[3], 10) - 1, match[5], match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1e3;
-            }case ".":
-            {
-              if (match[5] >= 70) {
-                if (match[3] > 12 || match[1] > 31) {
-                  return fail;
-                }return new Date(match[5], parseInt(match[3], 10) - 1, match[1], match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1e3;
-              }if (match[5] < 60 && !match[6]) {
-                if (match[1] > 23 || match[3] > 59) {
-                  return fail;
-                }today = new Date();return new Date(today.getFullYear(), today.getMonth(), today.getDate(), match[1] || 0, match[3] || 0, match[5] || 0, match[9] || 0) / 1e3;
-              }return fail;
-            }case "/":
-            {
-              if (match[1] > 12 || match[3] > 31 || match[5] < 70 && match[5] > 38) {
-                return fail;
-              }year = match[5] >= 0 && match[5] <= 38 ? +match[5] + 2e3 : match[5];return new Date(year, parseInt(match[1], 10) - 1, match[3], match[6] || 0, match[7] || 0, match[8] || 0, match[9] || 0) / 1e3;
-            }case ":":
-            {
-              if (match[1] > 23 || match[3] > 59 || match[5] > 59) {
-                return fail;
-              }today = new Date();return new Date(today.getFullYear(), today.getMonth(), today.getDate(), match[1] || 0, match[3] || 0, match[5] || 0) / 1e3;
-            }}
-      }
-    }if (text === "now") {
-      return now === null || isNaN(now) ? new Date().getTime() / 1e3 | 0 : now | 0;
-    }if (!isNaN(parsed = Date.parse(text))) {
-      return parsed / 1e3 | 0;
-    }date = now ? new Date(now * 1e3) : new Date();days = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 };ranges = { yea: "FullYear", mon: "Month", day: "Date", hou: "Hours", min: "Minutes", sec: "Seconds" };function lastNext(type, range, modifier) {
-      var diff,
-          day = days[range];if (typeof day !== "undefined") {
-        diff = day - date.getDay();if (diff === 0) {
-          diff = 7 * modifier;
-        } else if (diff > 0 && type === "last") {
-          diff -= 7;
-        } else if (diff < 0 && type === "next") {
-          diff += 7;
-        }date.setDate(date.getDate() + diff);
-      }
-    }function process(val) {
-      var splt = val.split(" "),
-          type = splt[0],
-          range = splt[1].substring(0, 3),
-          typeIsNumber = /\d+/.test(type),
-          ago = splt[2] === "ago",
-          num = (type === "last" ? -1 : 1) * (ago ? -1 : 1);if (typeIsNumber) {
-        num *= parseInt(type, 10);
-      }if (ranges.hasOwnProperty(range) && !splt[1].match(/^mon(day|\.)?$/i)) {
-        return date["set" + ranges[range]](date["get" + ranges[range]]() + num);
-      }if (range === "wee") {
-        return date.setDate(date.getDate() + num * 7);
-      }if (type === "next" || type === "last") {
-        lastNext(type, range, num);
-      } else if (!typeIsNumber) {
-        return false;
-      }return true;
-    }times = "(years?|months?|weeks?|days?|hours?|minutes?|min|seconds?|sec" + "|sunday|sun\\.?|monday|mon\\.?|tuesday|tue\\.?|wednesday|wed\\.?" + "|thursday|thu\\.?|friday|fri\\.?|saturday|sat\\.?)";regex = "([+-]?\\d+\\s" + times + "|" + "(last|next)\\s" + times + ")(\\sago)?";match = text.match(new RegExp(regex, "gi"));if (!match) {
-      return fail;
-    }for (i = 0, len = match.length; i < len; i++) {
-      if (!process(match[i])) {
-        return fail;
-      }
-    }return date.getTime() / 1e3;
-  };Twig.lib.is = function (type, obj) {
-    var clas = Object.prototype.toString.call(obj).slice(8, -1);return obj !== undefined && obj !== null && clas === type;
-  };Twig.lib.copy = function (src) {
-    var target = {},
-        key;for (key in src) {
-      target[key] = src[key];
-    }return target;
-  };Twig.lib.replaceAll = function (string, search, replace) {
-    return string.split(search).join(replace);
-  };Twig.lib.chunkArray = function (arr, size) {
-    var returnVal = [],
-        x = 0,
-        len = arr.length;if (size < 1 || !Twig.lib.is("Array", arr)) {
-      return [];
-    }while (x < len) {
-      returnVal.push(arr.slice(x, x += size));
-    }return returnVal;
-  };Twig.lib.round = function round(value, precision, mode) {
-    var m, f, isHalf, sgn;precision |= 0;m = Math.pow(10, precision);value *= m;sgn = value > 0 | -(value < 0);isHalf = value % 1 === .5 * sgn;f = Math.floor(value);if (isHalf) {
-      switch (mode) {case "PHP_ROUND_HALF_DOWN":
-          value = f + (sgn < 0);break;case "PHP_ROUND_HALF_EVEN":
-          value = f + f % 2 * sgn;break;case "PHP_ROUND_HALF_ODD":
-          value = f + !(f % 2);break;default:
-          value = f + (sgn > 0);}
-    }return (isHalf ? value : Math.round(value)) / m;
-  };return Twig;
-}(Twig || {});var Twig = function (Twig) {
-  "use strict";
-  Twig.logic = {};Twig.logic.type = { if_: "Twig.logic.type.if", endif: "Twig.logic.type.endif", for_: "Twig.logic.type.for", endfor: "Twig.logic.type.endfor", else_: "Twig.logic.type.else", elseif: "Twig.logic.type.elseif", set: "Twig.logic.type.set", setcapture: "Twig.logic.type.setcapture", endset: "Twig.logic.type.endset", filter: "Twig.logic.type.filter", endfilter: "Twig.logic.type.endfilter", block: "Twig.logic.type.block", endblock: "Twig.logic.type.endblock", extends_: "Twig.logic.type.extends", use: "Twig.logic.type.use", include: "Twig.logic.type.include", spaceless: "Twig.logic.type.spaceless", endspaceless: "Twig.logic.type.endspaceless", macro: "Twig.logic.type.macro", endmacro: "Twig.logic.type.endmacro", import_: "Twig.logic.type.import", from: "Twig.logic.type.from", embed: "Twig.logic.type.embed", endembed: "Twig.logic.type.endembed" };Twig.logic.definitions = [{ type: Twig.logic.type.if_, regex: /^if\s+([\s\S]+)$/, next: [Twig.logic.type.else_, Twig.logic.type.elseif, Twig.logic.type.endif], open: true, compile: function compile(token) {
-      var expression = token.match[1];token.stack = Twig.expression.compile.apply(this, [{ type: Twig.expression.type.expression, value: expression }]).stack;delete token.match;return token;
-    }, parse: function parse(token, context, chain) {
-      var output = "",
-          result = Twig.expression.parse.apply(this, [token.stack, context]);chain = true;if (result) {
-        chain = false;output = Twig.parse.apply(this, [token.output, context]);
-      }return { chain: chain, output: output };
-    } }, { type: Twig.logic.type.elseif, regex: /^elseif\s+([^\s].*)$/, next: [Twig.logic.type.else_, Twig.logic.type.elseif, Twig.logic.type.endif], open: false, compile: function compile(token) {
-      var expression = token.match[1];token.stack = Twig.expression.compile.apply(this, [{ type: Twig.expression.type.expression, value: expression }]).stack;delete token.match;return token;
-    }, parse: function parse(token, context, chain) {
-      var output = "";if (chain && Twig.expression.parse.apply(this, [token.stack, context]) === true) {
-        chain = false;output = Twig.parse.apply(this, [token.output, context]);
-      }return { chain: chain, output: output };
-    } }, { type: Twig.logic.type.else_, regex: /^else$/, next: [Twig.logic.type.endif, Twig.logic.type.endfor], open: false, parse: function parse(token, context, chain) {
-      var output = "";if (chain) {
-        output = Twig.parse.apply(this, [token.output, context]);
-      }return { chain: chain, output: output };
-    } }, { type: Twig.logic.type.endif, regex: /^endif$/, next: [], open: false }, { type: Twig.logic.type.for_, regex: /^for\s+([a-zA-Z0-9_,\s]+)\s+in\s+([^\s].*?)(?:\s+if\s+([^\s].*))?$/, next: [Twig.logic.type.else_, Twig.logic.type.endfor], open: true, compile: function compile(token) {
-      var key_value = token.match[1],
-          expression = token.match[2],
-          conditional = token.match[3],
-          kv_split = null;token.key_var = null;token.value_var = null;if (key_value.indexOf(",") >= 0) {
-        kv_split = key_value.split(",");if (kv_split.length === 2) {
-          token.key_var = kv_split[0].trim();token.value_var = kv_split[1].trim();
-        } else {
-          throw new Twig.Error("Invalid expression in for loop: " + key_value);
-        }
-      } else {
-        token.value_var = key_value;
-      }token.expression = Twig.expression.compile.apply(this, [{ type: Twig.expression.type.expression, value: expression }]).stack;if (conditional) {
-        token.conditional = Twig.expression.compile.apply(this, [{ type: Twig.expression.type.expression, value: conditional }]).stack;
-      }delete token.match;return token;
-    }, parse: function parse(token, context, continue_chain) {
-      var result = Twig.expression.parse.apply(this, [token.expression, context]),
-          output = [],
-          len,
-          index = 0,
-          keyset,
-          that = this,
-          conditional = token.conditional,
-          buildLoop = function buildLoop(index, len) {
-        var isConditional = conditional !== undefined;return { index: index + 1, index0: index, revindex: isConditional ? undefined : len - index, revindex0: isConditional ? undefined : len - index - 1, first: index === 0, last: isConditional ? undefined : index === len - 1, length: isConditional ? undefined : len, parent: context };
-      },
-          loop = function loop(key, value) {
-        var inner_context = Twig.ChildContext(context);inner_context[token.value_var] = value;if (token.key_var) {
-          inner_context[token.key_var] = key;
-        }inner_context.loop = buildLoop(index, len);if (conditional === undefined || Twig.expression.parse.apply(that, [conditional, inner_context])) {
-          output.push(Twig.parse.apply(that, [token.output, inner_context]));
-          index += 1;
-        }delete inner_context["loop"];delete inner_context[token.value_var];delete inner_context[token.key_var];Twig.merge(context, inner_context, true);
-      };if (Twig.lib.is("Array", result)) {
-        len = result.length;Twig.forEach(result, function (value) {
-          var key = index;loop(key, value);
-        });
-      } else if (Twig.lib.is("Object", result)) {
-        if (result._keys !== undefined) {
-          keyset = result._keys;
-        } else {
-          keyset = Object.keys(result);
-        }len = keyset.length;Twig.forEach(keyset, function (key) {
-          if (key === "_keys") return;loop(key, result[key]);
-        });
-      }continue_chain = output.length === 0;return { chain: continue_chain, output: Twig.output.apply(this, [output]) };
-    } }, { type: Twig.logic.type.endfor, regex: /^endfor$/, next: [], open: false }, { type: Twig.logic.type.set, regex: /^set\s+([a-zA-Z0-9_,\s]+)\s*=\s*([\s\S]+)$/, next: [], open: true, compile: function compile(token) {
-      var key = token.match[1].trim(),
-          expression = token.match[2],
-          expression_stack = Twig.expression.compile.apply(this, [{ type: Twig.expression.type.expression, value: expression }]).stack;token.key = key;token.expression = expression_stack;delete token.match;return token;
-    }, parse: function parse(token, context, continue_chain) {
-      var value = Twig.expression.parse.apply(this, [token.expression, context]),
-          key = token.key;context[key] = value;return { chain: continue_chain, context: context };
-    } }, { type: Twig.logic.type.setcapture, regex: /^set\s+([a-zA-Z0-9_,\s]+)$/, next: [Twig.logic.type.endset], open: true, compile: function compile(token) {
-      var key = token.match[1].trim();token.key = key;delete token.match;return token;
-    }, parse: function parse(token, context, continue_chain) {
-      var value = Twig.parse.apply(this, [token.output, context]),
-          key = token.key;this.context[key] = value;context[key] = value;return { chain: continue_chain, context: context };
-    } }, { type: Twig.logic.type.endset, regex: /^endset$/, next: [], open: false }, { type: Twig.logic.type.filter, regex: /^filter\s+(.+)$/, next: [Twig.logic.type.endfilter], open: true, compile: function compile(token) {
-      var expression = "|" + token.match[1].trim();token.stack = Twig.expression.compile.apply(this, [{ type: Twig.expression.type.expression, value: expression }]).stack;delete token.match;return token;
-    }, parse: function parse(token, context, chain) {
-      var unfiltered = Twig.parse.apply(this, [token.output, context]),
-          stack = [{ type: Twig.expression.type.string, value: unfiltered }].concat(token.stack);var output = Twig.expression.parse.apply(this, [stack, context]);return { chain: chain, output: output };
-    } }, { type: Twig.logic.type.endfilter, regex: /^endfilter$/, next: [], open: false }, { type: Twig.logic.type.block, regex: /^block\s+([a-zA-Z0-9_]+)$/, next: [Twig.logic.type.endblock], open: true, compile: function compile(token) {
-      token.block = token.match[1].trim();delete token.match;return token;
-    }, parse: function parse(token, context, chain) {
-      var block_output = "",
-          output = "",
-          isImported = this.importedBlocks.indexOf(token.block) > -1,
-          hasParent = this.blocks[token.block] && this.blocks[token.block].indexOf(Twig.placeholders.parent) > -1;if (this.blocks[token.block] === undefined || isImported || hasParent || context.loop || token.overwrite) {
-        block_output = Twig.expression.parse.apply(this, [{ type: Twig.expression.type.string, value: Twig.parse.apply(this, [token.output, context]) }, context]);if (isImported) {
-          this.importedBlocks.splice(this.importedBlocks.indexOf(token.block), 1);
-        }if (hasParent) {
-          this.blocks[token.block] = Twig.Markup(this.blocks[token.block].replace(Twig.placeholders.parent, block_output));
-        } else {
-          this.blocks[token.block] = block_output;
-        }this.originalBlockTokens[token.block] = { type: token.type, block: token.block, output: token.output, overwrite: true };
-      }if (this.child.blocks[token.block]) {
-        output = this.child.blocks[token.block];
-      } else {
-        output = this.blocks[token.block];
-      }return { chain: chain, output: output };
-    } }, { type: Twig.logic.type.endblock, regex: /^endblock(?:\s+([a-zA-Z0-9_]+))?$/, next: [], open: false }, { type: Twig.logic.type.extends_, regex: /^extends\s+(.+)$/, next: [], open: true, compile: function compile(token) {
-      var expression = token.match[1].trim();delete token.match;token.stack = Twig.expression.compile.apply(this, [{ type: Twig.expression.type.expression, value: expression }]).stack;return token;
-    }, parse: function parse(token, context, chain) {
-      var file = Twig.expression.parse.apply(this, [token.stack, context]);this.extend = file;return { chain: chain, output: "" };
-    } }, { type: Twig.logic.type.use, regex: /^use\s+(.+)$/, next: [], open: true, compile: function compile(token) {
-      var expression = token.match[1].trim();delete token.match;token.stack = Twig.expression.compile.apply(this, [{ type: Twig.expression.type.expression, value: expression }]).stack;return token;
-    }, parse: function parse(token, context, chain) {
-      var file = Twig.expression.parse.apply(this, [token.stack, context]);this.importBlocks(file);return { chain: chain, output: "" };
-    } }, { type: Twig.logic.type.include, regex: /^include\s+(ignore missing\s+)?(.+?)\s*(?:with\s+([\S\s]+?))?\s*(only)?$/, next: [], open: true, compile: function compile(token) {
-      var match = token.match,
-          includeMissing = match[1] !== undefined,
-          expression = match[2].trim(),
-          withContext = match[3],
-          only = match[4] !== undefined && match[4].length;delete token.match;token.only = only;token.includeMissing = includeMissing;token.stack = Twig.expression.compile.apply(this, [{ type: Twig.expression.type.expression, value: expression }]).stack;if (withContext !== undefined) {
-        token.withStack = Twig.expression.compile.apply(this, [{ type: Twig.expression.type.expression, value: withContext.trim() }]).stack;
-      }return token;
-    }, parse: function parse(token, context, chain) {
-      var innerContext = {},
-          withContext,
-          i,
-          template;if (!token.only) {
-        innerContext = Twig.ChildContext(context);
-      }if (token.withStack !== undefined) {
-        withContext = Twig.expression.parse.apply(this, [token.withStack, context]);for (i in withContext) {
-          if (withContext.hasOwnProperty(i)) innerContext[i] = withContext[i];
-        }
-      }var file = Twig.expression.parse.apply(this, [token.stack, innerContext]);if (file instanceof Twig.Template) {
-        template = file;
-      } else {
-        template = this.importFile(file);
-      }return { chain: chain, output: template.render(innerContext) };
-    } }, { type: Twig.logic.type.spaceless, regex: /^spaceless$/, next: [Twig.logic.type.endspaceless], open: true, parse: function parse(token, context, chain) {
-      var unfiltered = Twig.parse.apply(this, [token.output, context]),
-          rBetweenTagSpaces = />\s+</g,
-          output = unfiltered.replace(rBetweenTagSpaces, "><").trim();return { chain: chain, output: output };
-    } }, { type: Twig.logic.type.endspaceless, regex: /^endspaceless$/, next: [], open: false }, { type: Twig.logic.type.macro, regex: /^macro\s+([a-zA-Z0-9_]+)\s*\(\s*((?:[a-zA-Z0-9_]+(?:,\s*)?)*)\s*\)$/, next: [Twig.logic.type.endmacro], open: true, compile: function compile(token) {
-      var macroName = token.match[1],
-          parameters = token.match[2].split(/[\s,]+/);for (var i = 0; i < parameters.length; i++) {
-        for (var j = 0; j < parameters.length; j++) {
-          if (parameters[i] === parameters[j] && i !== j) {
-            throw new Twig.Error("Duplicate arguments for parameter: " + parameters[i]);
-          }
-        }
-      }token.macroName = macroName;token.parameters = parameters;delete token.match;return token;
-    }, parse: function parse(token, context, chain) {
-      var template = this;this.macros[token.macroName] = function () {
-        var macroContext = { _self: template.macros };for (var i = 0; i < token.parameters.length; i++) {
-          var prop = token.parameters[i];if (typeof arguments[i] !== "undefined") {
-            macroContext[prop] = arguments[i];
-          } else {
-            macroContext[prop] = undefined;
-          }
-        }return Twig.parse.apply(template, [token.output, macroContext]);
-      };return { chain: chain, output: "" };
-    } }, { type: Twig.logic.type.endmacro, regex: /^endmacro$/, next: [], open: false }, { type: Twig.logic.type.import_, regex: /^import\s+(.+)\s+as\s+([a-zA-Z0-9_]+)$/, next: [], open: true, compile: function compile(token) {
-      var expression = token.match[1].trim(),
-          contextName = token.match[2].trim();delete token.match;token.expression = expression;token.contextName = contextName;token.stack = Twig.expression.compile.apply(this, [{ type: Twig.expression.type.expression, value: expression }]).stack;return token;
-    }, parse: function parse(token, context, chain) {
-      if (token.expression !== "_self") {
-        var file = Twig.expression.parse.apply(this, [token.stack, context]);var template = this.importFile(file || token.expression);context[token.contextName] = template.render({}, { output: "macros" });
-      } else {
-        context[token.contextName] = this.macros;
-      }return { chain: chain, output: "" };
-    } }, { type: Twig.logic.type.from, regex: /^from\s+(.+)\s+import\s+([a-zA-Z0-9_, ]+)$/, next: [], open: true, compile: function compile(token) {
-      var expression = token.match[1].trim(),
-          macroExpressions = token.match[2].trim().split(/[ ,]+/),
-          macroNames = {};for (var i = 0; i < macroExpressions.length; i++) {
-        var res = macroExpressions[i];var macroMatch = res.match(/^([a-zA-Z0-9_]+)\s+(.+)\s+as\s+([a-zA-Z0-9_]+)$/);if (macroMatch) {
-          macroNames[macroMatch[1].trim()] = macroMatch[2].trim();
-        } else if (res.match(/^([a-zA-Z0-9_]+)$/)) {
-          macroNames[res] = res;
-        } else {}
-      }delete token.match;token.expression = expression;token.macroNames = macroNames;token.stack = Twig.expression.compile.apply(this, [{ type: Twig.expression.type.expression, value: expression }]).stack;return token;
-    }, parse: function parse(token, context, chain) {
-      var macros;if (token.expression !== "_self") {
-        var file = Twig.expression.parse.apply(this, [token.stack, context]);var template = this.importFile(file || token.expression);macros = template.render({}, { output: "macros" });
-      } else {
-        macros = this.macros;
-      }for (var macroName in token.macroNames) {
-        if (macros.hasOwnProperty(macroName)) {
-          context[token.macroNames[macroName]] = macros[macroName];
-        }
-      }return { chain: chain, output: "" };
-    } }, { type: Twig.logic.type.embed, regex: /^embed\s+(ignore missing\s+)?(.+?)\s*(?:with\s+(.+?))?\s*(only)?$/, next: [Twig.logic.type.endembed], open: true, compile: function compile(token) {
-      var match = token.match,
-          includeMissing = match[1] !== undefined,
-          expression = match[2].trim(),
-          withContext = match[3],
-          only = match[4] !== undefined && match[4].length;delete token.match;token.only = only;token.includeMissing = includeMissing;token.stack = Twig.expression.compile.apply(this, [{ type: Twig.expression.type.expression, value: expression }]).stack;if (withContext !== undefined) {
-        token.withStack = Twig.expression.compile.apply(this, [{ type: Twig.expression.type.expression, value: withContext.trim() }]).stack;
-      }return token;
-    }, parse: function parse(token, context, chain) {
-      var innerContext = {},
-          withContext,
-          i,
-          template;if (!token.only) {
-        for (i in context) {
-          if (context.hasOwnProperty(i)) innerContext[i] = context[i];
-        }
-      }if (token.withStack !== undefined) {
-        withContext = Twig.expression.parse.apply(this, [token.withStack, context]);for (i in withContext) {
-          if (withContext.hasOwnProperty(i)) innerContext[i] = withContext[i];
-        }
-      }var file = Twig.expression.parse.apply(this, [token.stack, innerContext]);if (file instanceof Twig.Template) {
-        template = file;
-      } else {
-        template = this.importFile(file);
-      }this.blocks = {};var output = Twig.parse.apply(this, [token.output, innerContext]);return { chain: chain, output: template.render(innerContext, { blocks: this.blocks }) };
-    } }, { type: Twig.logic.type.endembed, regex: /^endembed$/, next: [], open: false }];Twig.logic.handler = {};Twig.logic.extendType = function (type, value) {
-    value = value || "Twig.logic.type" + type;Twig.logic.type[type] = value;
-  };Twig.logic.extend = function (definition) {
-    if (!definition.type) {
-      throw new Twig.Error("Unable to extend logic definition. No type provided for " + definition);
-    } else {
-      Twig.logic.extendType(definition.type);
-    }Twig.logic.handler[definition.type] = definition;
-  };while (Twig.logic.definitions.length > 0) {
-    Twig.logic.extend(Twig.logic.definitions.shift());
-  }Twig.logic.compile = function (raw_token) {
-    var expression = raw_token.value.trim(),
-        token = Twig.logic.tokenize.apply(this, [expression]),
-        token_template = Twig.logic.handler[token.type];if (token_template.compile) {
-      token = token_template.compile.apply(this, [token]);Twig.log.trace("Twig.logic.compile: ", "Compiled logic token to ", token);
-    }return token;
-  };Twig.logic.tokenize = function (expression) {
-    var token = {},
-        token_template_type = null,
-        token_type = null,
-        token_regex = null,
-        regex_array = null,
-        regex = null,
-        match = null;expression = expression.trim();for (token_template_type in Twig.logic.handler) {
-      if (Twig.logic.handler.hasOwnProperty(token_template_type)) {
-        token_type = Twig.logic.handler[token_template_type].type;token_regex = Twig.logic.handler[token_template_type].regex;regex_array = [];if (token_regex instanceof Array) {
-          regex_array = token_regex;
-        } else {
-          regex_array.push(token_regex);
-        }while (regex_array.length > 0) {
-          regex = regex_array.shift();match = regex.exec(expression.trim());if (match !== null) {
-            token.type = token_type;token.match = match;Twig.log.trace("Twig.logic.tokenize: ", "Matched a ", token_type, " regular expression of ", match);return token;
-          }
-        }
-      }
-    }throw new Twig.Error("Unable to parse '" + expression.trim() + "'");
-  };Twig.logic.parse = function (token, context, chain) {
-    var output = "",
-        token_template;context = context || {};Twig.log.debug("Twig.logic.parse: ", "Parsing logic token ", token);token_template = Twig.logic.handler[token.type];if (token_template.parse) {
-      output = token_template.parse.apply(this, [token, context, chain]);
-    }return output;
-  };return Twig;
-}(Twig || {});var Twig = function (Twig) {
-  "use strict";
-  Twig.expression = {};Twig.expression.reservedWords = ["true", "false", "null", "TRUE", "FALSE", "NULL", "_context"];Twig.expression.type = { comma: "Twig.expression.type.comma", operator: { unary: "Twig.expression.type.operator.unary", binary: "Twig.expression.type.operator.binary" }, string: "Twig.expression.type.string", bool: "Twig.expression.type.bool", array: { start: "Twig.expression.type.array.start", end: "Twig.expression.type.array.end" }, object: { start: "Twig.expression.type.object.start", end: "Twig.expression.type.object.end" }, parameter: { start: "Twig.expression.type.parameter.start", end: "Twig.expression.type.parameter.end" }, key: { period: "Twig.expression.type.key.period", brackets: "Twig.expression.type.key.brackets" }, filter: "Twig.expression.type.filter", _function: "Twig.expression.type._function", variable: "Twig.expression.type.variable", number: "Twig.expression.type.number", _null: "Twig.expression.type.null", context: "Twig.expression.type.context", test: "Twig.expression.type.test" };Twig.expression.set = { operations: [Twig.expression.type.filter, Twig.expression.type.operator.unary, Twig.expression.type.operator.binary, Twig.expression.type.array.end, Twig.expression.type.object.end, Twig.expression.type.parameter.end, Twig.expression.type.comma, Twig.expression.type.test], expressions: [Twig.expression.type._function, Twig.expression.type.bool, Twig.expression.type.string, Twig.expression.type.variable, Twig.expression.type.number, Twig.expression.type._null, Twig.expression.type.context, Twig.expression.type.parameter.start, Twig.expression.type.array.start, Twig.expression.type.object.start] };Twig.expression.set.operations_extended = Twig.expression.set.operations.concat([Twig.expression.type.key.period, Twig.expression.type.key.brackets]);Twig.expression.fn = { compile: { push: function push(token, stack, output) {
-        output.push(token);
-      }, push_both: function push_both(token, stack, output) {
-        output.push(token);stack.push(token);
-      } }, parse: { push: function push(token, stack, context) {
-        stack.push(token);
-      }, push_value: function push_value(token, stack, context) {
-        stack.push(token.value);
-      } } };Twig.expression.definitions = [{ type: Twig.expression.type.test, regex: /^is\s+(not)?\s*([a-zA-Z_][a-zA-Z0-9_]*)/, next: Twig.expression.set.operations.concat([Twig.expression.type.parameter.start]), compile: function compile(token, stack, output) {
-      token.filter = token.match[2];token.modifier = token.match[1];delete token.match;delete token.value;output.push(token);
-    }, parse: function parse(token, stack, context) {
-      var value = stack.pop(),
-          params = token.params && Twig.expression.parse.apply(this, [token.params, context]),
-          result = Twig.test(token.filter, value, params);if (token.modifier == "not") {
-        stack.push(!result);
-      } else {
-        stack.push(result);
-      }
-    } }, { type: Twig.expression.type.comma, regex: /^,/, next: Twig.expression.set.expressions.concat([Twig.expression.type.array.end, Twig.expression.type.object.end]), compile: function compile(token, stack, output) {
-      var i = stack.length - 1,
-          stack_token;delete token.match;delete token.value;for (; i >= 0; i--) {
-        stack_token = stack.pop();if (stack_token.type === Twig.expression.type.object.start || stack_token.type === Twig.expression.type.parameter.start || stack_token.type === Twig.expression.type.array.start) {
-          stack.push(stack_token);break;
-        }output.push(stack_token);
-      }output.push(token);
-    } }, { type: Twig.expression.type.operator.binary, regex: /(^[\+\-~%\?\:]|^[!=]==?|^[!<>]=?|^\*\*?|^\/\/?|^and\s+|^or\s+|^in\s+|^not in\s+|^\.\.)/, next: Twig.expression.set.expressions.concat([Twig.expression.type.operator.unary]), compile: function compile(token, stack, output) {
-      delete token.match;token.value = token.value.trim();var value = token.value,
-          operator = Twig.expression.operator.lookup(value, token);Twig.log.trace("Twig.expression.compile: ", "Operator: ", operator, " from ", value);while (stack.length > 0 && (stack[stack.length - 1].type == Twig.expression.type.operator.unary || stack[stack.length - 1].type == Twig.expression.type.operator.binary) && (operator.associativity === Twig.expression.operator.leftToRight && operator.precidence >= stack[stack.length - 1].precidence || operator.associativity === Twig.expression.operator.rightToLeft && operator.precidence > stack[stack.length - 1].precidence)) {
-        var temp = stack.pop();output.push(temp);
-      }if (value === ":") {
-        if (stack[stack.length - 1] && stack[stack.length - 1].value === "?") {} else {
-          var key_token = output.pop();if (key_token.type === Twig.expression.type.string || key_token.type === Twig.expression.type.variable || key_token.type === Twig.expression.type.number) {
-            token.key = key_token.value;
-          } else {
-            throw new Twig.Error("Unexpected value before ':' of " + key_token.type + " = " + key_token.value);
-          }output.push(token);return;
-        }
-      } else {
-        stack.push(operator);
-      }
-    }, parse: function parse(token, stack, context) {
-      if (token.key) {
-        stack.push(token);
-      } else {
-        Twig.expression.operator.parse(token.value, stack);
-      }
-    } }, { type: Twig.expression.type.operator.unary, regex: /(^not\s+)/, next: Twig.expression.set.expressions, compile: function compile(token, stack, output) {
-      delete token.match;token.value = token.value.trim();var value = token.value,
-          operator = Twig.expression.operator.lookup(value, token);Twig.log.trace("Twig.expression.compile: ", "Operator: ", operator, " from ", value);while (stack.length > 0 && (stack[stack.length - 1].type == Twig.expression.type.operator.unary || stack[stack.length - 1].type == Twig.expression.type.operator.binary) && (operator.associativity === Twig.expression.operator.leftToRight && operator.precidence >= stack[stack.length - 1].precidence || operator.associativity === Twig.expression.operator.rightToLeft && operator.precidence > stack[stack.length - 1].precidence)) {
-        var temp = stack.pop();output.push(temp);
-      }stack.push(operator);
-    }, parse: function parse(token, stack, context) {
-      Twig.expression.operator.parse(token.value, stack);
-    } }, { type: Twig.expression.type.string, regex: /^(["'])(?:(?=(\\?))\2[\s\S])*?\1/, next: Twig.expression.set.operations, compile: function compile(token, stack, output) {
-      var value = token.value;delete token.match;if (value.substring(0, 1) === '"') {
-        value = value.replace('\\"', '"');
-      } else {
-        value = value.replace("\\'", "'");
-      }token.value = value.substring(1, value.length - 1).replace(/\\n/g, "\n").replace(/\\r/g, "\r");Twig.log.trace("Twig.expression.compile: ", "String value: ", token.value);output.push(token);
-    }, parse: Twig.expression.fn.parse.push_value }, { type: Twig.expression.type.parameter.start, regex: /^\(/, next: Twig.expression.set.expressions.concat([Twig.expression.type.parameter.end]), compile: Twig.expression.fn.compile.push_both, parse: Twig.expression.fn.parse.push }, { type: Twig.expression.type.parameter.end, regex: /^\)/, next: Twig.expression.set.operations_extended, compile: function compile(token, stack, output) {
-      var stack_token,
-          end_token = token;stack_token = stack.pop();while (stack.length > 0 && stack_token.type != Twig.expression.type.parameter.start) {
-        output.push(stack_token);stack_token = stack.pop();
-      }var param_stack = [];while (token.type !== Twig.expression.type.parameter.start) {
-        param_stack.unshift(token);token = output.pop();
-      }param_stack.unshift(token);var is_expression = false;token = output[output.length - 1];if (token === undefined || token.type !== Twig.expression.type._function && token.type !== Twig.expression.type.filter && token.type !== Twig.expression.type.test && token.type !== Twig.expression.type.key.brackets && token.type !== Twig.expression.type.key.period) {
-        end_token.expression = true;param_stack.pop();param_stack.shift();end_token.params = param_stack;output.push(end_token);
-      } else {
-        end_token.expression = false;token.params = param_stack;
-      }
-    }, parse: function parse(token, stack, context) {
-      var new_array = [],
-          array_ended = false,
-          value = null;if (token.expression) {
-        value = Twig.expression.parse.apply(this, [token.params, context]);stack.push(value);
-      } else {
-        while (stack.length > 0) {
-          value = stack.pop();if (value && value.type && value.type == Twig.expression.type.parameter.start) {
-            array_ended = true;break;
-          }new_array.unshift(value);
-        }if (!array_ended) {
-          throw new Twig.Error("Expected end of parameter set.");
-        }stack.push(new_array);
-      }
-    } }, { type: Twig.expression.type.array.start, regex: /^\[/, next: Twig.expression.set.expressions.concat([Twig.expression.type.array.end]), compile: Twig.expression.fn.compile.push_both, parse: Twig.expression.fn.parse.push }, { type: Twig.expression.type.array.end, regex: /^\]/, next: Twig.expression.set.operations_extended, compile: function compile(token, stack, output) {
-      var i = stack.length - 1,
-          stack_token;for (; i >= 0; i--) {
-        stack_token = stack.pop();if (stack_token.type === Twig.expression.type.array.start) {
-          break;
-        }output.push(stack_token);
-      }output.push(token);
-    }, parse: function parse(token, stack, context) {
-      var new_array = [],
-          array_ended = false,
-          value = null;while (stack.length > 0) {
-        value = stack.pop();if (value.type && value.type == Twig.expression.type.array.start) {
-          array_ended = true;break;
-        }new_array.unshift(value);
-      }if (!array_ended) {
-        throw new Twig.Error("Expected end of array.");
-      }stack.push(new_array);
-    } }, { type: Twig.expression.type.object.start, regex: /^\{/, next: Twig.expression.set.expressions.concat([Twig.expression.type.object.end]), compile: Twig.expression.fn.compile.push_both, parse: Twig.expression.fn.parse.push }, { type: Twig.expression.type.object.end, regex: /^\}/, next: Twig.expression.set.operations_extended, compile: function compile(token, stack, output) {
-      var i = stack.length - 1,
-          stack_token;for (; i >= 0; i--) {
-        stack_token = stack.pop();if (stack_token && stack_token.type === Twig.expression.type.object.start) {
-          break;
-        }output.push(stack_token);
-      }output.push(token);
-    }, parse: function parse(end_token, stack, context) {
-      var new_object = {},
-          object_ended = false,
-          token = null,
-          token_key = null,
-          has_value = false,
-          value = null;while (stack.length > 0) {
-        token = stack.pop();if (token && token.type && token.type === Twig.expression.type.object.start) {
-          object_ended = true;break;
-        }if (token && token.type && (token.type === Twig.expression.type.operator.binary || token.type === Twig.expression.type.operator.unary) && token.key) {
-          if (!has_value) {
-            throw new Twig.Error("Missing value for key '" + token.key + "' in object definition.");
-          }new_object[token.key] = value;if (new_object._keys === undefined) new_object._keys = [];new_object._keys.unshift(token.key);value = null;has_value = false;
-        } else {
-          has_value = true;value = token;
-        }
-      }if (!object_ended) {
-        throw new Twig.Error("Unexpected end of object.");
-      }stack.push(new_object);
-    } }, { type: Twig.expression.type.filter, regex: /^\|\s?([a-zA-Z_][a-zA-Z0-9_\-]*)/, next: Twig.expression.set.operations_extended.concat([Twig.expression.type.parameter.start]), compile: function compile(token, stack, output) {
-      token.value = token.match[1];output.push(token);
-    }, parse: function parse(token, stack, context) {
-      var input = stack.pop(),
-          params = token.params && Twig.expression.parse.apply(this, [token.params, context]);stack.push(Twig.filter.apply(this, [token.value, input, params]));
-    } }, { type: Twig.expression.type._function, regex: /^([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/, next: Twig.expression.type.parameter.start, transform: function transform(match, tokens) {
-      return "(";
-    }, compile: function compile(token, stack, output) {
-      var fn = token.match[1];token.fn = fn;delete token.match;delete token.value;output.push(token);
-    }, parse: function parse(token, stack, context) {
-      var params = token.params && Twig.expression.parse.apply(this, [token.params, context]),
-          fn = token.fn,
-          value;if (Twig.functions[fn]) {
-        value = Twig.functions[fn].apply(this, params);
-      } else if (typeof context[fn] == "function") {
-        value = context[fn].apply(context, params);
-      } else {
-        throw new Twig.Error(fn + " function does not exist and is not defined in the context");
-      }stack.push(value);
-    } }, { type: Twig.expression.type.variable, regex: /^[a-zA-Z_][a-zA-Z0-9_]*/, next: Twig.expression.set.operations_extended.concat([Twig.expression.type.parameter.start]), compile: Twig.expression.fn.compile.push, validate: function validate(match, tokens) {
-      return Twig.indexOf(Twig.expression.reservedWords, match[0]) < 0;
-    }, parse: function parse(token, stack, context) {
-      var value = Twig.expression.resolve(context[token.value], context);stack.push(value);
-    } }, { type: Twig.expression.type.key.period, regex: /^\.([a-zA-Z0-9_]+)/, next: Twig.expression.set.operations_extended.concat([Twig.expression.type.parameter.start]), compile: function compile(token, stack, output) {
-      token.key = token.match[1];delete token.match;delete token.value;output.push(token);
-    }, parse: function parse(token, stack, context) {
-      var params = token.params && Twig.expression.parse.apply(this, [token.params, context]),
-          key = token.key,
-          object = stack.pop(),
-          value;if (object === null || object === undefined) {
-        if (this.options.strict_variables) {
-          throw new Twig.Error("Can't access a key " + key + " on an null or undefined object.");
-        } else {
-          return null;
-        }
-      }var capitalize = function capitalize(value) {
-        return value.substr(0, 1).toUpperCase() + value.substr(1);
-      };if ((typeof object === "undefined" ? "undefined" : _typeof(object)) === "object" && key in object) {
-        value = object[key];
-      } else if (object["get" + capitalize(key)] !== undefined) {
-        value = object["get" + capitalize(key)];
-      } else if (object["is" + capitalize(key)] !== undefined) {
-        value = object["is" + capitalize(key)];
-      } else {
-        value = null;
-      }stack.push(Twig.expression.resolve(value, object, params));
-    } }, { type: Twig.expression.type.key.brackets, regex: /^\[([^\]]*)\]/, next: Twig.expression.set.operations_extended.concat([Twig.expression.type.parameter.start]), compile: function compile(token, stack, output) {
-      var match = token.match[1];delete token.value;delete token.match;token.stack = Twig.expression.compile({ value: match }).stack;output.push(token);
-    }, parse: function parse(token, stack, context) {
-      var params = token.params && Twig.expression.parse.apply(this, [token.params, context]),
-          key = Twig.expression.parse.apply(this, [token.stack, context]),
-          object = stack.pop(),
-          value;if (object === null || object === undefined) {
-        if (this.options.strict_variables) {
-          throw new Twig.Error("Can't access a key " + key + " on an null or undefined object.");
-        } else {
-          return null;
-        }
-      }if ((typeof object === "undefined" ? "undefined" : _typeof(object)) === "object" && key in object) {
-        value = object[key];
-      } else {
-        value = null;
-      }stack.push(Twig.expression.resolve(value, object, params));
-    } }, { type: Twig.expression.type._null, regex: /^(null|NULL|none|NONE)/, next: Twig.expression.set.operations, compile: function compile(token, stack, output) {
-      delete token.match;token.value = null;output.push(token);
-    }, parse: Twig.expression.fn.parse.push_value }, { type: Twig.expression.type.context, regex: /^_context/, next: Twig.expression.set.operations_extended.concat([Twig.expression.type.parameter.start]), compile: Twig.expression.fn.compile.push, parse: function parse(token, stack, context) {
-      stack.push(context);
-    } }, { type: Twig.expression.type.number, regex: /^\-?\d+(\.\d+)?/, next: Twig.expression.set.operations, compile: function compile(token, stack, output) {
-      token.value = Number(token.value);output.push(token);
-    }, parse: Twig.expression.fn.parse.push_value }, { type: Twig.expression.type.bool, regex: /^(true|TRUE|false|FALSE)/, next: Twig.expression.set.operations, compile: function compile(token, stack, output) {
-      token.value = token.match[0].toLowerCase() === "true";delete token.match;output.push(token);
-    }, parse: Twig.expression.fn.parse.push_value }];Twig.expression.resolve = function (value, context, params) {
-    if (typeof value == "function") {
-      return value.apply(context, params || []);
-    } else {
-      return value;
-    }
-  };Twig.expression.handler = {};Twig.expression.extendType = function (type) {
-    Twig.expression.type[type] = "Twig.expression.type." + type;
-  };Twig.expression.extend = function (definition) {
-    if (!definition.type) {
-      throw new Twig.Error("Unable to extend logic definition. No type provided for " + definition);
-    }Twig.expression.handler[definition.type] = definition;
-  };while (Twig.expression.definitions.length > 0) {
-    Twig.expression.extend(Twig.expression.definitions.shift());
-  }Twig.expression.tokenize = function (expression) {
-    var tokens = [],
-        exp_offset = 0,
-        next = null,
-        type,
-        regex,
-        regex_array,
-        token_next,
-        match_found,
-        invalid_matches = [],
-        match_function;match_function = function match_function() {
-      var match = Array.prototype.slice.apply(arguments),
-          string = match.pop(),
-          offset = match.pop();Twig.log.trace("Twig.expression.tokenize", "Matched a ", type, " regular expression of ", match);if (next && Twig.indexOf(next, type) < 0) {
-        invalid_matches.push(type + " cannot follow a " + tokens[tokens.length - 1].type + " at template:" + exp_offset + " near '" + match[0].substring(0, 20) + "...'");return match[0];
-      }if (Twig.expression.handler[type].validate && !Twig.expression.handler[type].validate(match, tokens)) {
-        return match[0];
-      }invalid_matches = [];tokens.push({ type: type, value: match[0], match: match });match_found = true;next = token_next;exp_offset += match[0].length;if (Twig.expression.handler[type].transform) {
-        return Twig.expression.handler[type].transform(match, tokens);
-      }return "";
-    };Twig.log.debug("Twig.expression.tokenize", "Tokenizing expression ", expression);while (expression.length > 0) {
-      expression = expression.trim();for (type in Twig.expression.handler) {
-        if (Twig.expression.handler.hasOwnProperty(type)) {
-          token_next = Twig.expression.handler[type].next;regex = Twig.expression.handler[type].regex;if (regex instanceof Array) {
-            regex_array = regex;
-          } else {
-            regex_array = [regex];
-          }match_found = false;while (regex_array.length > 0) {
-            regex = regex_array.pop();expression = expression.replace(regex, match_function);
-          }if (match_found) {
-            break;
-          }
-        }
-      }if (!match_found) {
-        if (invalid_matches.length > 0) {
-          throw new Twig.Error(invalid_matches.join(" OR "));
-        } else {
-          throw new Twig.Error("Unable to parse '" + expression + "' at template position" + exp_offset);
-        }
-      }
-    }Twig.log.trace("Twig.expression.tokenize", "Tokenized to ", tokens);return tokens;
-  };Twig.expression.compile = function (raw_token) {
-    var expression = raw_token.value,
-        tokens = Twig.expression.tokenize(expression),
-        token = null,
-        output = [],
-        stack = [],
-        token_template = null;Twig.log.trace("Twig.expression.compile: ", "Compiling ", expression);while (tokens.length > 0) {
-      token = tokens.shift();token_template = Twig.expression.handler[token.type];Twig.log.trace("Twig.expression.compile: ", "Compiling ", token);token_template.compile && token_template.compile(token, stack, output);Twig.log.trace("Twig.expression.compile: ", "Stack is", stack);Twig.log.trace("Twig.expression.compile: ", "Output is", output);
-    }while (stack.length > 0) {
-      output.push(stack.pop());
-    }Twig.log.trace("Twig.expression.compile: ", "Final output is", output);raw_token.stack = output;delete raw_token.value;return raw_token;
-  };Twig.expression.parse = function (tokens, context) {
-    var that = this;if (!(tokens instanceof Array)) {
-      tokens = [tokens];
-    }var stack = [],
-        token_template = null;Twig.forEach(tokens, function (token) {
-      token_template = Twig.expression.handler[token.type];token_template.parse && token_template.parse.apply(that, [token, stack, context]);
-    });return stack.pop();
-  };return Twig;
-}(Twig || {});var Twig = function (Twig) {
-  "use strict";
-  Twig.expression.operator = { leftToRight: "leftToRight", rightToLeft: "rightToLeft" };var containment = function containment(a, b) {
-    if (b.indexOf !== undefined) {
-      return a === b || a !== "" && b.indexOf(a) > -1;
-    } else {
-      var el;for (el in b) {
-        if (b.hasOwnProperty(el) && b[el] === a) {
-          return true;
-        }
-      }return false;
-    }
-  };Twig.expression.operator.lookup = function (operator, token) {
-    switch (operator) {case "..":case "not in":case "in":
-        token.precidence = 20;token.associativity = Twig.expression.operator.leftToRight;break;case ",":
-        token.precidence = 18;token.associativity = Twig.expression.operator.leftToRight;break;case "?":case ":":
-        token.precidence = 16;token.associativity = Twig.expression.operator.rightToLeft;break;case "or":
-        token.precidence = 14;token.associativity = Twig.expression.operator.leftToRight;break;case "and":
-        token.precidence = 13;token.associativity = Twig.expression.operator.leftToRight;break;case "==":case "!=":
-        token.precidence = 9;token.associativity = Twig.expression.operator.leftToRight;break;case "<":case "<=":case ">":case ">=":
-        token.precidence = 8;token.associativity = Twig.expression.operator.leftToRight;break;case "~":case "+":case "-":
-        token.precidence = 6;token.associativity = Twig.expression.operator.leftToRight;break;case "//":case "**":case "*":case "/":case "%":
-        token.precidence = 5;token.associativity = Twig.expression.operator.leftToRight;break;case "not":
-        token.precidence = 3;token.associativity = Twig.expression.operator.rightToLeft;break;default:
-        throw new Twig.Error(operator + " is an unknown operator.");}token.operator = operator;return token;
-  };Twig.expression.operator.parse = function (operator, stack) {
-    Twig.log.trace("Twig.expression.operator.parse: ", "Handling ", operator);var a, b, c;switch (operator) {case ":":
-        break;case "?":
-        c = stack.pop();b = stack.pop();a = stack.pop();if (a) {
-          stack.push(b);
-        } else {
-          stack.push(c);
-        }break;case "+":
-        b = parseFloat(stack.pop());a = parseFloat(stack.pop());stack.push(a + b);break;case "-":
-        b = parseFloat(stack.pop());a = parseFloat(stack.pop());stack.push(a - b);break;case "*":
-        b = parseFloat(stack.pop());a = parseFloat(stack.pop());stack.push(a * b);break;case "/":
-        b = parseFloat(stack.pop());a = parseFloat(stack.pop());stack.push(a / b);break;case "//":
-        b = parseFloat(stack.pop());a = parseFloat(stack.pop());
-        stack.push(parseInt(a / b));break;case "%":
-        b = parseFloat(stack.pop());a = parseFloat(stack.pop());stack.push(a % b);break;case "~":
-        b = stack.pop();a = stack.pop();stack.push((a != null ? a.toString() : "") + (b != null ? b.toString() : ""));break;case "not":case "!":
-        stack.push(!stack.pop());break;case "<":
-        b = stack.pop();a = stack.pop();stack.push(a < b);break;case "<=":
-        b = stack.pop();a = stack.pop();stack.push(a <= b);break;case ">":
-        b = stack.pop();a = stack.pop();stack.push(a > b);break;case ">=":
-        b = stack.pop();a = stack.pop();stack.push(a >= b);break;case "===":
-        b = stack.pop();a = stack.pop();stack.push(a === b);break;case "==":
-        b = stack.pop();a = stack.pop();stack.push(a == b);break;case "!==":
-        b = stack.pop();a = stack.pop();stack.push(a !== b);break;case "!=":
-        b = stack.pop();a = stack.pop();stack.push(a != b);break;case "or":
-        b = stack.pop();a = stack.pop();stack.push(a || b);break;case "and":
-        b = stack.pop();a = stack.pop();stack.push(a && b);break;case "**":
-        b = stack.pop();a = stack.pop();stack.push(Math.pow(a, b));break;case "not in":
-        b = stack.pop();a = stack.pop();stack.push(!containment(a, b));break;case "in":
-        b = stack.pop();a = stack.pop();stack.push(containment(a, b));break;case "..":
-        b = stack.pop();a = stack.pop();stack.push(Twig.functions.range(a, b));break;default:
-        throw new Twig.Error(operator + " is an unknown operator.");}
-  };return Twig;
-}(Twig || {});var Twig = function (Twig) {
-  function is(type, obj) {
-    var clas = Object.prototype.toString.call(obj).slice(8, -1);return obj !== undefined && obj !== null && clas === type;
-  }Twig.filters = { upper: function upper(value) {
-      if (typeof value !== "string") {
-        return value;
-      }return value.toUpperCase();
-    }, lower: function lower(value) {
-      if (typeof value !== "string") {
-        return value;
-      }return value.toLowerCase();
-    }, capitalize: function capitalize(value) {
-      if (typeof value !== "string") {
-        return value;
-      }return value.substr(0, 1).toUpperCase() + value.toLowerCase().substr(1);
-    }, title: function title(value) {
-      if (typeof value !== "string") {
-        return value;
-      }return value.toLowerCase().replace(/(^|\s)([a-z])/g, function (m, p1, p2) {
-        return p1 + p2.toUpperCase();
-      });
-    }, length: function length(value) {
-      if (Twig.lib.is("Array", value) || typeof value === "string") {
-        return value.length;
-      } else if (Twig.lib.is("Object", value)) {
-        if (value._keys === undefined) {
-          return Object.keys(value).length;
-        } else {
-          return value._keys.length;
-        }
-      } else {
-        return 0;
-      }
-    }, reverse: function reverse(value) {
-      if (is("Array", value)) {
-        return value.reverse();
-      } else if (is("String", value)) {
-        return value.split("").reverse().join("");
-      } else if (is("Object", value)) {
-        var keys = value._keys || Object.keys(value).reverse();value._keys = keys;return value;
-      }
-    }, sort: function sort(value) {
-      if (is("Array", value)) {
-        return value.sort();
-      } else if (is("Object", value)) {
-        delete value._keys;var keys = Object.keys(value),
-            sorted_keys = keys.sort(function (a, b) {
-          return value[a] > value[b];
-        });value._keys = sorted_keys;return value;
-      }
-    }, keys: function keys(value) {
-      if (value === undefined || value === null) {
-        return;
-      }var keyset = value._keys || Object.keys(value),
-          output = [];Twig.forEach(keyset, function (key) {
-        if (key === "_keys") return;if (value.hasOwnProperty(key)) {
-          output.push(key);
-        }
-      });return output;
-    }, url_encode: function url_encode(value) {
-      if (value === undefined || value === null) {
-        return;
-      }return encodeURIComponent(value);
-    }, join: function join(value, params) {
-      if (value === undefined || value === null) {
-        return;
-      }var join_str = "",
-          output = [],
-          keyset = null;if (params && params[0]) {
-        join_str = params[0];
-      }if (is("Array", value)) {
-        output = value;
-      } else {
-        keyset = value._keys || Object.keys(value);Twig.forEach(keyset, function (key) {
-          if (key === "_keys") return;if (value.hasOwnProperty(key)) {
-            output.push(value[key]);
-          }
-        });
-      }return output.join(join_str);
-    }, "default": function _default(value, params) {
-      if (params === undefined || params.length !== 1) {
-        throw new Twig.Error("default filter expects one argument");
-      }if (value === undefined || value === null || value === "") {
-        return params[0];
-      } else {
-        return value;
-      }
-    }, json_encode: function json_encode(value) {
-      if (value && value.hasOwnProperty("_keys")) {
-        delete value._keys;
-      }if (value === undefined || value === null) {
-        return "null";
-      }return JSON.stringify(value);
-    }, merge: function merge(value, params) {
-      var obj = [],
-          arr_index = 0,
-          keyset = [];if (!is("Array", value)) {
-        obj = {};
-      } else {
-        Twig.forEach(params, function (param) {
-          if (!is("Array", param)) {
-            obj = {};
-          }
-        });
-      }if (!is("Array", obj)) {
-        obj._keys = [];
-      }if (is("Array", value)) {
-        Twig.forEach(value, function (val) {
-          if (obj._keys) obj._keys.push(arr_index);obj[arr_index] = val;arr_index++;
-        });
-      } else {
-        keyset = value._keys || Object.keys(value);Twig.forEach(keyset, function (key) {
-          obj[key] = value[key];obj._keys.push(key);var int_key = parseInt(key, 10);if (!isNaN(int_key) && int_key >= arr_index) {
-            arr_index = int_key + 1;
-          }
-        });
-      }Twig.forEach(params, function (param) {
-        if (is("Array", param)) {
-          Twig.forEach(param, function (val) {
-            if (obj._keys) obj._keys.push(arr_index);obj[arr_index] = val;arr_index++;
-          });
-        } else {
-          keyset = param._keys || Object.keys(param);Twig.forEach(keyset, function (key) {
-            if (!obj[key]) obj._keys.push(key);obj[key] = param[key];var int_key = parseInt(key, 10);if (!isNaN(int_key) && int_key >= arr_index) {
-              arr_index = int_key + 1;
-            }
-          });
-        }
-      });if (params.length === 0) {
-        throw new Twig.Error("Filter merge expects at least one parameter");
-      }return obj;
-    }, date: function date(value, params) {
-      var date = Twig.functions.date(value);var format = params && params.length ? params[0] : "F j, Y H:i";return Twig.lib.formatDate(date, format);
-    }, date_modify: function date_modify(value, params) {
-      if (value === undefined || value === null) {
-        return;
-      }if (params === undefined || params.length !== 1) {
-        throw new Twig.Error("date_modify filter expects 1 argument");
-      }var modifyText = params[0],
-          time;if (Twig.lib.is("Date", value)) {
-        time = Twig.lib.strtotime(modifyText, value.getTime() / 1e3);
-      }if (Twig.lib.is("String", value)) {
-        time = Twig.lib.strtotime(modifyText, Twig.lib.strtotime(value));
-      }if (Twig.lib.is("Number", value)) {
-        time = Twig.lib.strtotime(modifyText, value);
-      }return new Date(time * 1e3);
-    }, replace: function replace(value, params) {
-      if (value === undefined || value === null) {
-        return;
-      }var pairs = params[0],
-          tag;for (tag in pairs) {
-        if (pairs.hasOwnProperty(tag) && tag !== "_keys") {
-          value = Twig.lib.replaceAll(value, tag, pairs[tag]);
-        }
-      }return value;
-    }, format: function format(value, params) {
-      if (value === undefined || value === null) {
-        return;
-      }return Twig.lib.vsprintf(value, params);
-    }, striptags: function striptags(value) {
-      if (value === undefined || value === null) {
-        return;
-      }return Twig.lib.strip_tags(value);
-    }, escape: function escape(value) {
-      if (value === undefined || value === null) {
-        return;
-      }var raw_value = value.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");return Twig.Markup(raw_value);
-    }, e: function e(value) {
-      return Twig.filters.escape(value);
-    }, nl2br: function nl2br(value) {
-      if (value === undefined || value === null) {
-        return;
-      }var linebreak_tag = "BACKSLASH_n_replace",
-          br = "<br />" + linebreak_tag;value = Twig.filters.escape(value).replace(/\r\n/g, br).replace(/\r/g, br).replace(/\n/g, br);value = Twig.lib.replaceAll(value, linebreak_tag, "\n");return Twig.Markup(value);
-    }, number_format: function number_format(value, params) {
-      var number = value,
-          decimals = params && params[0] ? params[0] : undefined,
-          dec = params && params[1] !== undefined ? params[1] : ".",
-          sep = params && params[2] !== undefined ? params[2] : ",";number = (number + "").replace(/[^0-9+\-Ee.]/g, "");var n = !isFinite(+number) ? 0 : +number,
-          prec = !isFinite(+decimals) ? 0 : Math.abs(decimals),
-          s = "",
-          toFixedFix = function toFixedFix(n, prec) {
-        var k = Math.pow(10, prec);return "" + Math.round(n * k) / k;
-      };s = (prec ? toFixedFix(n, prec) : "" + Math.round(n)).split(".");if (s[0].length > 3) {
-        s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
-      }if ((s[1] || "").length < prec) {
-        s[1] = s[1] || "";s[1] += new Array(prec - s[1].length + 1).join("0");
-      }return s.join(dec);
-    }, trim: function trim(value, params) {
-      if (value === undefined || value === null) {
-        return;
-      }var str = Twig.filters.escape("" + value),
-          whitespace;if (params && params[0]) {
-        whitespace = "" + params[0];
-      } else {
-        whitespace = " \n\r\t\f\x0B \u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u200B\u2028\u2029\u3000";
-      }for (var i = 0; i < str.length; i++) {
-        if (whitespace.indexOf(str.charAt(i)) === -1) {
-          str = str.substring(i);break;
-        }
-      }for (i = str.length - 1; i >= 0; i--) {
-        if (whitespace.indexOf(str.charAt(i)) === -1) {
-          str = str.substring(0, i + 1);break;
-        }
-      }return whitespace.indexOf(str.charAt(0)) === -1 ? str : "";
-    }, truncate: function truncate(value, params) {
-      var length = 30,
-          preserve = false,
-          separator = "...";value = value + "";if (params) {
-        if (params[0]) {
-          length = params[0];
-        }if (params[1]) {
-          preserve = params[1];
-        }if (params[2]) {
-          separator = params[2];
-        }
-      }if (value.length > length) {
-        if (preserve) {
-          length = value.indexOf(" ", length);if (length === -1) {
-            return value;
-          }
-        }value = value.substr(0, length) + separator;
-      }return value;
-    }, slice: function slice(value, params) {
-      if (value === undefined || value === null) {
-        return;
-      }if (params === undefined || params.length < 1) {
-        throw new Twig.Error("slice filter expects at least 1 argument");
-      }var start = params[0] || 0;var length = params.length > 1 ? params[1] : value.length;var startIndex = start >= 0 ? start : Math.max(value.length + start, 0);if (Twig.lib.is("Array", value)) {
-        var output = [];for (var i = startIndex; i < startIndex + length && i < value.length; i++) {
-          output.push(value[i]);
-        }return output;
-      } else if (Twig.lib.is("String", value)) {
-        return value.substr(startIndex, length);
-      } else {
-        throw new Twig.Error("slice filter expects value to be an array or string");
-      }
-    }, abs: function abs(value) {
-      if (value === undefined || value === null) {
-        return;
-      }return Math.abs(value);
-    }, first: function first(value) {
-      if (is("Array", value)) {
-        return value[0];
-      } else if (is("Object", value)) {
-        if ("_keys" in value) {
-          return value[value._keys[0]];
-        }
-      } else if (typeof value === "string") {
-        return value.substr(0, 1);
-      }return;
-    }, split: function split(value, params) {
-      if (value === undefined || value === null) {
-        return;
-      }if (params === undefined || params.length < 1 || params.length > 2) {
-        throw new Twig.Error("split filter expects 1 or 2 argument");
-      }if (Twig.lib.is("String", value)) {
-        var delimiter = params[0],
-            limit = params[1],
-            split = value.split(delimiter);if (limit === undefined) {
-          return split;
-        } else if (limit < 0) {
-          return value.split(delimiter, split.length + limit);
-        } else {
-          var limitedSplit = [];if (delimiter == "") {
-            while (split.length > 0) {
-              var temp = "";for (var i = 0; i < limit && split.length > 0; i++) {
-                temp += split.shift();
-              }limitedSplit.push(temp);
-            }
-          } else {
-            for (var i = 0; i < limit - 1 && split.length > 0; i++) {
-              limitedSplit.push(split.shift());
-            }if (split.length > 0) {
-              limitedSplit.push(split.join(delimiter));
-            }
-          }return limitedSplit;
-        }
-      } else {
-        throw new Twig.Error("split filter expects value to be a string");
-      }
-    }, last: function last(value) {
-      if (Twig.lib.is("Object", value)) {
-        var keys;if (value._keys === undefined) {
-          keys = Object.keys(value);
-        } else {
-          keys = value._keys;
-        }return value[keys[keys.length - 1]];
-      }return value[value.length - 1];
-    }, raw: function raw(value) {
-      return Twig.Markup(value);
-    }, batch: function batch(items, params) {
-      var size = params.shift(),
-          fill = params.shift(),
-          result,
-          last,
-          missing;if (!Twig.lib.is("Array", items)) {
-        throw new Twig.Error("batch filter expects items to be an array");
-      }if (!Twig.lib.is("Number", size)) {
-        throw new Twig.Error("batch filter expects size to be a number");
-      }size = Math.ceil(size);result = Twig.lib.chunkArray(items, size);if (fill && items.length % size != 0) {
-        last = result.pop();missing = size - last.length;while (missing--) {
-          last.push(fill);
-        }result.push(last);
-      }return result;
-    }, round: function round(value, params) {
-      params = params || [];var precision = params.length > 0 ? params[0] : 0,
-          method = params.length > 1 ? params[1] : "common";value = parseFloat(value);if (precision && !Twig.lib.is("Number", precision)) {
-        throw new Twig.Error("round filter expects precision to be a number");
-      }if (method === "common") {
-        return Twig.lib.round(value, precision);
-      }if (!Twig.lib.is("Function", Math[method])) {
-        throw new Twig.Error("round filter expects method to be 'floor', 'ceil', or 'common'");
-      }return Math[method](value * Math.pow(10, precision)) / Math.pow(10, precision);
-    } };Twig.filter = function (filter, value, params) {
-    if (!Twig.filters[filter]) {
-      throw "Unable to find filter " + filter;
-    }return Twig.filters[filter].apply(this, [value, params]);
-  };Twig.filter.extend = function (filter, definition) {
-    Twig.filters[filter] = definition;
-  };return Twig;
-}(Twig || {});var Twig = function (Twig) {
-  function is(type, obj) {
-    var clas = Object.prototype.toString.call(obj).slice(8, -1);return obj !== undefined && obj !== null && clas === type;
-  }Twig.functions = { range: function range(low, high, step) {
-      var matrix = [];var inival, endval, plus;var walker = step || 1;var chars = false;if (!isNaN(low) && !isNaN(high)) {
-        inival = parseInt(low, 10);endval = parseInt(high, 10);
-      } else if (isNaN(low) && isNaN(high)) {
-        chars = true;inival = low.charCodeAt(0);endval = high.charCodeAt(0);
-      } else {
-        inival = isNaN(low) ? 0 : low;endval = isNaN(high) ? 0 : high;
-      }plus = inival > endval ? false : true;if (plus) {
-        while (inival <= endval) {
-          matrix.push(chars ? String.fromCharCode(inival) : inival);inival += walker;
-        }
-      } else {
-        while (inival >= endval) {
-          matrix.push(chars ? String.fromCharCode(inival) : inival);inival -= walker;
-        }
-      }return matrix;
-    }, cycle: function cycle(arr, i) {
-      var pos = i % arr.length;return arr[pos];
-    }, dump: function dump() {
-      var EOL = "\n",
-          indentChar = "  ",
-          indentTimes = 0,
-          out = "",
-          args = Array.prototype.slice.call(arguments),
-          indent = function indent(times) {
-        var ind = "";while (times > 0) {
-          times--;ind += indentChar;
-        }return ind;
-      },
-          displayVar = function displayVar(variable) {
-        out += indent(indentTimes);if ((typeof variable === "undefined" ? "undefined" : _typeof(variable)) === "object") {
-          dumpVar(variable);
-        } else if (typeof variable === "function") {
-          out += "function()" + EOL;
-        } else if (typeof variable === "string") {
-          out += "string(" + variable.length + ') "' + variable + '"' + EOL;
-        } else if (typeof variable === "number") {
-          out += "number(" + variable + ")" + EOL;
-        } else if (typeof variable === "boolean") {
-          out += "bool(" + variable + ")" + EOL;
-        }
-      },
-          dumpVar = function dumpVar(variable) {
-        var i;if (variable === null) {
-          out += "NULL" + EOL;
-        } else if (variable === undefined) {
-          out += "undefined" + EOL;
-        } else if ((typeof variable === "undefined" ? "undefined" : _typeof(variable)) === "object") {
-          out += indent(indentTimes) + (typeof variable === "undefined" ? "undefined" : _typeof(variable));indentTimes++;out += "(" + function (obj) {
-            var size = 0,
-                key;for (key in obj) {
-              if (obj.hasOwnProperty(key)) {
-                size++;
-              }
-            }return size;
-          }(variable) + ") {" + EOL;for (i in variable) {
-            out += indent(indentTimes) + "[" + i + "]=> " + EOL;displayVar(variable[i]);
-          }indentTimes--;out += indent(indentTimes) + "}" + EOL;
-        } else {
-          displayVar(variable);
-        }
-      };if (args.length == 0) args.push(this.context);Twig.forEach(args, function (variable) {
-        dumpVar(variable);
-      });return out;
-    }, date: function date(_date, time) {
-      var dateObj;if (_date === undefined) {
-        dateObj = new Date();
-      } else if (Twig.lib.is("Date", _date)) {
-        dateObj = _date;
-      } else if (Twig.lib.is("String", _date)) {
-        dateObj = new Date(Twig.lib.strtotime(_date) * 1e3);
-      } else if (Twig.lib.is("Number", _date)) {
-        dateObj = new Date(_date * 1e3);
-      } else {
-        throw new Twig.Error("Unable to parse date " + _date);
-      }return dateObj;
-    }, block: function block(_block) {
-      if (this.originalBlockTokens[_block]) {
-        return Twig.logic.parse.apply(this, [this.originalBlockTokens[_block], this.context]).output;
-      } else {
-        return this.blocks[_block];
-      }
-    }, parent: function parent() {
-      return Twig.placeholders.parent;
-    }, attribute: function attribute(object, method, params) {
-      if (Twig.lib.is("Object", object)) {
-        if (object.hasOwnProperty(method)) {
-          if (typeof object[method] === "function") {
-            return object[method].apply(undefined, params);
-          } else {
-            return object[method];
-          }
-        }
-      }return object[method] || undefined;
-    }, template_from_string: function template_from_string(template) {
-      if (template === undefined) {
-        template = "";
-      }return new Twig.Template({ options: this.options, data: template });
-    }, random: function random(value) {
-      var LIMIT_INT31 = 2147483648;function getRandomNumber(n) {
-        var random = Math.floor(Math.random() * LIMIT_INT31);var limits = [0, n];var min = Math.min.apply(null, limits),
-            max = Math.max.apply(null, limits);return min + Math.floor((max - min + 1) * random / LIMIT_INT31);
-      }if (Twig.lib.is("Number", value)) {
-        return getRandomNumber(value);
-      }if (Twig.lib.is("String", value)) {
-        return value.charAt(getRandomNumber(value.length - 1));
-      }if (Twig.lib.is("Array", value)) {
-        return value[getRandomNumber(value.length - 1)];
-      }if (Twig.lib.is("Object", value)) {
-        var keys = Object.keys(value);return value[keys[getRandomNumber(keys.length - 1)]];
-      }return getRandomNumber(LIMIT_INT31 - 1);
-    } };Twig._function = function (_function, value, params) {
-    if (!Twig.functions[_function]) {
-      throw "Unable to find function " + _function;
-    }return Twig.functions[_function](value, params);
-  };Twig._function.extend = function (_function, definition) {
-    Twig.functions[_function] = definition;
-  };return Twig;
-}(Twig || {});var Twig = function (Twig) {
-  "use strict";
-  Twig.tests = { empty: function empty(value) {
-      if (value === null || value === undefined) return true;if (typeof value === "number") return false;if (value.length && value.length > 0) return false;for (var key in value) {
-        if (value.hasOwnProperty(key)) return false;
-      }return true;
-    }, odd: function odd(value) {
-      return value % 2 === 1;
-    }, even: function even(value) {
-      return value % 2 === 0;
-    }, divisibleby: function divisibleby(value, params) {
-      return value % params[0] === 0;
-    }, defined: function defined(value) {
-      return value !== undefined;
-    }, none: function none(value) {
-      return value === null;
-    }, "null": function _null(value) {
-      return this.none(value);
-    }, sameas: function sameas(value, params) {
-      return value === params[0];
-    }, iterable: function iterable(value) {
-      return value && (Twig.lib.is("Array", value) || Twig.lib.is("Object", value));
-    } };Twig.test = function (test, value, params) {
-    if (!Twig.tests[test]) {
-      throw "Test " + test + " is not defined.";
-    }return Twig.tests[test](value, params);
-  };Twig.test.extend = function (test, definition) {
-    Twig.tests[test] = definition;
-  };return Twig;
-}(Twig || {});var Twig = function (Twig) {
-  "use strict";
-  Twig.exports = { VERSION: Twig.VERSION };Twig.exports.twig = function twig(params) {
-    "use strict";
-    var id = params.id,
-        options = { strict_variables: params.strict_variables || false, autoescape: params.autoescape != null && params.autoescape || false, allowInlineIncludes: params.allowInlineIncludes || false, rethrow: params.rethrow || false };if (id) {
-      Twig.validateId(id);
-    }if (params.debug !== undefined) {
-      Twig.debug = params.debug;
-    }if (params.trace !== undefined) {
-      Twig.trace = params.trace;
-    }if (params.data !== undefined) {
-      return new Twig.Template({ data: params.data, module: params.module, id: id, options: options });
-    } else if (params.ref !== undefined) {
-      if (params.id !== undefined) {
-        throw new Twig.Error("Both ref and id cannot be set on a twig.js template.");
-      }return Twig.Templates.load(params.ref);
-    } else if (params.href !== undefined) {
-      return Twig.Templates.loadRemote(params.href, { id: id, method: "ajax", base: params.base, module: params.module, precompiled: params.precompiled, async: params.async, options: options }, params.load, params.error);
-    } else if (params.path !== undefined) {
-      return Twig.Templates.loadRemote(params.path, { id: id, method: "fs", base: params.base, module: params.module, precompiled: params.precompiled, async: params.async, options: options }, params.load, params.error);
-    }
-  };Twig.exports.extendFilter = function (filter, definition) {
-    Twig.filter.extend(filter, definition);
-  };Twig.exports.extendFunction = function (fn, definition) {
-    Twig._function.extend(fn, definition);
-  };Twig.exports.extendTest = function (test, definition) {
-    Twig.test.extend(test, definition);
-  };Twig.exports.extendTag = function (definition) {
-    Twig.logic.extend(definition);
-  };Twig.exports.extend = function (fn) {
-    fn(Twig);
-  };Twig.exports.compile = function (markup, options) {
-    var id = options.filename,
-        path = options.filename,
-        template;template = new Twig.Template({ data: markup, path: path, id: id, options: options.settings["twig options"] });return function (context) {
-      return template.render(context);
-    };
-  };Twig.exports.renderFile = function (path, options, fn) {
-    if ("function" == typeof options) {
-      fn = options;options = {};
-    }options = options || {};var params = { path: path, base: options.settings["views"], load: function load(template) {
-        fn(null, template.render(options));
-      } };var view_options = options.settings["twig options"];if (view_options) {
-      for (var option in view_options) {
-        if (view_options.hasOwnProperty(option)) {
-          params[option] = view_options[option];
-        }
-      }
-    }Twig.exports.twig(params);
-  };Twig.exports.__express = Twig.exports.renderFile;Twig.exports.cache = function (cache) {
-    Twig.cache = cache;
-  };return Twig;
-}(Twig || {});var Twig = function (Twig) {
-  Twig.compiler = { module: {} };Twig.compiler.compile = function (template, options) {
-    var tokens = JSON.stringify(template.tokens),
-        id = template.id,
-        output;if (options.module) {
-      if (Twig.compiler.module[options.module] === undefined) {
-        throw new Twig.Error("Unable to find module type " + options.module);
-      }output = Twig.compiler.module[options.module](id, tokens, options.twig);
-    } else {
-      output = Twig.compiler.wrap(id, tokens);
-    }return output;
-  };Twig.compiler.module = { amd: function amd(id, tokens, pathToTwig) {
-      return 'define(["' + pathToTwig + '"], function (Twig) {\n	var twig, templates;\ntwig = Twig.twig;\ntemplates = ' + Twig.compiler.wrap(id, tokens) + "\n	return templates;\n});";
-    }, node: function node(id, tokens) {
-      return 'var twig = require("twig").twig;\n' + "exports.template = " + Twig.compiler.wrap(id, tokens);
-    }, cjs2: function cjs2(id, tokens, pathToTwig) {
-      return 'module.declare([{ twig: "' + pathToTwig + '" }], function (require, exports, module) {\n' + '	var twig = require("twig").twig;\n' + "	exports.template = " + Twig.compiler.wrap(id, tokens) + "\n});";
-    } };Twig.compiler.wrap = function (id, tokens) {
-    return 'twig({id:"' + id.replace('"', '\\"') + '", data:' + tokens + ", precompiled: true});\n";
-  };return Twig;
-}(Twig || {});if (typeof module !== "undefined" && module.declare) {
-  module.declare([], function (require, exports, module) {
-    for (key in Twig.exports) {
-      if (Twig.exports.hasOwnProperty(key)) {
-        exports[key] = Twig.exports[key];
-      }
-    }
-  });
-} else if (typeof define == "function" && define.amd) {
-  define(function () {
-    return Twig.exports;
-  });
-} else if (typeof module !== "undefined" && module.exports) {
-  module.exports = Twig.exports;
-} else {
-  window.twig = Twig.exports.twig;window.Twig = Twig.exports;
-}
+window.global = window;
+!function (e, t) {
+	"object" == (typeof exports === "undefined" ? "undefined" : _typeof(exports)) && "object" == (typeof module === "undefined" ? "undefined" : _typeof(module)) ? module.exports = t() : "function" == typeof define && define.amd ? define([], t) : "object" == (typeof exports === "undefined" ? "undefined" : _typeof(exports)) ? exports.Twig = t() : e.Twig = t();
+}(window, function () {
+	return function (e) {
+		var t = {};function r(n) {
+			if (t[n]) return t[n].exports;var o = t[n] = { i: n, l: !1, exports: {} };return e[n].call(o.exports, o, o.exports, r), o.l = !0, o.exports;
+		}return r.m = e, r.c = t, r.d = function (e, t, n) {
+			r.o(e, t) || Object.defineProperty(e, t, { enumerable: !0, get: n });
+		}, r.r = function (e) {
+			"undefined" != typeof Symbol && Symbol.toStringTag && Object.defineProperty(e, Symbol.toStringTag, { value: "Module" }), Object.defineProperty(e, "__esModule", { value: !0 });
+		}, r.t = function (e, t) {
+			if (1 & t && (e = r(e)), 8 & t) return e;if (4 & t && "object" == (typeof e === "undefined" ? "undefined" : _typeof(e)) && e && e.__esModule) return e;var n = Object.create(null);if (r.r(n), Object.defineProperty(n, "default", { enumerable: !0, value: e }), 2 & t && "string" != typeof e) for (var o in e) {
+				r.d(n, o, function (t) {
+					return e[t];
+				}.bind(null, o));
+			}return n;
+		}, r.n = function (e) {
+			var t = e && e.__esModule ? function () {
+				return e.default;
+			} : function () {
+				return e;
+			};return r.d(t, "a", t), t;
+		}, r.o = function (e, t) {
+			return Object.prototype.hasOwnProperty.call(e, t);
+		}, r.p = "", r(r.s = 28);
+	}([function (e, t, r) {
+		(function (e) {
+			function r(e, t) {
+				for (var r = 0, n = e.length - 1; n >= 0; n--) {
+					var o = e[n];"." === o ? e.splice(n, 1) : ".." === o ? (e.splice(n, 1), r++) : r && (e.splice(n, 1), r--);
+				}if (t) for (; r--; r) {
+					e.unshift("..");
+				}return e;
+			}var n = /^(\/?|)([\s\S]*?)((?:\.{1,2}|[^\/]+?|)(\.[^.\/]*|))(?:[\/]*)$/,
+			    o = function o(e) {
+				return n.exec(e).slice(1);
+			};function i(e, t) {
+				if (e.filter) return e.filter(t);for (var r = [], n = 0; n < e.length; n++) {
+					t(e[n], n, e) && r.push(e[n]);
+				}return r;
+			}t.resolve = function () {
+				for (var t = "", n = !1, o = arguments.length - 1; o >= -1 && !n; o--) {
+					var s = o >= 0 ? arguments[o] : e.cwd();if ("string" != typeof s) throw new TypeError("Arguments to path.resolve must be strings");s && (t = s + "/" + t, n = "/" === s.charAt(0));
+				}return t = r(i(t.split("/"), function (e) {
+					return !!e;
+				}), !n).join("/"), (n ? "/" : "") + t || ".";
+			}, t.normalize = function (e) {
+				var n = t.isAbsolute(e),
+				    o = "/" === s(e, -1);return (e = r(i(e.split("/"), function (e) {
+					return !!e;
+				}), !n).join("/")) || n || (e = "."), e && o && (e += "/"), (n ? "/" : "") + e;
+			}, t.isAbsolute = function (e) {
+				return "/" === e.charAt(0);
+			}, t.join = function () {
+				var e = Array.prototype.slice.call(arguments, 0);return t.normalize(i(e, function (e, t) {
+					if ("string" != typeof e) throw new TypeError("Arguments to path.join must be strings");return e;
+				}).join("/"));
+			}, t.relative = function (e, r) {
+				function n(e) {
+					for (var t = 0; t < e.length && "" === e[t]; t++) {}for (var r = e.length - 1; r >= 0 && "" === e[r]; r--) {}return t > r ? [] : e.slice(t, r - t + 1);
+				}e = t.resolve(e).substr(1), r = t.resolve(r).substr(1);for (var o = n(e.split("/")), i = n(r.split("/")), s = Math.min(o.length, i.length), a = s, p = 0; p < s; p++) {
+					if (o[p] !== i[p]) {
+						a = p;break;
+					}
+				}var c = [];for (p = a; p < o.length; p++) {
+					c.push("..");
+				}return (c = c.concat(i.slice(a))).join("/");
+			}, t.sep = "/", t.delimiter = ":", t.dirname = function (e) {
+				var t = o(e),
+				    r = t[0],
+				    n = t[1];return r || n ? (n && (n = n.substr(0, n.length - 1)), r + n) : ".";
+			}, t.basename = function (e, t) {
+				var r = o(e)[2];return t && r.substr(-1 * t.length) === t && (r = r.substr(0, r.length - t.length)), r;
+			}, t.extname = function (e) {
+				return o(e)[3];
+			};var s = "b" === "ab".substr(-1) ? function (e, t, r) {
+				return e.substr(t, r);
+			} : function (e, t, r) {
+				return t < 0 && (t = e.length + t), e.substr(t, r);
+			};
+		}).call(this, r(9));
+	}, function (e, t, r) {
+		"use strict";
+		e.exports = function () {
+			var e = arguments,
+			    t = 0,
+			    r = function r(e, t, _r, n) {
+				_r || (_r = " ");var o = e.length >= t ? "" : new Array(1 + t - e.length >>> 0).join(_r);return n ? e + o : o + e;
+			},
+			    n = function n(e, t, _n, o, i, s) {
+				var a = o - e.length;return a > 0 && (e = _n || !i ? r(e, o, s, _n) : [e.slice(0, t.length), r("", a, "0", !0), e.slice(t.length)].join("")), e;
+			},
+			    o = function o(e, t, _o, i, s, a, p) {
+				var c = e >>> 0;return e = (_o = _o && c && { 2: "0b", 8: "0", 16: "0x" }[t] || "") + r(c.toString(t), a || 0, "0", !1), n(e, _o, i, s, p);
+			},
+			    i = function i(e, t, r, o, _i, s) {
+				return null !== o && void 0 !== o && (e = e.slice(0, o)), n(e, "", t, r, _i, s);
+			};return e[t++].replace(/%%|%(\d+\$)?([-+'#0 ]*)(\*\d+\$|\*|\d+)?(?:\.(\*\d+\$|\*|\d+))?([scboxXuideEfFgG])/g, function (s, a, p, c, l, u) {
+				var f, h, y, d, g;if ("%%" === s) return "%";var m,
+				    x = !1,
+				    v = "",
+				    b = !1,
+				    w = !1,
+				    k = " ",
+				    _ = p.length;for (m = 0; m < _; m++) {
+					switch (p.charAt(m)) {case " ":
+							v = " ";break;case "+":
+							v = "+";break;case "-":
+							x = !0;break;case "'":
+							k = p.charAt(m + 1);break;case "0":
+							b = !0, k = "0";break;case "#":
+							w = !0;}
+				}if ((c = c ? "*" === c ? +e[t++] : "*" === c.charAt(0) ? +e[c.slice(1, -1)] : +c : 0) < 0 && (c = -c, x = !0), !isFinite(c)) throw new Error("sprintf: (minimum-)width must be finite");switch (l = l ? "*" === l ? +e[t++] : "*" === l.charAt(0) ? +e[l.slice(1, -1)] : +l : "fFeE".indexOf(u) > -1 ? 6 : "d" === u ? 0 : void 0, g = a ? e[a.slice(0, -1)] : e[t++], u) {case "s":
+						return i(g + "", x, c, l, b, k);case "c":
+						return i(String.fromCharCode(+g), x, c, l, b);case "b":
+						return o(g, 2, w, x, c, l, b);case "o":
+						return o(g, 8, w, x, c, l, b);case "x":
+						return o(g, 16, w, x, c, l, b);case "X":
+						return o(g, 16, w, x, c, l, b).toUpperCase();case "u":
+						return o(g, 10, w, x, c, l, b);case "i":case "d":
+						return f = +g || 0, g = (h = (f = Math.round(f - f % 1)) < 0 ? "-" : v) + r(String(Math.abs(f)), l, "0", !1), n(g, h, x, c, b);case "e":case "E":case "f":case "F":case "g":case "G":
+						return h = (f = +g) < 0 ? "-" : v, y = ["toExponential", "toFixed", "toPrecision"]["efg".indexOf(u.toLowerCase())], d = ["toString", "toUpperCase"]["eEfFgG".indexOf(u) % 2], g = h + Math.abs(f)[y](l), n(g, h, x, c, b)[d]();default:
+						return s;}
+			});
+		};
+	}, function (e, t) {
+		e.exports = function (e) {
+			"use strict";
+			return e.exports = { VERSION: e.VERSION }, e.exports.twig = function (t) {
+				var r = t.id,
+				    n = { strict_variables: t.strict_variables || !1, autoescape: null != t.autoescape && t.autoescape || !1, allowInlineIncludes: t.allowInlineIncludes || !1, rethrow: t.rethrow || !1, namespaces: t.namespaces };if (e.cache && r && e.validateId(r), void 0 !== t.debug && (e.debug = t.debug), void 0 !== t.trace && (e.trace = t.trace), void 0 !== t.data) return e.Templates.parsers.twig({ data: t.data, path: t.hasOwnProperty("path") ? t.path : void 0, module: t.module, id: r, options: n });if (void 0 !== t.ref) {
+					if (void 0 !== t.id) throw new e.Error("Both ref and id cannot be set on a twig.js template.");return e.Templates.load(t.ref);
+				}if (void 0 !== t.method) {
+					if (!e.Templates.isRegisteredLoader(t.method)) throw new e.Error('Loader for "' + t.method + '" is not defined.');return e.Templates.loadRemote(t.name || t.href || t.path || r || void 0, { id: r, method: t.method, parser: t.parser || "twig", base: t.base, module: t.module, precompiled: t.precompiled, async: t.async, options: n }, t.load, t.error);
+				}return void 0 !== t.href ? e.Templates.loadRemote(t.href, { id: r, method: "ajax", parser: t.parser || "twig", base: t.base, module: t.module, precompiled: t.precompiled, async: t.async, options: n }, t.load, t.error) : void 0 !== t.path ? e.Templates.loadRemote(t.path, { id: r, method: "fs", parser: t.parser || "twig", base: t.base, module: t.module, precompiled: t.precompiled, async: t.async, options: n }, t.load, t.error) : void 0;
+			}, e.exports.extendFilter = function (t, r) {
+				e.filter.extend(t, r);
+			}, e.exports.extendFunction = function (t, r) {
+				e._function.extend(t, r);
+			}, e.exports.extendTest = function (t, r) {
+				e.test.extend(t, r);
+			}, e.exports.extendTag = function (t) {
+				e.logic.extend(t);
+			}, e.exports.extend = function (t) {
+				t(e);
+			}, e.exports.compile = function (t, r) {
+				var n,
+				    o = r.filename,
+				    i = r.filename;return n = new e.Template({ data: t, path: i, id: o, options: r.settings["twig options"] }), function (e) {
+					return n.render(e);
+				};
+			}, e.exports.renderFile = function (t, r, n) {
+				"function" == typeof r && (n = r, r = {});var o = (r = r || {}).settings || {},
+				    i = o["twig options"],
+				    s = { path: t, base: o.views, load: function load(e) {
+						i && i.allow_async ? e.renderAsync(r).then(function (e) {
+							n(null, e);
+						}, n) : n(null, "" + e.render(r));
+					} };if (i) for (var a in i) {
+					i.hasOwnProperty(a) && (s[a] = i[a]);
+				}e.exports.twig(s);
+			}, e.exports.__express = e.exports.renderFile, e.exports.cache = function (t) {
+				e.cache = t;
+			}, e.exports.path = e.path, e.exports.filters = e.filters, e.exports.Promise = e.Promise, e;
+		};
+	}, function (e, t) {
+		e.exports = function (e) {
+			"use strict";
+			var t = 1;return e.parseAsync = function (t, r) {
+				return e.parse.call(this, t, r, !0);
+			}, e.expression.parseAsync = function (t, r, n) {
+				return e.expression.parse.call(this, t, r, n, !0);
+			}, e.logic.parseAsync = function (t, r, n) {
+				return e.logic.parse.call(this, t, r, n, !0);
+			}, e.Template.prototype.renderAsync = function (e, t) {
+				return this.render(e, t, !0);
+			}, e.async = {}, e.isPromise = function (e) {
+				return e && e.then && "function" == typeof e.then;
+			}, e.async.potentiallyAsync = function (t, r, n) {
+				return r ? e.Promise.resolve(n.call(t)) : function (t, r, n) {
+					var o = n.call(t),
+					    i = null,
+					    s = !0;if (!e.isPromise(o)) return o;if (o.then(function (e) {
+						o = e, s = !1;
+					}).catch(function (e) {
+						i = e;
+					}), null !== i) throw i;if (s) throw new e.Error("You are using Twig.js in sync mode in combination with async extensions.");return o;
+				}(t, 0, n);
+			}, e.Thenable = function (e, t, r) {
+				this.then = e, this._value = r ? t : null, this._state = r || 0;
+			}, e.Thenable.prototype.catch = function (e) {
+				return this._state == t ? this : this.then(null, e);
+			}, e.Thenable.resolvedThen = function (t) {
+				try {
+					return e.Promise.resolve(t(this._value));
+				} catch (t) {
+					return e.Promise.reject(t);
+				}
+			}, e.Thenable.rejectedThen = function (t, r) {
+				if (!r || "function" != typeof r) return this;var n = this._value,
+				    o = e.attempt(function () {
+					return r(n);
+				}, e.Promise.reject);return e.Promise.resolve(o);
+			}, e.Promise = function (r) {
+				var n = 0,
+				    o = null,
+				    i = function i(e, t) {
+					n = e, o = t;
+				};return function (e, t, r) {
+					try {
+						e(t, r);
+					} catch (e) {
+						r(e);
+					}
+				}(r, function (e) {
+					i(t, e);
+				}, function (e) {
+					i(2, e);
+				}), n === t ? e.Promise.resolve(o) : 2 === n ? e.Promise.reject(o) : (i = e.FullPromise()).promise;
+			}, e.FullPromise = function () {
+				var r = null;function n(e) {
+					e(a._value);
+				}function o(e, t) {
+					t(a._value);
+				}var i = function i(e, t) {
+					r = function (e, t, r) {
+						var n = [t, r, -2];return e ? -2 == e[2] ? e = [e, n] : e.push(n) : e = n, e;
+					}(r, e, t);
+				};function s(s, p) {
+					a._state || (a._value = p, a._state = s, i = s == t ? n : o, r && (-2 === r[2] && (i(r[0], r[1]), r = null), e.forEach(r, function (e) {
+						i(e[0], e[1]);
+					}), r = null));
+				}var a = new e.Thenable(function (r, n) {
+					var o = "function" == typeof r;if (a._state == t && !o) return e.Promise.resolve(a._value);if (a._state === t) return e.attempt(function () {
+						return e.Promise.resolve(r(a._value));
+					}, e.Promise.reject);var s = "function" == typeof n;return e.Promise(function (t, a) {
+						i(o ? function (n) {
+							e.attempt(function () {
+								t(r(n));
+							}, a);
+						} : t, s ? function (r) {
+							e.attempt(function () {
+								t(n(r));
+							}, a);
+						} : a);
+					});
+				});return s.promise = a, s;
+			}, e.Promise.defaultResolved = new e.Thenable(e.Thenable.resolvedThen, void 0, t), e.Promise.emptyStringResolved = new e.Thenable(e.Thenable.resolvedThen, "", t), e.Promise.resolve = function (r) {
+				return arguments.length < 1 || void 0 === r ? e.Promise.defaultResolved : e.isPromise(r) ? r : "" === r ? e.Promise.emptyStringResolved : new e.Thenable(e.Thenable.resolvedThen, r, t);
+			}, e.Promise.reject = function (t) {
+				return new e.Thenable(e.Thenable.rejectedThen, t, 2);
+			}, e.Promise.all = function (r) {
+				var n = new Array(r.length);return e.async.forEach(r, function (r, o) {
+					if (e.isPromise(r)) {
+						if (r._state != t) return r.then(function (e) {
+							n[o] = e;
+						});n[o] = r._value;
+					} else n[o] = r;
+				}).then(function () {
+					return n;
+				});
+			}, e.async.forEach = function (r, n) {
+				var o = r.length,
+				    i = 0;return function s() {
+					var a = null;do {
+						if (i == o) return e.Promise.resolve();a = n(r[i], i), i++;
+					} while (!a || !e.isPromise(a) || a._state == t);return a.then(s);
+				}();
+			}, e;
+		};
+	}, function (e, t) {
+		e.exports = function (e) {
+			"use strict";
+			return e.tests = { empty: function empty(e) {
+					if (null === e || void 0 === e) return !0;if ("number" == typeof e) return !1;if (e.length && e.length > 0) return !1;for (var t in e) {
+						if (e.hasOwnProperty(t)) return !1;
+					}return !0;
+				}, odd: function odd(e) {
+					return e % 2 == 1;
+				}, even: function even(e) {
+					return e % 2 == 0;
+				}, divisibleby: function divisibleby(e, t) {
+					return e % t[0] == 0;
+				}, defined: function defined(e) {
+					return void 0 !== e;
+				}, none: function none(e) {
+					return null === e;
+				}, null: function _null(e) {
+					return this.none(e);
+				}, "same as": function sameAs(e, t) {
+					return e === t[0];
+				}, sameas: function sameas(t, r) {
+					return console.warn("`sameas` is deprecated use `same as`"), e.tests["same as"](t, r);
+				}, iterable: function iterable(t) {
+					return t && (e.lib.is("Array", t) || e.lib.is("Object", t));
+				} }, e.test = function (t, r, n) {
+				if (!e.tests[t]) throw "Test " + t + " is not defined.";return e.tests[t](r, n);
+			}, e.test.extend = function (t, r) {
+				e.tests[t] = r;
+			}, e;
+		};
+	}, function (e, t, r) {
+		e.exports = function (e) {
+			"use strict";
+			e.path = {};var t = /.::/,
+			    n = /@/;return e.path.parsePath = function (r, o) {
+				var i = null,
+				    s = r.options.namespaces,
+				    a = o || "";if (s && "object" == (typeof s === "undefined" ? "undefined" : _typeof(s))) for (i in s) {
+					if (t.test(a)) return a.replace(i + "::", s[i]);if (n.test(a)) return a.replace("@" + i, s[i]);
+				}return e.path.relativePath(r, a);
+			}, e.path.relativePath = function (t, n) {
+				var o,
+				    i,
+				    s,
+				    a = "/",
+				    p = [];if (n = n || "", t.url) o = void 0 !== t.base ? t.base + ("/" === t.base.charAt(t.base.length - 1) ? "" : "/") : t.url;else if (t.path) {
+					var c = r(0),
+					    l = c.sep || a,
+					    u = new RegExp("^\\.{1,2}" + l.replace("\\", "\\\\"));n = n.replace(/\//g, l), void 0 !== t.base && null == n.match(u) ? (n = n.replace(t.base, ""), o = t.base + l) : o = c.normalize(t.path), o = o.replace(l + l, l), a = l;
+				} else {
+					if (!t.name && !t.id || !t.method || "fs" === t.method || "ajax" === t.method) throw new e.Error("Cannot extend an inline template.");o = t.base || t.name || t.id;
+				}for ((i = o.split(a)).pop(), i = i.concat(n.split(a)); i.length > 0;) {
+					"." == (s = i.shift()) || (".." == s && p.length > 0 && ".." != p[p.length - 1] ? p.pop() : p.push(s));
+				}return p.join(a);
+			}, e;
+		};
+	}, function (e, t) {
+		e.exports = function (e) {
+			"use strict";
+			e.Templates.registerParser("twig", function (t) {
+				return new e.Template(t);
+			});
+		};
+	}, function (e, t) {
+		e.exports = function (e) {
+			"use strict";
+			e.Templates.registerParser("source", function (e) {
+				return e.data || "";
+			});
+		};
+	}, function (e, t) {
+		e.exports = function (e) {
+			"use strict";
+			for (e.logic = {}, e.logic.type = { if_: "Twig.logic.type.if", endif: "Twig.logic.type.endif", for_: "Twig.logic.type.for", endfor: "Twig.logic.type.endfor", else_: "Twig.logic.type.else", elseif: "Twig.logic.type.elseif", set: "Twig.logic.type.set", setcapture: "Twig.logic.type.setcapture", endset: "Twig.logic.type.endset", filter: "Twig.logic.type.filter", endfilter: "Twig.logic.type.endfilter", shortblock: "Twig.logic.type.shortblock", block: "Twig.logic.type.block", endblock: "Twig.logic.type.endblock", extends_: "Twig.logic.type.extends", use: "Twig.logic.type.use", include: "Twig.logic.type.include", spaceless: "Twig.logic.type.spaceless", endspaceless: "Twig.logic.type.endspaceless", macro: "Twig.logic.type.macro", endmacro: "Twig.logic.type.endmacro", import_: "Twig.logic.type.import", from: "Twig.logic.type.from", embed: "Twig.logic.type.embed", endembed: "Twig.logic.type.endembed", with: "Twig.logic.type.with", endwith: "Twig.logic.type.endwith" }, e.logic.definitions = [{ type: e.logic.type.if_, regex: /^if\s+([\s\S]+)$/, next: [e.logic.type.else_, e.logic.type.elseif, e.logic.type.endif], open: !0, compile: function compile(t) {
+					var r = t.match[1];return t.stack = e.expression.compile.call(this, { type: e.expression.type.expression, value: r }).stack, delete t.match, t;
+				}, parse: function parse(t, r, n) {
+					var o = this;return e.expression.parseAsync.call(this, t.stack, r).then(function (i) {
+						return n = !0, e.lib.boolval(i) ? (n = !1, e.parseAsync.call(o, t.output, r)) : "";
+					}).then(function (e) {
+						return { chain: n, output: e };
+					});
+				} }, { type: e.logic.type.elseif, regex: /^elseif\s+([^\s].*)$/, next: [e.logic.type.else_, e.logic.type.elseif, e.logic.type.endif], open: !1, compile: function compile(t) {
+					var r = t.match[1];return t.stack = e.expression.compile.call(this, { type: e.expression.type.expression, value: r }).stack, delete t.match, t;
+				}, parse: function parse(t, r, n) {
+					var o = this;return e.expression.parseAsync.call(this, t.stack, r).then(function (i) {
+						return n && e.lib.boolval(i) ? (n = !1, e.parseAsync.call(o, t.output, r)) : "";
+					}).then(function (e) {
+						return { chain: n, output: e };
+					});
+				} }, { type: e.logic.type.else_, regex: /^else$/, next: [e.logic.type.endif, e.logic.type.endfor], open: !1, parse: function parse(t, r, n) {
+					var o = e.Promise.resolve("");return n && (o = e.parseAsync.call(this, t.output, r)), o.then(function (e) {
+						return { chain: n, output: e };
+					});
+				} }, { type: e.logic.type.endif, regex: /^endif$/, next: [], open: !1 }, { type: e.logic.type.for_, regex: /^for\s+([a-zA-Z0-9_,\s]+)\s+in\s+([\S\s]+?)(?:\s+if\s+([^\s].*))?$/, next: [e.logic.type.else_, e.logic.type.endfor], open: !0, compile: function compile(t) {
+					var r = t.match[1],
+					    n = t.match[2],
+					    o = t.match[3],
+					    i = null;if (t.key_var = null, t.value_var = null, r.indexOf(",") >= 0) {
+						if (2 !== (i = r.split(",")).length) throw new e.Error("Invalid expression in for loop: " + r);t.key_var = i[0].trim(), t.value_var = i[1].trim();
+					} else t.value_var = r;return t.expression = e.expression.compile.call(this, { type: e.expression.type.expression, value: n }).stack, o && (t.conditional = e.expression.compile.call(this, { type: e.expression.type.expression, value: o }).stack), delete t.match, t;
+				}, parse: function parse(t, r, n) {
+					var o,
+					    i,
+					    s = [],
+					    a = 0,
+					    p = this,
+					    c = t.conditional,
+					    l = function l(n, i) {
+						var l = e.ChildContext(r);return l[t.value_var] = i, t.key_var && (l[t.key_var] = n), l.loop = function (e, t) {
+							var n = void 0 !== c;return { index: a + 1, index0: a, revindex: n ? void 0 : o - a, revindex0: n ? void 0 : o - a - 1, first: 0 === a, last: n ? void 0 : a === o - 1, length: n ? void 0 : o, parent: r };
+						}(), (void 0 === c ? e.Promise.resolve(!0) : e.expression.parseAsync.call(p, c, l)).then(function (r) {
+							if (r) return e.parseAsync.call(p, t.output, l).then(function (e) {
+								s.push(e), a += 1;
+							});
+						}).then(function () {
+							delete l.loop, delete l[t.value_var], delete l[t.key_var], e.merge(r, l, !0);
+						});
+					};return e.expression.parseAsync.call(this, t.expression, r).then(function (t) {
+						return e.lib.isArray(t) ? (o = t.length, e.async.forEach(t, function (e) {
+							return l(a, e);
+						})) : e.lib.is("Object", t) ? (i = void 0 !== t._keys ? t._keys : Object.keys(t), o = i.length, e.async.forEach(i, function (e) {
+							if ("_keys" !== e) return l(e, t[e]);
+						})) : void 0;
+					}).then(function () {
+						return { chain: 0 === s.length, output: e.output.call(p, s) };
+					});
+				} }, { type: e.logic.type.endfor, regex: /^endfor$/, next: [], open: !1 }, { type: e.logic.type.set, regex: /^set\s+([a-zA-Z0-9_,\s]+)\s*=\s*([\s\S]+)$/, next: [], open: !0, compile: function compile(t) {
+					var r = t.match[1].trim(),
+					    n = t.match[2],
+					    o = e.expression.compile.call(this, { type: e.expression.type.expression, value: n }).stack;return t.key = r, t.expression = o, delete t.match, t;
+				}, parse: function parse(t, r, n) {
+					var o = t.key;return e.expression.parseAsync.call(this, t.expression, r).then(function (t) {
+						return t === r && (t = e.lib.copy(t)), r[o] = t, { chain: n, context: r };
+					});
+				} }, { type: e.logic.type.setcapture, regex: /^set\s+([a-zA-Z0-9_,\s]+)$/, next: [e.logic.type.endset], open: !0, compile: function compile(e) {
+					var t = e.match[1].trim();return e.key = t, delete e.match, e;
+				}, parse: function parse(t, r, n) {
+					var o = this,
+					    i = t.key;return e.parseAsync.call(this, t.output, r).then(function (e) {
+						return o.context[i] = e, r[i] = e, { chain: n, context: r };
+					});
+				} }, { type: e.logic.type.endset, regex: /^endset$/, next: [], open: !1 }, { type: e.logic.type.filter, regex: /^filter\s+(.+)$/, next: [e.logic.type.endfilter], open: !0, compile: function compile(t) {
+					var r = "|" + t.match[1].trim();return t.stack = e.expression.compile.call(this, { type: e.expression.type.expression, value: r }).stack, delete t.match, t;
+				}, parse: function parse(t, r, n) {
+					var o = this;return e.parseAsync.call(this, t.output, r).then(function (n) {
+						var i = [{ type: e.expression.type.string, value: n }].concat(t.stack);return e.expression.parseAsync.call(o, i, r);
+					}).then(function (e) {
+						return { chain: n, output: e };
+					});
+				} }, { type: e.logic.type.endfilter, regex: /^endfilter$/, next: [], open: !1 }, { type: e.logic.type.block, regex: /^block\s+([a-zA-Z0-9_]+)$/, next: [e.logic.type.endblock], open: !0, compile: function compile(e) {
+					return e.block = e.match[1].trim(), delete e.match, e;
+				}, parse: function parse(t, r, n) {
+					var o,
+					    i = this,
+					    s = e.Promise.resolve(),
+					    a = e.indexOf(this.importedBlocks, t.block) > -1,
+					    p = this.blocks[t.block] && e.indexOf(this.blocks[t.block], e.placeholders.parent) > -1;return e.forEach(this.parseStack, function (r) {
+						r.type == e.logic.type.for_ && (t.overwrite = !0);
+					}), (void 0 === this.blocks[t.block] || a || p || t.overwrite) && (s = (s = t.expression ? e.expression.parseAsync.call(this, t.output, r).then(function (t) {
+						return e.expression.parseAsync.call(i, { type: e.expression.type.string, value: t }, r);
+					}) : e.parseAsync.call(this, t.output, r).then(function (t) {
+						return e.expression.parseAsync.call(i, { type: e.expression.type.string, value: t }, r);
+					})).then(function (r) {
+						a && i.importedBlocks.splice(i.importedBlocks.indexOf(t.block), 1), i.blocks[t.block] = p ? e.Markup(i.blocks[t.block].replace(e.placeholders.parent, r)) : r, i.originalBlockTokens[t.block] = { type: t.type, block: t.block, output: t.output, overwrite: !0 };
+					})), s.then(function () {
+						return o = i.child.blocks[t.block] ? i.child.blocks[t.block] : i.blocks[t.block], { chain: n, output: o };
+					});
+				} }, { type: e.logic.type.shortblock, regex: /^block\s+([a-zA-Z0-9_]+)\s+(.+)$/, next: [], open: !0, compile: function compile(t) {
+					return t.expression = t.match[2].trim(), t.output = e.expression.compile({ type: e.expression.type.expression, value: t.expression }).stack, t.block = t.match[1].trim(), delete t.match, t;
+				}, parse: function parse(t, r, n) {
+					for (var o = new Array(arguments.length), i = arguments.length; i-- > 0;) {
+						o[i] = arguments[i];
+					}return e.logic.handler[e.logic.type.block].parse.apply(this, o);
+				} }, { type: e.logic.type.endblock, regex: /^endblock(?:\s+([a-zA-Z0-9_]+))?$/, next: [], open: !1 }, { type: e.logic.type.extends_, regex: /^extends\s+(.+)$/, next: [], open: !0, compile: function compile(t) {
+					var r = t.match[1].trim();return delete t.match, t.stack = e.expression.compile.call(this, { type: e.expression.type.expression, value: r }).stack, t;
+				}, parse: function parse(t, r, n) {
+					var o = this,
+					    i = e.ChildContext(r);return e.expression.parseAsync.call(this, t.stack, r).then(function (t) {
+						return o.extend = t, (t instanceof e.Template ? t : o.importFile(t)).renderAsync(i);
+					}).then(function () {
+						return e.lib.extend(r, i), { chain: n, output: "" };
+					});
+				} }, { type: e.logic.type.use, regex: /^use\s+(.+)$/, next: [], open: !0, compile: function compile(t) {
+					var r = t.match[1].trim();return delete t.match, t.stack = e.expression.compile.call(this, { type: e.expression.type.expression, value: r }).stack, t;
+				}, parse: function parse(t, r, n) {
+					var o = this;return e.expression.parseAsync.call(this, t.stack, r).then(function (e) {
+						return o.importBlocks(e), { chain: n, output: "" };
+					});
+				} }, { type: e.logic.type.include, regex: /^include\s+(.+?)(?:\s|$)(ignore missing(?:\s|$))?(?:with\s+([\S\s]+?))?(?:\s|$)(only)?$/, next: [], open: !0, compile: function compile(t) {
+					var r = t.match,
+					    n = r[1].trim(),
+					    o = void 0 !== r[2],
+					    i = r[3],
+					    s = void 0 !== r[4] && r[4].length;return delete t.match, t.only = s, t.ignoreMissing = o, t.stack = e.expression.compile.call(this, { type: e.expression.type.expression, value: n }).stack, void 0 !== i && (t.withStack = e.expression.compile.call(this, { type: e.expression.type.expression, value: i.trim() }).stack), t;
+				}, parse: function parse(t, r, n) {
+					var o = t.only ? {} : e.ChildContext(r),
+					    i = t.ignoreMissing,
+					    s = this,
+					    a = { chain: n, output: "" };return (void 0 !== t.withStack ? e.expression.parseAsync.call(this, t.withStack, r).then(function (t) {
+						e.lib.extend(o, t);
+					}) : e.Promise.resolve()).then(function () {
+						return e.expression.parseAsync.call(s, t.stack, r);
+					}).then(function (t) {
+						if (t instanceof e.Template) return t.renderAsync(o);try {
+							return s.importFile(t).renderAsync(o);
+						} catch (e) {
+							if (i) return "";throw e;
+						}
+					}).then(function (e) {
+						return "" !== e && (a.output = e), a;
+					});
+				} }, { type: e.logic.type.spaceless, regex: /^spaceless$/, next: [e.logic.type.endspaceless], open: !0, parse: function parse(t, r, n) {
+					return e.parseAsync.call(this, t.output, r).then(function (t) {
+						var r = t.replace(/>\s+</g, "><").trim();return r = e.Markup(r), { chain: n, output: r };
+					});
+				} }, { type: e.logic.type.endspaceless, regex: /^endspaceless$/, next: [], open: !1 }, { type: e.logic.type.macro, regex: /^macro\s+([a-zA-Z0-9_]+)\s*\(\s*((?:[a-zA-Z0-9_]+(?:\s*=\s*([\s\S]+))?(?:,\s*)?)*)\s*\)$/, next: [e.logic.type.endmacro], open: !0, compile: function compile(t) {
+					var r = t.match[1],
+					    n = t.match[2].split(/\s*,\s*/),
+					    o = n.map(function (e) {
+						return e.split(/\s*=\s*/)[0];
+					}),
+					    i = o.length;if (i > 1) for (var s = {}, a = 0; a < i; a++) {
+						var p = o[a];if (s[p]) throw new e.Error("Duplicate arguments for parameter: " + p);s[p] = 1;
+					}return t.macroName = r, t.parameters = o, t.defaults = n.reduce(function (t, r) {
+						var n = r.split(/\s*=\s*/),
+						    o = n[0],
+						    i = n[1];return t[o] = i ? e.expression.compile.call(this, { type: e.expression.type.expression, value: i }).stack : void 0, t;
+					}, {}), delete t.match, t;
+				}, parse: function parse(t, r, n) {
+					var o = this;return this.macros[t.macroName] = function () {
+						var n = { _self: o.macros },
+						    i = Array.prototype.slice.call(arguments);return e.async.forEach(t.parameters, function (o, s) {
+							return void 0 !== i[s] ? (n[o] = i[s], !0) : void 0 !== t.defaults[o] ? e.expression.parseAsync.call(this, t.defaults[o], r).then(function (t) {
+								return n[o] = t, e.Promise.resolve();
+							}) : (n[o] = void 0, !0);
+						}).then(function () {
+							return e.parseAsync.call(o, t.output, n);
+						});
+					}, { chain: n, output: "" };
+				} }, { type: e.logic.type.endmacro, regex: /^endmacro$/, next: [], open: !1 }, { type: e.logic.type.import_, regex: /^import\s+(.+)\s+as\s+([a-zA-Z0-9_]+)$/, next: [], open: !0, compile: function compile(t) {
+					var r = t.match[1].trim(),
+					    n = t.match[2].trim();return delete t.match, t.expression = r, t.contextName = n, t.stack = e.expression.compile.call(this, { type: e.expression.type.expression, value: r }).stack, t;
+				}, parse: function parse(t, r, n) {
+					var o = this,
+					    i = { chain: n, output: "" };return "_self" === t.expression ? (r[t.contextName] = this.macros, e.Promise.resolve(i)) : e.expression.parseAsync.call(this, t.stack, r).then(function (e) {
+						return o.importFile(e || t.expression);
+					}).then(function (e) {
+						return r[t.contextName] = e.renderAsync({}, { output: "macros" }), i;
+					});
+				} }, { type: e.logic.type.from, regex: /^from\s+(.+)\s+import\s+([a-zA-Z0-9_, ]+)$/, next: [], open: !0, compile: function compile(t) {
+					for (var r = t.match[1].trim(), n = t.match[2].trim().split(/\s*,\s*/), o = {}, i = 0; i < n.length; i++) {
+						var s = n[i],
+						    a = s.match(/^([a-zA-Z0-9_]+)\s+as\s+([a-zA-Z0-9_]+)$/);a ? o[a[1].trim()] = a[2].trim() : s.match(/^([a-zA-Z0-9_]+)$/) && (o[s] = s);
+					}return delete t.match, t.expression = r, t.macroNames = o, t.stack = e.expression.compile.call(this, { type: e.expression.type.expression, value: r }).stack, t;
+				}, parse: function parse(t, r, n) {
+					var o = this,
+					    i = e.Promise.resolve(this.macros);return "_self" !== t.expression && (i = e.expression.parseAsync.call(this, t.stack, r).then(function (e) {
+						return o.importFile(e || t.expression);
+					}).then(function (e) {
+						return e.renderAsync({}, { output: "macros" });
+					})), i.then(function (e) {
+						for (var o in t.macroNames) {
+							e.hasOwnProperty(o) && (r[t.macroNames[o]] = e[o]);
+						}return { chain: n, output: "" };
+					});
+				} }, { type: e.logic.type.embed, regex: /^embed\s+(.+?)(?:\s+(ignore missing))?(?:\s+with\s+([\S\s]+?))?(?:\s+(only))?$/, next: [e.logic.type.endembed], open: !0, compile: function compile(t) {
+					var r = t.match,
+					    n = r[1].trim(),
+					    o = void 0 !== r[2],
+					    i = r[3],
+					    s = void 0 !== r[4] && r[4].length;return delete t.match, t.only = s, t.ignoreMissing = o, t.stack = e.expression.compile.call(this, { type: e.expression.type.expression, value: n }).stack, void 0 !== i && (t.withStack = e.expression.compile.call(this, { type: e.expression.type.expression, value: i.trim() }).stack), t;
+				}, parse: function parse(t, r, n) {
+					var o,
+					    i,
+					    s = {},
+					    a = this,
+					    p = e.Promise.resolve();if (!t.only) for (o in r) {
+						r.hasOwnProperty(o) && (s[o] = r[o]);
+					}return void 0 !== t.withStack && (p = e.expression.parseAsync.call(this, t.withStack, r).then(function (e) {
+						for (o in e) {
+							e.hasOwnProperty(o) && (s[o] = e[o]);
+						}
+					})), p.then(function () {
+						return p = null, e.expression.parseAsync.call(a, t.stack, s);
+					}).then(function (r) {
+						if (r instanceof e.Template) i = r;else try {
+							i = a.importFile(r);
+						} catch (e) {
+							if (t.ignoreMissing) return "";throw a = null, e;
+						}return a._blocks = e.lib.copy(a.blocks), a.blocks = {}, e.parseAsync.call(a, t.output, s).then(function () {
+							return i.renderAsync(s, { blocks: a.blocks });
+						});
+					}).then(function (t) {
+						return a.blocks = e.lib.copy(a._blocks), { chain: n, output: t };
+					});
+				} }, { type: e.logic.type.endembed, regex: /^endembed$/, next: [], open: !1 }, { type: e.logic.type.with, regex: /^(?:with\s+([\S\s]+?))(?:\s|$)(only)?$/, next: [e.logic.type.endwith], open: !0, compile: function compile(t) {
+					var r = t.match,
+					    n = r[1],
+					    o = void 0 !== r[2] && r[2].length;return delete t.match, t.only = o, void 0 !== n && (t.withStack = e.expression.compile.call(this, { type: e.expression.type.expression, value: n.trim() }).stack), t;
+				}, parse: function parse(t, r, n) {
+					var o,
+					    i = {},
+					    s = this,
+					    a = e.Promise.resolve();return t.only || (i = e.ChildContext(r)), void 0 !== t.withStack && (a = e.expression.parseAsync.call(this, t.withStack, r).then(function (e) {
+						for (o in e) {
+							e.hasOwnProperty(o) && (i[o] = e[o]);
+						}
+					})), a.then(function () {
+						return e.parseAsync.call(s, t.output, i);
+					}).then(function (e) {
+						return { chain: n, output: e };
+					});
+				} }, { type: e.logic.type.endwith, regex: /^endwith$/, next: [], open: !1 }], e.logic.handler = {}, e.logic.extendType = function (t, r) {
+				r = r || "Twig.logic.type" + t, e.logic.type[t] = r;
+			}, e.logic.extend = function (t) {
+				if (!t.type) throw new e.Error("Unable to extend logic definition. No type provided for " + t);e.logic.extendType(t.type), e.logic.handler[t.type] = t;
+			}; e.logic.definitions.length > 0;) {
+				e.logic.extend(e.logic.definitions.shift());
+			}return e.logic.compile = function (t) {
+				var r = t.value.trim(),
+				    n = e.logic.tokenize.call(this, r),
+				    o = e.logic.handler[n.type];return o.compile && (n = o.compile.call(this, n), e.log.trace("Twig.logic.compile: ", "Compiled logic token to ", n)), n;
+			}, e.logic.tokenize = function (t) {
+				var r = null,
+				    n = null,
+				    o = null,
+				    i = null,
+				    s = null,
+				    a = null,
+				    p = null;for (r in t = t.trim(), e.logic.handler) {
+					for (n = e.logic.handler[r].type, i = o = e.logic.handler[r].regex, e.lib.isArray(o) || (i = [o]), s = i.length, a = 0; a < s; a++) {
+						if (null !== (p = i[a].exec(t))) return e.log.trace("Twig.logic.tokenize: ", "Matched a ", n, " regular expression of ", p), { type: n, match: p };
+					}
+				}throw new e.Error("Unable to parse '" + t.trim() + "'");
+			}, e.logic.parse = function (t, r, n, o) {
+				return e.async.potentiallyAsync(this, o, function () {
+					e.log.debug("Twig.logic.parse: ", "Parsing logic token ", t);var o,
+					    i = e.logic.handler[t.type],
+					    s = this;return i.parse ? (s.parseStack.unshift(t), o = i.parse.call(s, t, r || {}, n), e.isPromise(o) ? o = o.then(function (e) {
+						return s.parseStack.shift(), e;
+					}) : s.parseStack.shift(), o) : "";
+				});
+			}, e;
+		};
+	}, function (e, t) {
+		var r,
+		    n,
+		    o = e.exports = {};function i() {
+			throw new Error("setTimeout has not been defined");
+		}function s() {
+			throw new Error("clearTimeout has not been defined");
+		}function a(e) {
+			if (r === setTimeout) return setTimeout(e, 0);if ((r === i || !r) && setTimeout) return r = setTimeout, setTimeout(e, 0);try {
+				return r(e, 0);
+			} catch (t) {
+				try {
+					return r.call(null, e, 0);
+				} catch (t) {
+					return r.call(this, e, 0);
+				}
+			}
+		}!function () {
+			try {
+				r = "function" == typeof setTimeout ? setTimeout : i;
+			} catch (e) {
+				r = i;
+			}try {
+				n = "function" == typeof clearTimeout ? clearTimeout : s;
+			} catch (e) {
+				n = s;
+			}
+		}();var p,
+		    c = [],
+		    l = !1,
+		    u = -1;function f() {
+			l && p && (l = !1, p.length ? c = p.concat(c) : u = -1, c.length && h());
+		}function h() {
+			if (!l) {
+				var e = a(f);l = !0;for (var t = c.length; t;) {
+					for (p = c, c = []; ++u < t;) {
+						p && p[u].run();
+					}u = -1, t = c.length;
+				}p = null, l = !1, function (e) {
+					if (n === clearTimeout) return clearTimeout(e);if ((n === s || !n) && clearTimeout) return n = clearTimeout, clearTimeout(e);try {
+						n(e);
+					} catch (t) {
+						try {
+							return n.call(null, e);
+						} catch (t) {
+							return n.call(this, e);
+						}
+					}
+				}(e);
+			}
+		}function y(e, t) {
+			this.fun = e, this.array = t;
+		}function d() {}o.nextTick = function (e) {
+			var t = new Array(arguments.length - 1);if (arguments.length > 1) for (var r = 1; r < arguments.length; r++) {
+				t[r - 1] = arguments[r];
+			}c.push(new y(e, t)), 1 !== c.length || l || a(h);
+		}, y.prototype.run = function () {
+			this.fun.apply(null, this.array);
+		}, o.title = "browser", o.browser = !0, o.env = {}, o.argv = [], o.version = "", o.versions = {}, o.on = d, o.addListener = d, o.once = d, o.off = d, o.removeListener = d, o.removeAllListeners = d, o.emit = d, o.prependListener = d, o.prependOnceListener = d, o.listeners = function (e) {
+			return [];
+		}, o.binding = function (e) {
+			throw new Error("process.binding is not supported");
+		}, o.cwd = function () {
+			return "/";
+		}, o.chdir = function (e) {
+			throw new Error("process.chdir is not supported");
+		}, o.umask = function () {
+			return 0;
+		};
+	}, function (e, t) {}, function (e, t, r) {
+		e.exports = function (e) {
+			"use strict";
+			var t, n;try {
+				t = r(10), n = r(0);
+			} catch (e) {}e.Templates.registerLoader("fs", function (r, o, i, s) {
+				var a,
+				    p,
+				    c = o.precompiled,
+				    l = this.parsers[o.parser] || this.parser.twig;if (!t || !n) throw new e.Error('Unsupported platform: Unable to load from file because there is no "fs" or "path" implementation');var u = function u(e, t) {
+					e ? "function" == typeof s && s(e) : (!0 === c && (t = JSON.parse(t)), o.data = t, o.path = o.path || r, a = l.call(this, o), "function" == typeof i && i(a));
+				};if (o.path = o.path || r, o.async) return t.stat(o.path, function (r, n) {
+					!r && n.isFile() ? t.readFile(o.path, "utf8", u) : "function" == typeof s && s(new e.Error("Unable to find template file " + o.path));
+				}), !0;try {
+					if (!t.statSync(o.path).isFile()) throw new e.Error("Unable to find template file " + o.path);
+				} catch (t) {
+					throw new e.Error("Unable to find template file " + o.path);
+				}return p = t.readFileSync(o.path, "utf8"), u(void 0, p), a;
+			});
+		};
+	}, function (e, t) {
+		e.exports = function (e) {
+			"use strict";
+			e.Templates.registerLoader("ajax", function (t, r, n, o) {
+				var i,
+				    s,
+				    a = r.precompiled,
+				    p = this.parsers[r.parser] || this.parser.twig;if ("undefined" == typeof XMLHttpRequest) throw new e.Error('Unsupported platform: Unable to do ajax requests because there is no "XMLHTTPRequest" implementation');return (s = new XMLHttpRequest()).onreadystatechange = function () {
+					var c = null;4 === s.readyState && (200 === s.status || window.cordova && 0 == s.status ? (e.log.debug("Got template ", s.responseText), c = !0 === a ? JSON.parse(s.responseText) : s.responseText, r.url = t, r.data = c, i = p.call(this, r), "function" == typeof n && n(i)) : "function" == typeof o && o(s));
+				}, s.open("GET", t, !!r.async), s.send(), !!r.async || i;
+			});
+		};
+	}, function (e, t, r) {
+		"use strict";
+		e.exports = function (e) {
+			return !1 !== e && 0 !== e && 0 !== e && "" !== e && "0" !== e && (!Array.isArray(e) || 0 !== e.length) && null !== e && void 0 !== e;
+		};
+	}, function (e, t, r) {
+		"use strict";
+		e.exports = function (e, t) {
+			var r,
+			    n,
+			    o = ["Sun", "Mon", "Tues", "Wednes", "Thurs", "Fri", "Satur", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+			    i = /\\?(.?)/gi,
+			    s = function s(e, t) {
+				return n[e] ? n[e]() : t;
+			},
+			    a = function a(e, t) {
+				for (e = String(e); e.length < t;) {
+					e = "0" + e;
+				}return e;
+			};return n = { d: function d() {
+					return a(n.j(), 2);
+				}, D: function D() {
+					return n.l().slice(0, 3);
+				}, j: function j() {
+					return r.getDate();
+				}, l: function l() {
+					return o[n.w()] + "day";
+				}, N: function N() {
+					return n.w() || 7;
+				}, S: function S() {
+					var e = n.j(),
+					    t = e % 10;return t <= 3 && 1 === parseInt(e % 100 / 10, 10) && (t = 0), ["st", "nd", "rd"][t - 1] || "th";
+				}, w: function w() {
+					return r.getDay();
+				}, z: function z() {
+					var e = new Date(n.Y(), n.n() - 1, n.j()),
+					    t = new Date(n.Y(), 0, 1);return Math.round((e - t) / 864e5);
+				}, W: function W() {
+					var e = new Date(n.Y(), n.n() - 1, n.j() - n.N() + 3),
+					    t = new Date(e.getFullYear(), 0, 4);return a(1 + Math.round((e - t) / 864e5 / 7), 2);
+				}, F: function F() {
+					return o[6 + n.n()];
+				}, m: function m() {
+					return a(n.n(), 2);
+				}, M: function M() {
+					return n.F().slice(0, 3);
+				}, n: function n() {
+					return r.getMonth() + 1;
+				}, t: function t() {
+					return new Date(n.Y(), n.n(), 0).getDate();
+				}, L: function L() {
+					var e = n.Y();return e % 4 == 0 & e % 100 != 0 | e % 400 == 0;
+				}, o: function o() {
+					var e = n.n(),
+					    t = n.W();return n.Y() + (12 === e && t < 9 ? 1 : 1 === e && t > 9 ? -1 : 0);
+				}, Y: function Y() {
+					return r.getFullYear();
+				}, y: function y() {
+					return n.Y().toString().slice(-2);
+				}, a: function a() {
+					return r.getHours() > 11 ? "pm" : "am";
+				}, A: function A() {
+					return n.a().toUpperCase();
+				}, B: function B() {
+					var e = 3600 * r.getUTCHours(),
+					    t = 60 * r.getUTCMinutes(),
+					    n = r.getUTCSeconds();return a(Math.floor((e + t + n + 3600) / 86.4) % 1e3, 3);
+				}, g: function g() {
+					return n.G() % 12 || 12;
+				}, G: function G() {
+					return r.getHours();
+				}, h: function h() {
+					return a(n.g(), 2);
+				}, H: function H() {
+					return a(n.G(), 2);
+				}, i: function i() {
+					return a(r.getMinutes(), 2);
+				}, s: function s() {
+					return a(r.getSeconds(), 2);
+				}, u: function u() {
+					return a(1e3 * r.getMilliseconds(), 6);
+				}, e: function e() {
+					throw new Error("Not supported (see source code of date() for timezone on how to add support)");
+				}, I: function I() {
+					return new Date(n.Y(), 0) - Date.UTC(n.Y(), 0) != new Date(n.Y(), 6) - Date.UTC(n.Y(), 6) ? 1 : 0;
+				}, O: function O() {
+					var e = r.getTimezoneOffset(),
+					    t = Math.abs(e);return (e > 0 ? "-" : "+") + a(100 * Math.floor(t / 60) + t % 60, 4);
+				}, P: function P() {
+					var e = n.O();return e.substr(0, 3) + ":" + e.substr(3, 2);
+				}, T: function T() {
+					return "UTC";
+				}, Z: function Z() {
+					return 60 * -r.getTimezoneOffset();
+				}, c: function c() {
+					return "Y-m-d\\TH:i:sP".replace(i, s);
+				}, r: function r() {
+					return "D, d M Y H:i:s O".replace(i, s);
+				}, U: function U() {
+					return r / 1e3 | 0;
+				} }, function (e, t) {
+				return r = void 0 === t ? new Date() : t instanceof Date ? new Date(t) : new Date(1e3 * t), e.replace(i, s);
+			}(e, t);
+		};
+	}, function (e, t, r) {
+		"use strict";
+		e.exports = function (e, t) {
+			var r, n, o, i, s, a, p, c, l, u, f;if (!e) return !1;e = e.replace(/^\s+|\s+$/g, "").replace(/\s{2,}/g, " ").replace(/[\t\r\n]/g, "").toLowerCase();var h = new RegExp(["^(\\d{1,4})", "([\\-\\.\\/:])", "(\\d{1,2})", "([\\-\\.\\/:])", "(\\d{1,4})", "(?:\\s(\\d{1,2}):(\\d{2})?:?(\\d{2})?)?", "(?:\\s([A-Z]+)?)?$"].join(""));if ((n = e.match(h)) && n[2] === n[4]) if (n[1] > 1901) switch (n[2]) {case "-":
+					return !(n[3] > 12 || n[5] > 31) && new Date(n[1], parseInt(n[3], 10) - 1, n[5], n[6] || 0, n[7] || 0, n[8] || 0, n[9] || 0) / 1e3;case ".":
+					return !1;case "/":
+					return !(n[3] > 12 || n[5] > 31) && new Date(n[1], parseInt(n[3], 10) - 1, n[5], n[6] || 0, n[7] || 0, n[8] || 0, n[9] || 0) / 1e3;} else if (n[5] > 1901) switch (n[2]) {case "-":case ".":
+					return !(n[3] > 12 || n[1] > 31) && new Date(n[5], parseInt(n[3], 10) - 1, n[1], n[6] || 0, n[7] || 0, n[8] || 0, n[9] || 0) / 1e3;case "/":
+					return !(n[1] > 12 || n[3] > 31) && new Date(n[5], parseInt(n[1], 10) - 1, n[3], n[6] || 0, n[7] || 0, n[8] || 0, n[9] || 0) / 1e3;} else switch (n[2]) {case "-":
+					return !(n[3] > 12 || n[5] > 31 || n[1] < 70 && n[1] > 38) && (i = n[1] >= 0 && n[1] <= 38 ? +n[1] + 2e3 : n[1], new Date(i, parseInt(n[3], 10) - 1, n[5], n[6] || 0, n[7] || 0, n[8] || 0, n[9] || 0) / 1e3);case ".":
+					return n[5] >= 70 ? !(n[3] > 12 || n[1] > 31) && new Date(n[5], parseInt(n[3], 10) - 1, n[1], n[6] || 0, n[7] || 0, n[8] || 0, n[9] || 0) / 1e3 : n[5] < 60 && !n[6] && !(n[1] > 23 || n[3] > 59) && (o = new Date(), new Date(o.getFullYear(), o.getMonth(), o.getDate(), n[1] || 0, n[3] || 0, n[5] || 0, n[9] || 0) / 1e3);case "/":
+					return !(n[1] > 12 || n[3] > 31 || n[5] < 70 && n[5] > 38) && (i = n[5] >= 0 && n[5] <= 38 ? +n[5] + 2e3 : n[5], new Date(i, parseInt(n[1], 10) - 1, n[3], n[6] || 0, n[7] || 0, n[8] || 0, n[9] || 0) / 1e3);case ":":
+					return !(n[1] > 23 || n[3] > 59 || n[5] > 59) && (o = new Date(), new Date(o.getFullYear(), o.getMonth(), o.getDate(), n[1] || 0, n[3] || 0, n[5] || 0) / 1e3);}if ("now" === e) return null === t || isNaN(t) ? new Date().getTime() / 1e3 | 0 : 0 | t;if (!isNaN(r = Date.parse(e))) return r / 1e3 | 0;if (h = new RegExp(["^([0-9]{4}-[0-9]{2}-[0-9]{2})", "[ t]", "([0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?)", "([\\+-][0-9]{2}(:[0-9]{2})?|z)"].join("")), (n = e.match(h)) && ("z" === n[4] ? n[4] = "Z" : n[4].match(/^([+-][0-9]{2})$/) && (n[4] = n[4] + ":00"), !isNaN(r = Date.parse(n[1] + "T" + n[2] + n[4])))) return r / 1e3 | 0;function y(e) {
+				var t = e.split(" "),
+				    r = t[0],
+				    n = t[1].substring(0, 3),
+				    o = /\d+/.test(r),
+				    i = "ago" === t[2],
+				    c = ("last" === r ? -1 : 1) * (i ? -1 : 1);if (o && (c *= parseInt(r, 10)), p.hasOwnProperty(n) && !t[1].match(/^mon(day|\.)?$/i)) return s["set" + p[n]](s["get" + p[n]]() + c);if ("wee" === n) return s.setDate(s.getDate() + 7 * c);if ("next" === r || "last" === r) !function (e, t, r) {
+					var n,
+					    o = a[t];void 0 !== o && (0 == (n = o - s.getDay()) ? n = 7 * r : n > 0 && "last" === e ? n -= 7 : n < 0 && "next" === e && (n += 7), s.setDate(s.getDate() + n));
+				}(r, n, c);else if (!o) return !1;return !0;
+			}if (s = t ? new Date(1e3 * t) : new Date(), a = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 }, p = { yea: "FullYear", mon: "Month", day: "Date", hou: "Hours", min: "Minutes", sec: "Seconds" }, u = "([+-]?\\d+\\s" + (l = "(years?|months?|weeks?|days?|hours?|minutes?|min|seconds?|sec|sunday|sun\\.?|monday|mon\\.?|tuesday|tue\\.?|wednesday|wed\\.?|thursday|thu\\.?|friday|fri\\.?|saturday|sat\\.?)") + "|(last|next)\\s" + l + ")(\\sago)?", !(n = e.match(new RegExp(u, "gi")))) return !1;for (f = 0, c = n.length; f < c; f++) {
+				if (!y(n[f])) return !1;
+			}return s.getTime() / 1e3;
+		};
+	}, function (e, t, r) {
+		"use strict";
+		e.exports = function (e, t) {
+			return t = (((t || "") + "").toLowerCase().match(/<[a-z][a-z0-9]*>/g) || []).join(""), e.replace(/<!--[\s\S]*?-->|<\?(?:php)?[\s\S]*?\?>/gi, "").replace(/<\/?([a-z][a-z0-9]*)\b[^>]*>/gi, function (e, r) {
+				return t.indexOf("<" + r.toLowerCase() + ">") > -1 ? e : "";
+			});
+		};
+	}, function (e, t, r) {
+		"use strict";
+		var n = "function" == typeof Symbol && "symbol" == _typeof(Symbol.iterator) ? function (e) {
+			return typeof e === "undefined" ? "undefined" : _typeof(e);
+		} : function (e) {
+			return e && "function" == typeof Symbol && e.constructor === Symbol && e !== Symbol.prototype ? "symbol" : typeof e === "undefined" ? "undefined" : _typeof(e);
+		};e.exports = function () {
+			var e,
+			    t,
+			    r,
+			    o = 0,
+			    i = arguments,
+			    s = i.length,
+			    a = function a(e) {
+				if ("[object Array]" === Object.prototype.toString.call(e)) return e;var t = [];for (var r in e) {
+					e.hasOwnProperty(r) && t.push(e[r]);
+				}return t;
+			},
+			    p = function e(t, r) {
+				var o = 0,
+				    i = 0,
+				    s = 0,
+				    p = 0,
+				    c = 0;if (t === r) return 0;if ("object" === (void 0 === t ? "undefined" : n(t))) {
+					if ("object" === (void 0 === r ? "undefined" : n(r))) {
+						if (t = a(t), r = a(r), c = t.length, (p = r.length) > c) return 1;if (p < c) return -1;for (o = 0, i = c; o < i; ++o) {
+							if (1 === (s = e(t[o], r[o]))) return 1;if (-1 === s) return -1;
+						}return 0;
+					}return -1;
+				}return "object" === (void 0 === r ? "undefined" : n(r)) ? 1 : isNaN(r) && !isNaN(t) ? 0 === t ? 0 : t < 0 ? 1 : -1 : isNaN(t) && !isNaN(r) ? 0 === r ? 0 : r > 0 ? 1 : -1 : r === t ? 0 : r > t ? 1 : -1;
+			};if (0 === s) throw new Error("At least one value should be passed to min()");if (1 === s) {
+				if ("object" !== n(i[0])) throw new Error("Wrong parameter count for min()");if (0 === (e = a(i[0])).length) throw new Error("Array must contain at least one element for min()");
+			} else e = i;for (t = e[0], o = 1, r = e.length; o < r; ++o) {
+				-1 === p(t, e[o]) && (t = e[o]);
+			}return t;
+		};
+	}, function (e, t, r) {
+		"use strict";
+		var n = "function" == typeof Symbol && "symbol" == _typeof(Symbol.iterator) ? function (e) {
+			return typeof e === "undefined" ? "undefined" : _typeof(e);
+		} : function (e) {
+			return e && "function" == typeof Symbol && e.constructor === Symbol && e !== Symbol.prototype ? "symbol" : typeof e === "undefined" ? "undefined" : _typeof(e);
+		};e.exports = function () {
+			var e,
+			    t,
+			    r,
+			    o = 0,
+			    i = arguments,
+			    s = i.length,
+			    a = function a(e) {
+				if ("[object Array]" === Object.prototype.toString.call(e)) return e;var t = [];for (var r in e) {
+					e.hasOwnProperty(r) && t.push(e[r]);
+				}return t;
+			},
+			    p = function e(t, r) {
+				var o = 0,
+				    i = 0,
+				    s = 0,
+				    p = 0,
+				    c = 0;if (t === r) return 0;if ("object" === (void 0 === t ? "undefined" : n(t))) {
+					if ("object" === (void 0 === r ? "undefined" : n(r))) {
+						if (t = a(t), r = a(r), c = t.length, (p = r.length) > c) return 1;if (p < c) return -1;for (o = 0, i = c; o < i; ++o) {
+							if (1 === (s = e(t[o], r[o]))) return 1;if (-1 === s) return -1;
+						}return 0;
+					}return -1;
+				}return "object" === (void 0 === r ? "undefined" : n(r)) ? 1 : isNaN(r) && !isNaN(t) ? 0 === t ? 0 : t < 0 ? 1 : -1 : isNaN(t) && !isNaN(r) ? 0 === r ? 0 : r > 0 ? 1 : -1 : r === t ? 0 : r > t ? 1 : -1;
+			};if (0 === s) throw new Error("At least one value should be passed to max()");if (1 === s) {
+				if ("object" !== n(i[0])) throw new Error("Wrong parameter count for max()");if (0 === (e = a(i[0])).length) throw new Error("Array must contain at least one element for max()");
+			} else e = i;for (t = e[0], o = 1, r = e.length; o < r; ++o) {
+				1 === p(t, e[o]) && (t = e[o]);
+			}return t;
+		};
+	}, function (e, t, r) {
+		"use strict";
+		e.exports = function (e, t, r) {
+			var n, o, i, s;if (t |= 0, i = (e *= n = Math.pow(10, t)) % 1 == .5 * (s = e > 0 | -(e < 0)), o = Math.floor(e), i) switch (r) {case "PHP_ROUND_HALF_DOWN":
+					e = o + (s < 0);break;case "PHP_ROUND_HALF_EVEN":
+					e = o + o % 2 * s;break;case "PHP_ROUND_HALF_ODD":
+					e = o + !(o % 2);break;default:
+					e = o + (s > 0);}return (i ? e : Math.round(e)) / n;
+		};
+	}, function (e, t, r) {
+		"use strict";
+		e.exports = function (e, t) {
+			return r(1).apply(this, [e].concat(t));
+		};
+	}, function (e, t, r) {
+		e.exports = function (e) {
+			e.lib = {}, e.lib.sprintf = r(1), e.lib.vsprintf = r(20), e.lib.round = r(19), e.lib.max = r(18), e.lib.min = r(17), e.lib.strip_tags = r(16), e.lib.strtotime = r(15), e.lib.date = r(14), e.lib.boolval = r(13);var t = Object.prototype.toString;return e.lib.is = function (e, r) {
+				return void 0 !== r && null !== r && ("Array" === e && Array.isArray ? Array.isArray(r) : t.call(r).slice(8, -1) === e);
+			}, e.lib.isArray = Array.isArray || function (e) {
+				return "Array" === t.call(e).slice(8, -1);
+			}, e.lib.copy = function (e) {
+				var t,
+				    r = {};for (t in e) {
+					r[t] = e[t];
+				}return r;
+			}, e.lib.extend = function (e, t) {
+				var r,
+				    n = Object.keys(t || {});for (r = n.length; r--;) {
+					e[n[r]] = t[n[r]];
+				}return e;
+			}, e.lib.replaceAll = function (e, t, r) {
+				return e.split(t).join(r);
+			}, e.lib.chunkArray = function (t, r) {
+				var n = [],
+				    o = 0,
+				    i = t.length;if (r < 1 || !e.lib.is("Array", t)) return [];for (; o < i;) {
+					n.push(t.slice(o, o += r));
+				}return n;
+			}, e;
+		};
+	}, function (e, t) {
+		e.exports = function (t) {
+			return t.functions = { range: function range(e, t, r) {
+					var n,
+					    o,
+					    i = [],
+					    s = r || 1,
+					    a = !1;if (isNaN(e) || isNaN(t) ? isNaN(e) && isNaN(t) ? (a = !0, n = e.charCodeAt(0), o = t.charCodeAt(0)) : (n = isNaN(e) ? 0 : e, o = isNaN(t) ? 0 : t) : (n = parseInt(e, 10), o = parseInt(t, 10)), n > o) for (; n >= o;) {
+						i.push(a ? String.fromCharCode(n) : n), n -= s;
+					} else for (; n <= o;) {
+						i.push(a ? String.fromCharCode(n) : n), n += s;
+					}return i;
+				}, cycle: function cycle(e, t) {
+					return e[t % e.length];
+				}, dump: function dump() {
+					var e = arguments.length;for (args = new Array(e); e-- > 0;) {
+						args[e] = arguments[e];
+					}var r = 0,
+					    n = "",
+					    o = function o(e) {
+						for (var t = ""; e > 0;) {
+							e--, t += "  ";
+						}return t;
+					},
+					    i = function i(e) {
+						n += o(r), "object" == (typeof e === "undefined" ? "undefined" : _typeof(e)) ? s(e) : "function" == typeof e ? n += "function()\n" : "string" == typeof e ? n += "string(" + e.length + ') "' + e + '"\n' : "number" == typeof e ? n += "number(" + e + ")\n" : "boolean" == typeof e && (n += "bool(" + e + ")\n");
+					},
+					    s = function s(e) {
+						var t;if (null === e) n += "NULL\n";else if (void 0 === e) n += "undefined\n";else if ("object" == (typeof e === "undefined" ? "undefined" : _typeof(e))) {
+							for (t in n += o(r) + (typeof e === "undefined" ? "undefined" : _typeof(e)), r++, n += "(" + function (e) {
+								var t,
+								    r = 0;for (t in e) {
+									e.hasOwnProperty(t) && r++;
+								}return r;
+							}(e) + ") {\n", e) {
+								n += o(r) + "[" + t + "]=> \n", i(e[t]);
+							}n += o(--r) + "}\n";
+						} else i(e);
+					};return 0 == args.length && args.push(this.context), t.forEach(args, function (e) {
+						s(e);
+					}), n;
+				}, date: function date(e, r) {
+					var n;if (void 0 === e || null === e || "" === e) n = new Date();else if (t.lib.is("Date", e)) n = e;else if (t.lib.is("String", e)) n = e.match(/^[0-9]+$/) ? new Date(1e3 * e) : new Date(1e3 * t.lib.strtotime(e));else {
+						if (!t.lib.is("Number", e)) throw new t.Error("Unable to parse date " + e);n = new Date(1e3 * e);
+					}return n;
+				}, block: function block(e) {
+					return this.originalBlockTokens[e] ? t.logic.parse.call(this, this.originalBlockTokens[e], this.context).output : this.blocks[e];
+				}, parent: function parent() {
+					return t.placeholders.parent;
+				}, attribute: function attribute(e, r, n) {
+					return t.lib.is("Object", e) && e.hasOwnProperty(r) ? "function" == typeof e[r] ? e[r].apply(void 0, n) : e[r] : e[r] || void 0;
+				}, max: function max(e) {
+					return t.lib.is("Object", e) ? (delete e._keys, t.lib.max(e)) : t.lib.max.apply(null, arguments);
+				}, min: function min(e) {
+					return t.lib.is("Object", e) ? (delete e._keys, t.lib.min(e)) : t.lib.min.apply(null, arguments);
+				}, template_from_string: function template_from_string(e) {
+					return void 0 === e && (e = ""), t.Templates.parsers.twig({ options: this.options, data: e });
+				}, random: function random(e) {
+					var r = 2147483648;function n(e) {
+						var t = Math.floor(Math.random() * r),
+						    n = Math.min.call(null, 0, e),
+						    o = Math.max.call(null, 0, e);return n + Math.floor((o - n + 1) * t / r);
+					}if (t.lib.is("Number", e)) return n(e);if (t.lib.is("String", e)) return e.charAt(n(e.length - 1));if (t.lib.is("Array", e)) return e[n(e.length - 1)];if (t.lib.is("Object", e)) {
+						var o = Object.keys(e);return e[o[n(o.length - 1)]];
+					}return n(r - 1);
+				}, source: function source(r, n) {
+					var o,
+					    i,
+					    s,
+					    a = !1;void 0 !== e && void 0 !== e.exports && "undefined" == typeof window ? (i = "fs", s = __dirname + "/" + r) : (i = "ajax", s = r);var p = { id: r, path: s, method: i, parser: "source", async: !1, fetchTemplateSource: !0 };void 0 === n && (n = !1);try {
+						void 0 === (o = t.Templates.loadRemote(r, p)) || null === o ? o = "" : a = !0;
+					} catch (e) {
+						t.log.debug("Twig.functions.source: ", "Problem loading template  ", e);
+					}return a || n ? o : 'Template "{name}" is not defined.'.replace("{name}", r);
+				} }, t._function = function (e, r, n) {
+				if (!t.functions[e]) throw "Unable to find function " + e;return t.functions[e](r, n);
+			}, t._function.extend = function (e, r) {
+				t.functions[e] = r;
+			}, t;
+		};
+	}, function (e, t) {
+		e.exports = function (_e) {
+			function t(e, t) {
+				var r = Object.prototype.toString.call(t).slice(8, -1);return void 0 !== t && null !== t && r === e;
+			}return _e.filters = { upper: function upper(e) {
+					return "string" != typeof e ? e : e.toUpperCase();
+				}, lower: function lower(e) {
+					return "string" != typeof e ? e : e.toLowerCase();
+				}, capitalize: function capitalize(e) {
+					return "string" != typeof e ? e : e.substr(0, 1).toUpperCase() + e.toLowerCase().substr(1);
+				}, title: function title(e) {
+					return "string" != typeof e ? e : e.toLowerCase().replace(/(^|\s)([a-z])/g, function (e, t, r) {
+						return t + r.toUpperCase();
+					});
+				}, length: function length(t) {
+					return _e.lib.is("Array", t) || "string" == typeof t ? t.length : _e.lib.is("Object", t) ? void 0 === t._keys ? Object.keys(t).length : t._keys.length : 0;
+				}, reverse: function reverse(e) {
+					if (t("Array", e)) return e.reverse();if (t("String", e)) return e.split("").reverse().join("");if (t("Object", e)) {
+						var r = e._keys || Object.keys(e).reverse();return e._keys = r, e;
+					}
+				}, sort: function sort(e) {
+					if (t("Array", e)) return e.sort();if (t("Object", e)) {
+						delete e._keys;var r = Object.keys(e).sort(function (t, r) {
+							var n;return e[t] > e[r] == !(e[t] <= e[r]) ? e[t] > e[r] ? 1 : e[t] < e[r] ? -1 : 0 : isNaN(n = parseFloat(e[t])) || isNaN(b1 = parseFloat(e[r])) ? "string" == typeof e[t] ? e[t] > e[r].toString() ? 1 : e[t] < e[r].toString() ? -1 : 0 : "string" == typeof e[r] ? e[t].toString() > e[r] ? 1 : e[t].toString() < e[r] ? -1 : 0 : null : n > b1 ? 1 : n < b1 ? -1 : 0;
+						});return e._keys = r, e;
+					}
+				}, keys: function keys(t) {
+					if (void 0 !== t && null !== t) {
+						var r = t._keys || Object.keys(t),
+						    n = [];return _e.forEach(r, function (e) {
+							"_keys" !== e && t.hasOwnProperty(e) && n.push(e);
+						}), n;
+					}
+				}, url_encode: function url_encode(e) {
+					if (void 0 !== e && null !== e) {
+						var t = encodeURIComponent(e);return t.replace("'", "%27");
+					}
+				}, join: function join(r, n) {
+					if (void 0 !== r && null !== r) {
+						var o = "",
+						    i = [],
+						    s = null;return n && n[0] && (o = n[0]), t("Array", r) ? i = r : (s = r._keys || Object.keys(r), _e.forEach(s, function (e) {
+							"_keys" !== e && r.hasOwnProperty(e) && i.push(r[e]);
+						})), i.join(o);
+					}
+				}, default: function _default(t, r) {
+					if (void 0 !== r && r.length > 1) throw new _e.Error("default filter expects one argument");return void 0 === t || null === t || "" === t ? void 0 === r ? "" : r[0] : t;
+				}, json_encode: function json_encode(r) {
+					if (void 0 === r || null === r) return "null";if ("object" == (typeof r === "undefined" ? "undefined" : _typeof(r)) && t("Array", r)) return o = [], _e.forEach(r, function (t) {
+						o.push(_e.filters.json_encode(t));
+					}), "[" + o.join(",") + "]";if ("object" == (typeof r === "undefined" ? "undefined" : _typeof(r)) && t("Date", r)) return '"' + r.toISOString() + '"';if ("object" == (typeof r === "undefined" ? "undefined" : _typeof(r))) {
+						var n = r._keys || Object.keys(r),
+						    o = [];return _e.forEach(n, function (t) {
+							o.push(JSON.stringify(t) + ":" + _e.filters.json_encode(r[t]));
+						}), "{" + o.join(",") + "}";
+					}return JSON.stringify(r);
+				}, merge: function merge(r, n) {
+					var o = [],
+					    i = 0,
+					    s = [];if (t("Array", r) ? _e.forEach(n, function (e) {
+						t("Array", e) || (o = {});
+					}) : o = {}, t("Array", o) || (o._keys = []), t("Array", r) ? _e.forEach(r, function (e) {
+						o._keys && o._keys.push(i), o[i] = e, i++;
+					}) : (s = r._keys || Object.keys(r), _e.forEach(s, function (e) {
+						o[e] = r[e], o._keys.push(e);var t = parseInt(e, 10);!isNaN(t) && t >= i && (i = t + 1);
+					})), _e.forEach(n, function (r) {
+						t("Array", r) ? _e.forEach(r, function (e) {
+							o._keys && o._keys.push(i), o[i] = e, i++;
+						}) : (s = r._keys || Object.keys(r), _e.forEach(s, function (e) {
+							o[e] || o._keys.push(e), o[e] = r[e];var t = parseInt(e, 10);!isNaN(t) && t >= i && (i = t + 1);
+						}));
+					}), 0 === n.length) throw new _e.Error("Filter merge expects at least one parameter");return o;
+				}, date: function date(t, r) {
+					var n = _e.functions.date(t),
+					    o = r && r.length ? r[0] : "F j, Y H:i";return _e.lib.date(o, n);
+				}, date_modify: function date_modify(t, r) {
+					if (void 0 !== t && null !== t) {
+						if (void 0 === r || 1 !== r.length) throw new _e.Error("date_modify filter expects 1 argument");var n,
+						    o = r[0];return _e.lib.is("Date", t) && (n = _e.lib.strtotime(o, t.getTime() / 1e3)), _e.lib.is("String", t) && (n = _e.lib.strtotime(o, _e.lib.strtotime(t))), _e.lib.is("Number", t) && (n = _e.lib.strtotime(o, t)), new Date(1e3 * n);
+					}
+				}, replace: function replace(t, r) {
+					if (void 0 !== t && null !== t) {
+						var n,
+						    o = r[0];for (n in o) {
+							o.hasOwnProperty(n) && "_keys" !== n && (t = _e.lib.replaceAll(t, n, o[n]));
+						}return t;
+					}
+				}, format: function format(t, r) {
+					if (void 0 !== t && null !== t) return _e.lib.vsprintf(t, r);
+				}, striptags: function striptags(t, r) {
+					if (void 0 !== t && null !== t) return _e.lib.strip_tags(t, r);
+				}, escape: function escape(t, r) {
+					if (void 0 !== t && null !== t) {
+						var n = "html";if (r && r.length && !0 !== r[0] && (n = r[0]), "html" == n) {
+							var o = t.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");return _e.Markup(o, "html");
+						}if ("js" == n) {
+							o = t.toString();for (var i = "", s = 0; s < o.length; s++) {
+								o[s].match(/^[a-zA-Z0-9,\._]$/) ? i += o[s] : i += (a = o.charCodeAt(s)) < 128 ? "\\x" + a.toString(16).toUpperCase() : _e.lib.sprintf("\\u%04s", a.toString(16).toUpperCase());
+							}return _e.Markup(i, "js");
+						}if ("css" == n) {
+							for (o = t.toString(), i = "", s = 0; s < o.length; s++) {
+								o[s].match(/^[a-zA-Z0-9]$/) ? i += o[s] : i += "\\" + (a = o.charCodeAt(s)).toString(16).toUpperCase() + " ";
+							}return _e.Markup(i, "css");
+						}if ("url" == n) return i = _e.filters.url_encode(t), _e.Markup(i, "url");if ("html_attr" == n) {
+							for (o = t.toString(), i = "", s = 0; s < o.length; s++) {
+								if (o[s].match(/^[a-zA-Z0-9,\.\-_]$/)) i += o[s];else if (o[s].match(/^[&<>"]$/)) i += o[s].replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");else {
+									var a;i += (a = o.charCodeAt(s)) <= 31 && 9 != a && 10 != a && 13 != a ? "&#xFFFD;" : a < 128 ? _e.lib.sprintf("&#x%02s;", a.toString(16).toUpperCase()) : _e.lib.sprintf("&#x%04s;", a.toString(16).toUpperCase());
+								}
+							}return _e.Markup(i, "html_attr");
+						}throw new _e.Error("escape strategy unsupported");
+					}
+				}, e: function e(t, r) {
+					return _e.filters.escape(t, r);
+				}, nl2br: function nl2br(t) {
+					if (void 0 !== t && null !== t) {
+						var r = "<br />BACKSLASH_n_replace";return t = _e.filters.escape(t).replace(/\r\n/g, r).replace(/\r/g, r).replace(/\n/g, r), t = _e.lib.replaceAll(t, "BACKSLASH_n_replace", "\n"), _e.Markup(t);
+					}
+				}, number_format: function number_format(e, t) {
+					var r = e,
+					    n = t && t[0] ? t[0] : void 0,
+					    o = t && void 0 !== t[1] ? t[1] : ".",
+					    i = t && void 0 !== t[2] ? t[2] : ",";r = (r + "").replace(/[^0-9+\-Ee.]/g, "");var s = isFinite(+r) ? +r : 0,
+					    a = isFinite(+n) ? Math.abs(n) : 0,
+					    p = "";return (p = (a ? function (e, t) {
+						var r = Math.pow(10, t);return "" + Math.round(e * r) / r;
+					}(s, a) : "" + Math.round(s)).split("."))[0].length > 3 && (p[0] = p[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, i)), (p[1] || "").length < a && (p[1] = p[1] || "", p[1] += new Array(a - p[1].length + 1).join("0")), p.join(o);
+				}, trim: function trim(e, t) {
+					if (void 0 !== e && null !== e) {
+						var r,
+						    n = "" + e;r = t && t[0] ? "" + t[0] : " \n\r\t\f\x0B\xA0\u2002\u2003\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u200B\u2028\u2029\u3000";for (var o = 0; o < n.length; o++) {
+							if (-1 === r.indexOf(n.charAt(o))) {
+								n = n.substring(o);break;
+							}
+						}for (o = n.length - 1; o >= 0; o--) {
+							if (-1 === r.indexOf(n.charAt(o))) {
+								n = n.substring(0, o + 1);break;
+							}
+						}return -1 === r.indexOf(n.charAt(0)) ? n : "";
+					}
+				}, truncate: function truncate(e, t) {
+					var r = 30,
+					    n = !1,
+					    o = "...";if (e += "", t && (t[0] && (r = t[0]), t[1] && (n = t[1]), t[2] && (o = t[2])), e.length > r) {
+						if (n && -1 === (r = e.indexOf(" ", r))) return e;e = e.substr(0, r) + o;
+					}return e;
+				}, slice: function slice(t, r) {
+					if (void 0 !== t && null !== t) {
+						if (void 0 === r || r.length < 1) throw new _e.Error("slice filter expects at least 1 argument");var n = r[0] || 0,
+						    o = r.length > 1 ? r[1] : t.length,
+						    i = n >= 0 ? n : Math.max(t.length + n, 0);if (_e.lib.is("Array", t)) {
+							for (var s = [], a = i; a < i + o && a < t.length; a++) {
+								s.push(t[a]);
+							}return s;
+						}if (_e.lib.is("String", t)) return t.substr(i, o);throw new _e.Error("slice filter expects value to be an array or string");
+					}
+				}, abs: function abs(e) {
+					if (void 0 !== e && null !== e) return Math.abs(e);
+				}, first: function first(e) {
+					if (t("Array", e)) return e[0];if (t("Object", e)) {
+						if ("_keys" in e) return e[e._keys[0]];
+					} else if ("string" == typeof e) return e.substr(0, 1);
+				}, split: function split(t, r) {
+					if (void 0 !== t && null !== t) {
+						if (void 0 === r || r.length < 1 || r.length > 2) throw new _e.Error("split filter expects 1 or 2 argument");if (_e.lib.is("String", t)) {
+							var n = r[0],
+							    o = r[1],
+							    i = t.split(n);if (void 0 === o) return i;if (o < 0) return t.split(n, i.length + o);var s = [];if ("" == n) for (; i.length > 0;) {
+								for (var a = "", p = 0; p < o && i.length > 0; p++) {
+									a += i.shift();
+								}s.push(a);
+							} else {
+								for (p = 0; p < o - 1 && i.length > 0; p++) {
+									s.push(i.shift());
+								}i.length > 0 && s.push(i.join(n));
+							}return s;
+						}throw new _e.Error("split filter expects value to be a string");
+					}
+				}, last: function last(t) {
+					var r;return _e.lib.is("Object", t) ? t[(r = void 0 === t._keys ? Object.keys(t) : t._keys)[r.length - 1]] : t[t.length - 1];
+				}, raw: function raw(t) {
+					return _e.Markup(t);
+				}, batch: function batch(t, r) {
+					var n,
+					    o,
+					    i,
+					    s = r.shift(),
+					    a = r.shift();if (!_e.lib.is("Array", t)) throw new _e.Error("batch filter expects items to be an array");if (!_e.lib.is("Number", s)) throw new _e.Error("batch filter expects size to be a number");if (s = Math.ceil(s), n = _e.lib.chunkArray(t, s), a && t.length % s != 0) {
+						for (i = s - (o = n.pop()).length; i--;) {
+							o.push(a);
+						}n.push(o);
+					}return n;
+				}, round: function round(t, r) {
+					var n = (r = r || []).length > 0 ? r[0] : 0,
+					    o = r.length > 1 ? r[1] : "common";if (t = parseFloat(t), n && !_e.lib.is("Number", n)) throw new _e.Error("round filter expects precision to be a number");if ("common" === o) return _e.lib.round(t, n);if (!_e.lib.is("Function", Math[o])) throw new _e.Error("round filter expects method to be 'floor', 'ceil', or 'common'");return Math[o](t * Math.pow(10, n)) / Math.pow(10, n);
+				} }, _e.filter = function (t, r, n) {
+				if (!_e.filters[t]) throw "Unable to find filter " + t;return _e.filters[t].call(this, r, n);
+			}, _e.filter.extend = function (t, r) {
+				_e.filters[t] = r;
+			}, _e;
+		};
+	}, function (e, t) {
+		e.exports = function (e) {
+			"use strict";
+			e.expression.operator = { leftToRight: "leftToRight", rightToLeft: "rightToLeft" };var t = function t(e, _t) {
+				if (void 0 === _t || null === _t) return null;if (void 0 !== _t.indexOf) return e === _t || "" !== e && _t.indexOf(e) > -1;var r;for (r in _t) {
+					if (_t.hasOwnProperty(r) && _t[r] === e) return !0;
+				}return !1;
+			};return e.expression.operator.lookup = function (t, r) {
+				switch (t) {case "..":
+						r.precidence = 20, r.associativity = e.expression.operator.leftToRight;break;case ",":
+						r.precidence = 18, r.associativity = e.expression.operator.leftToRight;break;case "?:":case "?":case ":":
+						r.precidence = 16, r.associativity = e.expression.operator.rightToLeft;break;case "or":
+						r.precidence = 14, r.associativity = e.expression.operator.leftToRight;break;case "and":
+						r.precidence = 13, r.associativity = e.expression.operator.leftToRight;break;case "b-or":
+						r.precidence = 12, r.associativity = e.expression.operator.leftToRight;break;case "b-xor":
+						r.precidence = 11, r.associativity = e.expression.operator.leftToRight;break;case "b-and":
+						r.precidence = 10, r.associativity = e.expression.operator.leftToRight;break;case "==":case "!=":
+						r.precidence = 9, r.associativity = e.expression.operator.leftToRight;break;case "<":case "<=":case ">":case ">=":case "not in":case "in":
+						r.precidence = 8, r.associativity = e.expression.operator.leftToRight;break;case "~":case "+":case "-":
+						r.precidence = 6, r.associativity = e.expression.operator.leftToRight;break;case "//":case "**":case "*":case "/":case "%":
+						r.precidence = 5, r.associativity = e.expression.operator.leftToRight;break;case "not":
+						r.precidence = 3, r.associativity = e.expression.operator.rightToLeft;break;default:
+						throw new e.Error("Failed to lookup operator: " + t + " is an unknown operator.");}return r.operator = t, r;
+			}, e.expression.operator.parse = function (r, n) {
+				var o, i, s;switch (e.log.trace("Twig.expression.operator.parse: ", "Handling ", r), "?" === r && (s = n.pop()), i = n.pop(), "not" !== r && (o = n.pop()), "in" !== r && "not in" !== r && (o && Array.isArray(o) && (o = o.length), i && Array.isArray(i) && (i = i.length)), r) {case ":":
+						break;case "?:":
+						e.lib.boolval(o) ? n.push(o) : n.push(i);break;case "?":
+						void 0 === o && (o = i, i = s, s = void 0), e.lib.boolval(o) ? n.push(i) : n.push(s);break;case "+":
+						i = parseFloat(i), o = parseFloat(o), n.push(o + i);break;case "-":
+						i = parseFloat(i), o = parseFloat(o), n.push(o - i);break;case "*":
+						i = parseFloat(i), o = parseFloat(o), n.push(o * i);break;case "/":
+						i = parseFloat(i), o = parseFloat(o), n.push(o / i);break;case "//":
+						i = parseFloat(i), o = parseFloat(o), n.push(Math.floor(o / i));break;case "%":
+						i = parseFloat(i), o = parseFloat(o), n.push(o % i);break;case "~":
+						n.push((null != o ? o.toString() : "") + (null != i ? i.toString() : ""));break;case "not":case "!":
+						n.push(!e.lib.boolval(i));break;case "<":
+						n.push(o < i);break;case "<=":
+						n.push(o <= i);break;case ">":
+						n.push(o > i);break;case ">=":
+						n.push(o >= i);break;case "===":
+						n.push(o === i);break;case "==":
+						n.push(o == i);break;case "!==":
+						n.push(o !== i);break;case "!=":
+						n.push(o != i);break;case "or":
+						n.push(e.lib.boolval(o) || e.lib.boolval(i));break;case "b-or":
+						n.push(o | i);break;case "b-xor":
+						n.push(o ^ i);break;case "and":
+						n.push(e.lib.boolval(o) && e.lib.boolval(i));break;case "b-and":
+						n.push(o & i);break;case "**":
+						n.push(Math.pow(o, i));break;case "not in":
+						n.push(!t(o, i));break;case "in":
+						n.push(t(o, i));break;case "..":
+						n.push(e.functions.range(o, i));break;default:
+						throw new e.Error("Failed to parse operator: " + r + " is an unknown operator.");}
+			}, e;
+		};
+	}, function (e, t, r) {
+		e.exports = function (e) {
+			"use strict";
+			function t(t, r, n) {
+				return r ? e.expression.parseAsync.call(t, r, n) : e.Promise.resolve(!1);
+			}for (e.expression = {}, r(24)(e), e.expression.reservedWords = ["true", "false", "null", "TRUE", "FALSE", "NULL", "_context", "and", "b-and", "or", "b-or", "b-xor", "in", "not in", "if"], e.expression.type = { comma: "Twig.expression.type.comma", operator: { unary: "Twig.expression.type.operator.unary", binary: "Twig.expression.type.operator.binary" }, string: "Twig.expression.type.string", bool: "Twig.expression.type.bool", slice: "Twig.expression.type.slice", array: { start: "Twig.expression.type.array.start", end: "Twig.expression.type.array.end" }, object: { start: "Twig.expression.type.object.start", end: "Twig.expression.type.object.end" }, parameter: { start: "Twig.expression.type.parameter.start", end: "Twig.expression.type.parameter.end" }, subexpression: { start: "Twig.expression.type.subexpression.start", end: "Twig.expression.type.subexpression.end" }, key: { period: "Twig.expression.type.key.period", brackets: "Twig.expression.type.key.brackets" }, filter: "Twig.expression.type.filter", _function: "Twig.expression.type._function", variable: "Twig.expression.type.variable", number: "Twig.expression.type.number", _null: "Twig.expression.type.null", context: "Twig.expression.type.context", test: "Twig.expression.type.test" }, e.expression.set = { operations: [e.expression.type.filter, e.expression.type.operator.unary, e.expression.type.operator.binary, e.expression.type.array.end, e.expression.type.object.end, e.expression.type.parameter.end, e.expression.type.subexpression.end, e.expression.type.comma, e.expression.type.test], expressions: [e.expression.type._function, e.expression.type.bool, e.expression.type.string, e.expression.type.variable, e.expression.type.number, e.expression.type._null, e.expression.type.context, e.expression.type.parameter.start, e.expression.type.array.start, e.expression.type.object.start, e.expression.type.subexpression.start, e.expression.type.operator.unary] }, e.expression.set.operations_extended = e.expression.set.operations.concat([e.expression.type.key.period, e.expression.type.key.brackets, e.expression.type.slice]), e.expression.fn = { compile: { push: function push(e, t, r) {
+						r.push(e);
+					}, push_both: function push_both(e, t, r) {
+						r.push(e), t.push(e);
+					} }, parse: { push: function push(e, t, r) {
+						t.push(e);
+					}, push_value: function push_value(e, t, r) {
+						t.push(e.value);
+					} } }, e.expression.definitions = [{ type: e.expression.type.test, regex: /^is\s+(not)?\s*([a-zA-Z_][a-zA-Z0-9_]*(\s?as)?)/, next: e.expression.set.operations.concat([e.expression.type.parameter.start]), compile: function compile(e, t, r) {
+					e.filter = e.match[2], e.modifier = e.match[1], delete e.match, delete e.value, r.push(e);
+				}, parse: function parse(r, n, o) {
+					var i = n.pop();return t(this, r.params, o).then(function (t) {
+						var o = e.test(r.filter, i, t);"not" == r.modifier ? n.push(!o) : n.push(o);
+					});
+				} }, { type: e.expression.type.comma, regex: /^,/, next: e.expression.set.expressions.concat([e.expression.type.array.end, e.expression.type.object.end]), compile: function compile(t, r, n) {
+					var o,
+					    i = r.length - 1;for (delete t.match, delete t.value; i >= 0; i--) {
+						if ((o = r.pop()).type === e.expression.type.object.start || o.type === e.expression.type.parameter.start || o.type === e.expression.type.array.start) {
+							r.push(o);break;
+						}n.push(o);
+					}n.push(t);
+				} }, { type: e.expression.type.number, regex: /^\-?\d+(\.\d+)?/, next: e.expression.set.operations, compile: function compile(e, t, r) {
+					e.value = Number(e.value), r.push(e);
+				}, parse: e.expression.fn.parse.push_value }, { type: e.expression.type.operator.binary, regex: /(^\?\:|^(b\-and)|^(b\-or)|^(b\-xor)|^[\+\-~%\?]|^[\:](?!\d\])|^[!=]==?|^[!<>]=?|^\*\*?|^\/\/?|^(and)[\(|\s+]|^(or)[\(|\s+]|^(in)[\(|\s+]|^(not in)[\(|\s+]|^\.\.)/, next: e.expression.set.expressions, transform: function transform(e, t) {
+					switch (e[0]) {case "and(":case "or(":case "in(":case "not in(":
+							return t[t.length - 1].value = e[2], e[0];default:
+							return "";}
+				}, compile: function compile(t, r, n) {
+					delete t.match, t.value = t.value.trim();var o = t.value,
+					    i = e.expression.operator.lookup(o, t);for (e.log.trace("Twig.expression.compile: ", "Operator: ", i, " from ", o); r.length > 0 && (r[r.length - 1].type == e.expression.type.operator.unary || r[r.length - 1].type == e.expression.type.operator.binary) && (i.associativity === e.expression.operator.leftToRight && i.precidence >= r[r.length - 1].precidence || i.associativity === e.expression.operator.rightToLeft && i.precidence > r[r.length - 1].precidence);) {
+						var s = r.pop();n.push(s);
+					}if (":" === o) {
+						if (!r[r.length - 1] || "?" !== r[r.length - 1].value) {
+							var a = n.pop();if (a.type === e.expression.type.string || a.type === e.expression.type.variable) t.key = a.value;else if (a.type === e.expression.type.number) t.key = a.value.toString();else {
+								if (!a.expression || a.type !== e.expression.type.parameter.end && a.type != e.expression.type.subexpression.end) throw new e.Error("Unexpected value before ':' of " + a.type + " = " + a.value);t.params = a.params;
+							}return void n.push(t);
+						}
+					} else r.push(i);
+				}, parse: function parse(t, r, n) {
+					if (t.key) r.push(t);else {
+						if (t.params) return e.expression.parseAsync.call(this, t.params, n).then(function (e) {
+							t.key = e, r.push(t), n.loop || delete t.params;
+						});e.expression.operator.parse(t.value, r);
+					}
+				} }, { type: e.expression.type.operator.unary, regex: /(^not\s+)/, next: e.expression.set.expressions, compile: function compile(t, r, n) {
+					delete t.match, t.value = t.value.trim();var o = t.value,
+					    i = e.expression.operator.lookup(o, t);for (e.log.trace("Twig.expression.compile: ", "Operator: ", i, " from ", o); r.length > 0 && (r[r.length - 1].type == e.expression.type.operator.unary || r[r.length - 1].type == e.expression.type.operator.binary) && (i.associativity === e.expression.operator.leftToRight && i.precidence >= r[r.length - 1].precidence || i.associativity === e.expression.operator.rightToLeft && i.precidence > r[r.length - 1].precidence);) {
+						var s = r.pop();n.push(s);
+					}r.push(i);
+				}, parse: function parse(t, r, n) {
+					e.expression.operator.parse(t.value, r);
+				} }, { type: e.expression.type.string, regex: /^(["'])(?:(?=(\\?))\2[\s\S])*?\1/, next: e.expression.set.operations_extended, compile: function compile(t, r, n) {
+					var o = t.value;delete t.match, o = '"' === o.substring(0, 1) ? o.replace('\\"', '"') : o.replace("\\'", "'"), t.value = o.substring(1, o.length - 1).replace(/\\n/g, "\n").replace(/\\r/g, "\r"), e.log.trace("Twig.expression.compile: ", "String value: ", t.value), n.push(t);
+				}, parse: e.expression.fn.parse.push_value }, { type: e.expression.type.subexpression.start, regex: /^\(/, next: e.expression.set.expressions.concat([e.expression.type.subexpression.end]), compile: function compile(e, t, r) {
+					e.value = "(", r.push(e), t.push(e);
+				}, parse: e.expression.fn.parse.push }, { type: e.expression.type.subexpression.end, regex: /^\)/, next: e.expression.set.operations_extended, validate: function validate(t, r) {
+					for (var n = r.length - 1, o = !1, i = !1, s = 0; !o && n >= 0;) {
+						var a = r[n];(o = a.type === e.expression.type.subexpression.start) && i && (i = !1, o = !1), a.type === e.expression.type.parameter.start ? s++ : a.type === e.expression.type.parameter.end ? s-- : a.type === e.expression.type.subexpression.end && (i = !0), n--;
+					}return o && 0 === s;
+				}, compile: function compile(t, r, n) {
+					var o,
+					    i = t;for (o = r.pop(); r.length > 0 && o.type != e.expression.type.subexpression.start;) {
+						n.push(o), o = r.pop();
+					}for (var s = []; t.type !== e.expression.type.subexpression.start;) {
+						s.unshift(t), t = n.pop();
+					}s.unshift(t), void 0 === (o = r[r.length - 1]) || o.type !== e.expression.type._function && o.type !== e.expression.type.filter && o.type !== e.expression.type.test && o.type !== e.expression.type.key.brackets ? (i.expression = !0, s.pop(), s.shift(), i.params = s, n.push(i)) : (i.expression = !1, o.params = s);
+				}, parse: function parse(t, r, n) {
+					if (t.expression) return e.expression.parseAsync.call(this, t.params, n).then(function (e) {
+						r.push(e);
+					});throw new e.Error("Unexpected subexpression end when token is not marked as an expression");
+				} }, { type: e.expression.type.parameter.start, regex: /^\(/, next: e.expression.set.expressions.concat([e.expression.type.parameter.end]), validate: function validate(t, r) {
+					var n = r[r.length - 1];return n && e.indexOf(e.expression.reservedWords, n.value.trim()) < 0;
+				}, compile: e.expression.fn.compile.push_both, parse: e.expression.fn.parse.push }, { type: e.expression.type.parameter.end, regex: /^\)/, next: e.expression.set.operations_extended, compile: function compile(t, r, n) {
+					var o,
+					    i = t;for (o = r.pop(); r.length > 0 && o.type != e.expression.type.parameter.start;) {
+						n.push(o), o = r.pop();
+					}for (var s = []; t.type !== e.expression.type.parameter.start;) {
+						s.unshift(t), t = n.pop();
+					}s.unshift(t), void 0 === (t = n[n.length - 1]) || t.type !== e.expression.type._function && t.type !== e.expression.type.filter && t.type !== e.expression.type.test && t.type !== e.expression.type.key.brackets ? (i.expression = !0, s.pop(), s.shift(), i.params = s, n.push(i)) : (i.expression = !1, t.params = s);
+				}, parse: function parse(t, r, n) {
+					var o = [],
+					    i = !1,
+					    s = null;if (t.expression) return e.expression.parseAsync.call(this, t.params, n).then(function (e) {
+						r.push(e);
+					});for (; r.length > 0;) {
+						if ((s = r.pop()) && s.type && s.type == e.expression.type.parameter.start) {
+							i = !0;break;
+						}o.unshift(s);
+					}if (!i) throw new e.Error("Expected end of parameter set.");r.push(o);
+				} }, { type: e.expression.type.slice, regex: /^\[(\d*\:\d*)\]/, next: e.expression.set.operations_extended, compile: function compile(e, t, r) {
+					var n = e.match[1].split(":"),
+					    o = n[0] ? parseInt(n[0]) : void 0,
+					    i = n[1] ? parseInt(n[1]) : void 0;e.value = "slice", e.params = [o, i], i || (e.params = [o]), r.push(e);
+				}, parse: function parse(t, r, n) {
+					var o = r.pop(),
+					    i = t.params;r.push(e.filter.call(this, t.value, o, i));
+				} }, { type: e.expression.type.array.start, regex: /^\[/, next: e.expression.set.expressions.concat([e.expression.type.array.end]), compile: e.expression.fn.compile.push_both, parse: e.expression.fn.parse.push }, { type: e.expression.type.array.end, regex: /^\]/, next: e.expression.set.operations_extended, compile: function compile(t, r, n) {
+					for (var o, i = r.length - 1; i >= 0 && (o = r.pop()).type !== e.expression.type.array.start; i--) {
+						n.push(o);
+					}n.push(t);
+				}, parse: function parse(t, r, n) {
+					for (var o = [], i = !1, s = null; r.length > 0;) {
+						if ((s = r.pop()).type && s.type == e.expression.type.array.start) {
+							i = !0;break;
+						}o.unshift(s);
+					}if (!i) throw new e.Error("Expected end of array.");r.push(o);
+				} }, { type: e.expression.type.object.start, regex: /^\{/, next: e.expression.set.expressions.concat([e.expression.type.object.end]), compile: e.expression.fn.compile.push_both, parse: e.expression.fn.parse.push }, { type: e.expression.type.object.end, regex: /^\}/, next: e.expression.set.operations_extended, compile: function compile(t, r, n) {
+					for (var o, i = r.length - 1; i >= 0 && (!(o = r.pop()) || o.type !== e.expression.type.object.start); i--) {
+						n.push(o);
+					}n.push(t);
+				}, parse: function parse(t, r, n) {
+					for (var o = {}, i = !1, s = null, a = !1, p = null; r.length > 0;) {
+						if ((s = r.pop()) && s.type && s.type === e.expression.type.object.start) {
+							i = !0;break;
+						}if (s && s.type && (s.type === e.expression.type.operator.binary || s.type === e.expression.type.operator.unary) && s.key) {
+							if (!a) throw new e.Error("Missing value for key '" + s.key + "' in object definition.");o[s.key] = p, void 0 === o._keys && (o._keys = []), o._keys.unshift(s.key), p = null, a = !1;
+						} else a = !0, p = s;
+					}if (!i) throw new e.Error("Unexpected end of object.");r.push(o);
+				} }, { type: e.expression.type.filter, regex: /^\|\s?([a-zA-Z_][a-zA-Z0-9_\-]*)/, next: e.expression.set.operations_extended.concat([e.expression.type.parameter.start]), compile: function compile(e, t, r) {
+					e.value = e.match[1], r.push(e);
+				}, parse: function parse(r, n, o) {
+					var i = this,
+					    s = n.pop();return t(this, r.params, o).then(function (t) {
+						return e.filter.call(i, r.value, s, t);
+					}).then(function (e) {
+						n.push(e);
+					});
+				} }, { type: e.expression.type._function, regex: /^([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/, next: e.expression.type.parameter.start, validate: function validate(t, r) {
+					return t[1] && e.indexOf(e.expression.reservedWords, t[1]) < 0;
+				}, transform: function transform(e, t) {
+					return "(";
+				}, compile: function compile(e, t, r) {
+					var n = e.match[1];e.fn = n, delete e.match, delete e.value, r.push(e);
+				}, parse: function parse(r, n, o) {
+					var i,
+					    s = this,
+					    a = r.fn;return t(this, r.params, o).then(function (t) {
+						if (e.functions[a]) i = e.functions[a].apply(s, t);else {
+							if ("function" != typeof o[a]) throw new e.Error(a + " function does not exist and is not defined in the context");i = o[a].apply(o, t);
+						}return i;
+					}).then(function (e) {
+						n.push(e);
+					});
+				} }, { type: e.expression.type.variable, regex: /^[a-zA-Z_][a-zA-Z0-9_]*/, next: e.expression.set.operations_extended.concat([e.expression.type.parameter.start]), compile: e.expression.fn.compile.push, validate: function validate(t, r) {
+					return e.indexOf(e.expression.reservedWords, t[0]) < 0;
+				}, parse: function parse(t, r, n) {
+					return e.expression.resolveAsync.call(this, n[t.value], n).then(function (e) {
+						r.push(e);
+					});
+				} }, { type: e.expression.type.key.period, regex: /^\.([a-zA-Z0-9_]+)/, next: e.expression.set.operations_extended.concat([e.expression.type.parameter.start]), compile: function compile(e, t, r) {
+					e.key = e.match[1], delete e.match, delete e.value, r.push(e);
+				}, parse: function parse(r, n, o, i) {
+					var s,
+					    a = this,
+					    p = r.key,
+					    c = n.pop();return t(this, r.params, o).then(function (t) {
+						if (null === c || void 0 === c) {
+							if (a.options.strict_variables) throw new e.Error("Can't access a key " + p + " on an null or undefined object.");s = void 0;
+						} else {
+							var r = function r(e) {
+								return e.substr(0, 1).toUpperCase() + e.substr(1);
+							};s = "object" == (typeof c === "undefined" ? "undefined" : _typeof(c)) && (p in c) ? c[p] : void 0 !== c["get" + r(p)] ? c["get" + r(p)] : void 0 !== c["is" + r(p)] ? c["is" + r(p)] : void 0;
+						}return e.expression.resolveAsync.call(a, s, o, t, i, c);
+					}).then(function (e) {
+						n.push(e);
+					});
+				} }, { type: e.expression.type.key.brackets, regex: /^\[([^\]\:]*)\]/, next: e.expression.set.operations_extended.concat([e.expression.type.parameter.start]), compile: function compile(t, r, n) {
+					var o = t.match[1];delete t.value, delete t.match, t.stack = e.expression.compile({ value: o }).stack, n.push(t);
+				}, parse: function parse(r, n, o, i) {
+					var s,
+					    a,
+					    p = this,
+					    c = null;return t(this, r.params, o).then(function (t) {
+						return c = t, e.expression.parseAsync.call(p, r.stack, o);
+					}).then(function (t) {
+						if (null === (s = n.pop()) || void 0 === s) {
+							if (p.options.strict_variables) throw new e.Error("Can't access a key " + t + " on an null or undefined object.");return null;
+						}return a = "object" == (typeof s === "undefined" ? "undefined" : _typeof(s)) && (t in s) ? s[t] : null, e.expression.resolveAsync.call(p, a, s, c, i);
+					}).then(function (e) {
+						n.push(e);
+					});
+				} }, { type: e.expression.type._null, regex: /^(null|NULL|none|NONE)/, next: e.expression.set.operations, compile: function compile(e, t, r) {
+					delete e.match, e.value = null, r.push(e);
+				}, parse: e.expression.fn.parse.push_value }, { type: e.expression.type.context, regex: /^_context/, next: e.expression.set.operations_extended.concat([e.expression.type.parameter.start]), compile: e.expression.fn.compile.push, parse: function parse(e, t, r) {
+					t.push(r);
+				} }, { type: e.expression.type.bool, regex: /^(true|TRUE|false|FALSE)/, next: e.expression.set.operations, compile: function compile(e, t, r) {
+					e.value = "true" === e.match[0].toLowerCase(), delete e.match, r.push(e);
+				}, parse: e.expression.fn.parse.push_value }], e.expression.resolveAsync = function (t, r, n, o, i) {
+				if ("function" != typeof t) return e.Promise.resolve(t);var s = e.Promise.resolve(n);return o && o.type === e.expression.type.parameter.end && (s = s.then(function () {
+					return o.params && e.expression.parseAsync.call(this, o.params, r, !0);
+				}).then(function (e) {
+					return o.cleanup = !0, e;
+				})), s.then(function (e) {
+					return t.apply(i || r, e || []);
+				});
+			}, e.expression.resolve = function (t, r, n, o, i) {
+				return e.async.potentiallyAsync(this, !1, function () {
+					return e.expression.resolveAsync.call(this, t, r, n, o, i);
+				});
+			}, e.expression.handler = {}, e.expression.extendType = function (t) {
+				e.expression.type[t] = "Twig.expression.type." + t;
+			}, e.expression.extend = function (t) {
+				if (!t.type) throw new e.Error("Unable to extend logic definition. No type provided for " + t);e.expression.handler[t.type] = t;
+			}; e.expression.definitions.length > 0;) {
+				e.expression.extend(e.expression.definitions.shift());
+			}return e.expression.tokenize = function (t) {
+				var r,
+				    n,
+				    o,
+				    i,
+				    s,
+				    a,
+				    p = [],
+				    c = 0,
+				    l = null,
+				    u = [];for (a = function a() {
+					for (var t = arguments.length - 2, n = new Array(t); t-- > 0;) {
+						n[t] = arguments[t];
+					}if (e.log.trace("Twig.expression.tokenize", "Matched a ", r, " regular expression of ", n), l && e.indexOf(l, r) < 0) return u.push(r + " cannot follow a " + p[p.length - 1].type + " at template:" + c + " near '" + n[0].substring(0, 20) + "...'"), n[0];var o = e.expression.handler[r];return o.validate && !o.validate(n, p) ? n[0] : (u = [], p.push({ type: r, value: n[0], match: n }), s = !0, l = i, c += n[0].length, o.transform ? o.transform(n, p) : "");
+				}, e.log.debug("Twig.expression.tokenize", "Tokenizing expression ", t); t.length > 0;) {
+					for (r in t = t.trim(), e.expression.handler) {
+						if (i = e.expression.handler[r].next, n = e.expression.handler[r].regex, e.log.trace("Checking type ", r, " on ", t), s = !1, e.lib.isArray(n)) for (o = n.length; o-- > 0;) {
+							t = t.replace(n[o], a);
+						} else t = t.replace(n, a);if (s) break;
+					}if (!s) throw u.length > 0 ? new e.Error(u.join(" OR ")) : new e.Error("Unable to parse '" + t + "' at template position" + c);
+				}return e.log.trace("Twig.expression.tokenize", "Tokenized to ", p), p;
+			}, e.expression.compile = function (t) {
+				var r = t.value,
+				    n = e.expression.tokenize(r),
+				    o = null,
+				    i = [],
+				    s = [],
+				    a = null;for (e.log.trace("Twig.expression.compile: ", "Compiling ", r); n.length > 0;) {
+					o = n.shift(), a = e.expression.handler[o.type], e.log.trace("Twig.expression.compile: ", "Compiling ", o), a.compile && a.compile(o, s, i), e.log.trace("Twig.expression.compile: ", "Stack is", s), e.log.trace("Twig.expression.compile: ", "Output is", i);
+				}for (; s.length > 0;) {
+					i.push(s.pop());
+				}return e.log.trace("Twig.expression.compile: ", "Final output is", i), t.stack = i, delete t.value, t;
+			}, e.expression.parse = function (t, r, n, o) {
+				var i = this;e.lib.isArray(t) || (t = [t]);var s = [],
+				    a = [],
+				    p = e.expression.type.operator.binary;return e.async.potentiallyAsync(this, o, function () {
+					return e.async.forEach(t, function (n, o) {
+						var c,
+						    l = null,
+						    u = null;if (!n.cleanup) return t.length > o + 1 && (u = t[o + 1]), (l = e.expression.handler[n.type]).parse && (c = l.parse.call(i, n, s, r, u)), n.type === p && r.loop && a.push(n), c;
+					}).then(function () {
+						for (var e = a.length, t = null; e-- > 0;) {
+							(t = a[e]).params && t.key && delete t.key;
+						}if (n) {
+							var r = s.splice(0);s.push(r);
+						}return s.pop();
+					});
+				});
+			}, e;
+		};
+	}, function (e, t) {
+		e.exports = function (e) {
+			return e.compiler = { module: {} }, e.compiler.compile = function (t, r) {
+				var n,
+				    o = JSON.stringify(t.tokens),
+				    i = t.id;if (r.module) {
+					if (void 0 === e.compiler.module[r.module]) throw new e.Error("Unable to find module type " + r.module);n = e.compiler.module[r.module](i, o, r.twig);
+				} else n = e.compiler.wrap(i, o);return n;
+			}, e.compiler.module = { amd: function amd(t, r, n) {
+					return 'define(["' + n + '"], function (Twig) {\n\tvar twig, templates;\ntwig = Twig.twig;\ntemplates = ' + e.compiler.wrap(t, r) + "\n\treturn templates;\n});";
+				}, node: function node(t, r) {
+					return 'var twig = require("twig").twig;\nexports.template = ' + e.compiler.wrap(t, r);
+				}, cjs2: function cjs2(t, r, n) {
+					return 'module.declare([{ twig: "' + n + '" }], function (require, exports, module) {\n\tvar twig = require("twig").twig;\n\texports.template = ' + e.compiler.wrap(t, r) + "\n});";
+				} }, e.compiler.wrap = function (e, t) {
+				return 'twig({id:"' + e.replace('"', '\\"') + '", data:' + t + ", precompiled: true});\n";
+			}, e;
+		};
+	}, function (e, t) {
+		e.exports = function (e) {
+			"use strict";
+			function t(t, r) {
+				if (t.options.rethrow) throw "string" == typeof r && (r = new e.Error(r)), "TwigException" != r.type || r.file || (r.file = t.id), r;if (e.log.error("Error parsing twig template " + t.id + ": "), r.stack ? e.log.error(r.stack) : e.log.error(r.toString()), e.debug) return r.toString();
+			}return e.trace = !1, e.debug = !1, e.cache = !0, e.noop = function () {}, e.placeholders = { parent: "{{|PARENT|}}" }, e.hasIndexOf = Array.prototype.hasOwnProperty("indexOf"), e.indexOf = function (t, r) {
+				if (e.hasIndexOf) return t.indexOf(r);if (void 0 === t || null === t) throw new TypeError();var n = Object(t),
+				    o = n.length >>> 0;if (0 === o) return -1;var i = 0;if (arguments.length > 0 && ((i = Number(arguments[1])) != i ? i = 0 : 0 !== i && i !== 1 / 0 && i !== -1 / 0 && (i = (i > 0 || -1) * Math.floor(Math.abs(i)))), i >= o) return -1;for (var s = i >= 0 ? i : Math.max(o - Math.abs(i), 0); s < o; s++) {
+					if (s in n && n[s] === r) return s;
+				}return t == r ? 0 : -1;
+			}, e.forEach = function (e, t, r) {
+				if (Array.prototype.forEach) return e.forEach(t, r);var n, o;if (null == e) throw new TypeError(" this is null or not defined");var i = Object(e),
+				    s = i.length >>> 0;if ("[object Function]" != {}.toString.call(t)) throw new TypeError(t + " is not a function");for (r && (n = r), o = 0; o < s;) {
+					var a;o in i && (a = i[o], t.call(n, a, o, i)), o++;
+				}
+			}, e.merge = function (t, r, n) {
+				return e.forEach(Object.keys(r), function (e) {
+					(!n || e in t) && (t[e] = r[e]);
+				}), t;
+			}, e.attempt = function (e, t) {
+				try {
+					return e();
+				} catch (e) {
+					return t(e);
+				}
+			}, e.Error = function (e, t) {
+				this.message = e, this.name = "TwigException", this.type = "TwigException", this.file = t;
+			}, e.Error.prototype.toString = function () {
+				return this.name + ": " + this.message;
+			}, e.log = { trace: function trace() {
+					e.trace && console && console.log(Array.prototype.slice.call(arguments));
+				}, debug: function debug() {
+					e.debug && console && console.log(Array.prototype.slice.call(arguments));
+				} }, "undefined" != typeof console ? void 0 !== console.error ? e.log.error = function () {
+				console.error.apply(console, arguments);
+			} : void 0 !== console.log && (e.log.error = function () {
+				console.log.apply(console, arguments);
+			}) : e.log.error = function () {}, e.ChildContext = function (t) {
+				return e.lib.copy(t);
+			}, e.token = {}, e.token.type = { output: "output", logic: "logic", comment: "comment", raw: "raw", output_whitespace_pre: "output_whitespace_pre", output_whitespace_post: "output_whitespace_post", output_whitespace_both: "output_whitespace_both", logic_whitespace_pre: "logic_whitespace_pre", logic_whitespace_post: "logic_whitespace_post", logic_whitespace_both: "logic_whitespace_both" }, e.token.definitions = [{ type: e.token.type.raw, open: "{% raw %}", close: "{% endraw %}" }, { type: e.token.type.raw, open: "{% verbatim %}", close: "{% endverbatim %}" }, { type: e.token.type.output_whitespace_pre, open: "{{-", close: "}}" }, { type: e.token.type.output_whitespace_post, open: "{{", close: "-}}" }, { type: e.token.type.output_whitespace_both, open: "{{-", close: "-}}" }, { type: e.token.type.logic_whitespace_pre, open: "{%-", close: "%}" }, { type: e.token.type.logic_whitespace_post, open: "{%", close: "-%}" }, { type: e.token.type.logic_whitespace_both, open: "{%-", close: "-%}" }, { type: e.token.type.output, open: "{{", close: "}}" }, { type: e.token.type.logic, open: "{%", close: "%}" }, { type: e.token.type.comment, open: "{#", close: "#}" }], e.token.strings = ['"', "'"], e.token.findStart = function (t) {
+				var r,
+				    n,
+				    o,
+				    i,
+				    s = { position: null, def: null },
+				    a = null,
+				    p = e.token.definitions.length;for (r = 0; r < p; r++) {
+					n = e.token.definitions[r], o = t.indexOf(n.open), i = t.indexOf(n.close), e.log.trace("Twig.token.findStart: ", "Searching for ", n.open, " found at ", o), o >= 0 && n.open.length !== n.close.length && i < 0 || (o >= 0 && (null === s.position || o < s.position) ? (s.position = o, s.def = n, a = i) : o >= 0 && null !== s.position && o === s.position && (n.open.length > s.def.open.length ? (s.position = o, s.def = n, a = i) : n.open.length === s.def.open.length && (n.close.length, s.def.close.length, i >= 0 && i < a && (s.position = o, s.def = n, a = i))));
+				}return s;
+			}, e.token.findEnd = function (t, r, n) {
+				for (var o, i, s = null, a = !1, p = 0, c = null, l = null, u = null, f = null, h = null, y = null; !a;) {
+					if (c = null, l = null, !((u = t.indexOf(r.close, p)) >= 0)) throw new e.Error("Unable to find closing bracket '" + r.close + "' opened near template position " + n);if (s = u, a = !0, r.type === e.token.type.comment) break;if (r.type === e.token.type.raw) break;for (i = e.token.strings.length, o = 0; o < i; o += 1) {
+						(h = t.indexOf(e.token.strings[o], p)) > 0 && h < u && (null === c || h < c) && (c = h, l = e.token.strings[o]);
+					}if (null !== c) for (f = c + 1, s = null, a = !1;;) {
+						if ((y = t.indexOf(l, f)) < 0) throw "Unclosed string in template";if ("\\" !== t.substr(y - 1, 1)) {
+							p = y + 1;break;
+						}f = y + 1;
+					}
+				}return s;
+			}, e.tokenize = function (t) {
+				for (var r = [], n = 0, o = null, i = null; t.length > 0;) {
+					if (o = e.token.findStart(t), e.log.trace("Twig.tokenize: ", "Found token: ", o), null !== o.position) {
+						if (o.position > 0 && r.push({ type: e.token.type.raw, value: t.substring(0, o.position) }), t = t.substr(o.position + o.def.open.length), n += o.position + o.def.open.length, i = e.token.findEnd(t, o.def, n), e.log.trace("Twig.tokenize: ", "Token ends at ", i), r.push({ type: o.def.type, value: t.substring(0, i).trim() }), "\n" === t.substr(i + o.def.close.length, 1)) switch (o.def.type) {case "logic_whitespace_pre":case "logic_whitespace_post":case "logic_whitespace_both":case "logic":
+								i += 1;}t = t.substr(i + o.def.close.length), n += i + o.def.close.length;
+					} else r.push({ type: e.token.type.raw, value: t }), t = "";
+				}return r;
+			}, e.compile = function (t) {
+				var r = this;return e.attempt(function () {
+					for (var n = [], o = [], i = [], s = null, a = null, p = null, c = null, l = null, u = null, f = null, h = null, y = null, d = null, g = null, m = null, x = function x(t) {
+						e.expression.compile.call(r, t), o.length > 0 ? i.push(t) : n.push(t);
+					}, v = function v(t) {
+						if (a = e.logic.compile.call(r, t), d = a.type, g = e.logic.handler[d].open, m = e.logic.handler[d].next, e.log.trace("Twig.compile: ", "Compiled logic token to ", a, " next is: ", m, " open is : ", g), void 0 !== g && !g) {
+							if (c = o.pop(), f = e.logic.handler[c.type], e.indexOf(f.next, d) < 0) throw new Error(d + " not expected after a " + c.type);c.output = c.output || [], c.output = c.output.concat(i), i = [], y = { type: e.token.type.logic, token: c }, o.length > 0 ? i.push(y) : n.push(y);
+						}void 0 !== m && m.length > 0 ? (e.log.trace("Twig.compile: ", "Pushing ", a, " to logic stack."), o.length > 0 && ((c = o.pop()).output = c.output || [], c.output = c.output.concat(i), o.push(c), i = []), o.push(a)) : void 0 !== g && g && (y = { type: e.token.type.logic, token: a }, o.length > 0 ? i.push(y) : n.push(y));
+					}; t.length > 0;) {
+						switch (s = t.shift(), l = n[n.length - 1], u = i[i.length - 1], h = t[0], e.log.trace("Compiling token ", s), s.type) {case e.token.type.raw:
+								o.length > 0 ? i.push(s) : n.push(s);break;case e.token.type.logic:
+								v.call(r, s);break;case e.token.type.comment:
+								break;case e.token.type.output:
+								x.call(r, s);break;case e.token.type.logic_whitespace_pre:case e.token.type.logic_whitespace_post:case e.token.type.logic_whitespace_both:case e.token.type.output_whitespace_pre:case e.token.type.output_whitespace_post:case e.token.type.output_whitespace_both:
+								switch (s.type !== e.token.type.output_whitespace_post && s.type !== e.token.type.logic_whitespace_post && (l && l.type === e.token.type.raw && (n.pop(), null === l.value.match(/^\s*$/) && (l.value = l.value.trim(), n.push(l))), u && u.type === e.token.type.raw && (i.pop(), null === u.value.match(/^\s*$/) && (u.value = u.value.trim(), i.push(u)))), s.type) {case e.token.type.output_whitespace_pre:case e.token.type.output_whitespace_post:case e.token.type.output_whitespace_both:
+										x.call(r, s);break;case e.token.type.logic_whitespace_pre:case e.token.type.logic_whitespace_post:case e.token.type.logic_whitespace_both:
+										v.call(r, s);}s.type !== e.token.type.output_whitespace_pre && s.type !== e.token.type.logic_whitespace_pre && h && h.type === e.token.type.raw && (t.shift(), null === h.value.match(/^\s*$/) && (h.value = h.value.trim(), t.unshift(h)));}e.log.trace("Twig.compile: ", " Output: ", n, " Logic Stack: ", o, " Pending Output: ", i);
+					}if (o.length > 0) throw p = o.pop(), new Error("Unable to find an end tag for " + p.type + ", expecting one of " + p.next);return n;
+				}, function (t) {
+					if (r.options.rethrow) throw "TwigException" != t.type || t.file || (t.file = r.id), t;e.log.error("Error compiling twig template " + r.id + ": "), t.stack ? e.log.error(t.stack) : e.log.error(t.toString());
+				});
+			}, e.parse = function (r, n, o) {
+				var i,
+				    s = this,
+				    a = [],
+				    p = null,
+				    c = !0,
+				    l = !0;function u(e) {
+					a.push(e);
+				}function f(e) {
+					void 0 !== e.chain && (l = e.chain), void 0 !== e.context && (n = e.context), void 0 !== e.output && a.push(e.output);
+				}if (i = e.async.forEach(r, function (t) {
+					switch (e.log.debug("Twig.parse: ", "Parsing token: ", t), t.type) {case e.token.type.raw:
+							a.push(e.filters.raw(t.value));break;case e.token.type.logic:
+							return e.logic.parseAsync.call(s, t.token, n, l).then(f);case e.token.type.comment:
+							break;case e.token.type.output_whitespace_pre:case e.token.type.output_whitespace_post:case e.token.type.output_whitespace_both:case e.token.type.output:
+							return e.log.debug("Twig.parse: ", "Output token: ", t.stack), e.expression.parseAsync.call(s, t.stack, n).then(u);}
+				}).then(function () {
+					return a = e.output.call(s, a), c = !1, a;
+				}).catch(function (e) {
+					o && t(s, e), p = e;
+				}), o) return i;if (null !== p) return t(this, p);if (c) throw new e.Error("You are using Twig.js in sync mode in combination with async extensions.");return a;
+			}, e.prepare = function (t) {
+				var r, n;return e.log.debug("Twig.prepare: ", "Tokenizing ", t), n = e.tokenize.call(this, t), e.log.debug("Twig.prepare: ", "Compiling ", n), r = e.compile.call(this, n), e.log.debug("Twig.prepare: ", "Compiled ", r), r;
+			}, e.output = function (t) {
+				var r = this.options.autoescape;if (!r) return t.join("");var n = "string" == typeof r ? r : "html",
+				    o = 0,
+				    i = t.length,
+				    s = "",
+				    a = new Array(i);for (o = 0; o < i; o++) {
+					(s = t[o]) && !0 !== s.twig_markup && s.twig_markup != n && (s = e.filters.escape(s, [n])), a[o] = s;
+				}return a.length < 1 ? "" : e.Markup(a.join(""), !0);
+			}, e.Templates = { loaders: {}, parsers: {}, registry: {} }, e.validateId = function (t) {
+				if ("prototype" === t) throw new e.Error(t + " is not a valid twig identifier");if (e.cache && e.Templates.registry.hasOwnProperty(t)) throw new e.Error("There is already a template with the ID " + t);return !0;
+			}, e.Templates.registerLoader = function (t, r, n) {
+				if ("function" != typeof r) throw new e.Error("Unable to add loader for " + t + ": Invalid function reference given.");n && (r = r.bind(n)), this.loaders[t] = r;
+			}, e.Templates.unRegisterLoader = function (e) {
+				this.isRegisteredLoader(e) && delete this.loaders[e];
+			}, e.Templates.isRegisteredLoader = function (e) {
+				return this.loaders.hasOwnProperty(e);
+			}, e.Templates.registerParser = function (t, r, n) {
+				if ("function" != typeof r) throw new e.Error("Unable to add parser for " + t + ": Invalid function regerence given.");n && (r = r.bind(n)), this.parsers[t] = r;
+			}, e.Templates.unRegisterParser = function (e) {
+				this.isRegisteredParser(e) && delete this.parsers[e];
+			}, e.Templates.isRegisteredParser = function (e) {
+				return this.parsers.hasOwnProperty(e);
+			}, e.Templates.save = function (t) {
+				if (void 0 === t.id) throw new e.Error("Unable to save template with no id");e.Templates.registry[t.id] = t;
+			}, e.Templates.load = function (t) {
+				return e.Templates.registry.hasOwnProperty(t) ? e.Templates.registry[t] : null;
+			}, e.Templates.loadRemote = function (t, r, n, o) {
+				var i = void 0 === r.id ? t : r.id,
+				    s = e.Templates.registry[i];return e.cache && void 0 !== s ? ("function" == typeof n && n(s), s) : (r.parser = r.parser || "twig", r.id = i, void 0 === r.async && (r.async = !0), (this.loaders[r.method] || this.loaders.fs).call(this, t, r, n, o));
+			}, e.Template = function (t) {
+				var r,
+				    n,
+				    o,
+				    i = t.data,
+				    s = t.id,
+				    a = t.blocks,
+				    p = t.macros || {},
+				    c = t.base,
+				    l = t.path,
+				    u = t.url,
+				    f = t.name,
+				    h = t.method,
+				    y = t.options;this.id = s, this.method = h, this.base = c, this.path = l, this.url = u, this.name = f, this.macros = p, this.options = y, this.reset(a), r = "String", n = i, o = Object.prototype.toString.call(n).slice(8, -1), this.tokens = void 0 !== n && null !== n && o === r ? e.prepare.call(this, i) : i, void 0 !== s && e.Templates.save(this);
+			}, e.Template.prototype.reset = function (t) {
+				e.log.debug("Twig.Template.reset", "Reseting template " + this.id), this.blocks = {}, this.importedBlocks = [], this.originalBlockTokens = {}, this.child = { blocks: t || {} }, this.extend = null, this.parseStack = [];
+			}, e.Template.prototype.render = function (t, r, n) {
+				var o = this;return this.context = t || {}, this.reset(), r && r.blocks && (this.blocks = r.blocks), r && r.macros && (this.macros = r.macros), e.async.potentiallyAsync(this, n, function () {
+					return e.parseAsync.call(this, this.tokens, this.context).then(function (t) {
+						var n, i;return o.extend ? (o.options.allowInlineIncludes && (n = e.Templates.load(o.extend)) && (n.options = o.options), n || (i = e.path.parsePath(o, o.extend), n = e.Templates.loadRemote(i, { method: o.getLoaderMethod(), base: o.base, async: !1, id: i, options: o.options })), o.parent = n, o.parent.renderAsync(o.context, { blocks: o.blocks })) : r ? "blocks" == r.output ? o.blocks : "macros" == r.output ? o.macros : t : t;
+					});
+				});
+			}, e.Template.prototype.importFile = function (t) {
+				var r, n;if (!this.url && this.options.allowInlineIncludes) {
+					if (t = this.path ? e.path.parsePath(this, t) : t, !(n = e.Templates.load(t)) && !(n = e.Templates.loadRemote(r, { id: t, method: this.getLoaderMethod(), async: !1, path: t, options: this.options }))) throw new e.Error("Unable to find the template " + t);return n.options = this.options, n;
+				}return r = e.path.parsePath(this, t), e.Templates.loadRemote(r, { method: this.getLoaderMethod(), base: this.base, async: !1, options: this.options, id: r });
+			}, e.Template.prototype.importBlocks = function (t, r) {
+				var n = this.importFile(t),
+				    o = this.context,
+				    i = this;r = r || !1, n.render(o), e.forEach(Object.keys(n.blocks), function (e) {
+					(r || void 0 === i.blocks[e]) && (i.blocks[e] = n.blocks[e], i.importedBlocks.push(e));
+				});
+			}, e.Template.prototype.importMacros = function (t) {
+				var r = e.path.parsePath(this, t);return e.Templates.loadRemote(r, { method: this.getLoaderMethod(), async: !1, id: r });
+			}, e.Template.prototype.getLoaderMethod = function () {
+				return this.path ? "fs" : this.url ? "ajax" : this.method || "fs";
+			}, e.Template.prototype.compile = function (t) {
+				return e.compiler.compile(this, t);
+			}, e.Markup = function (e, t) {
+				if ("string" != typeof e || e.length < 1) return e;var r = new String(e);return r.twig_markup = void 0 === t || t, r;
+			}, e;
+		};
+	}, function (e, t, r) {
+		/**
+   * Twig.js
+   *
+   * @copyright 2011-2016 John Roepke and the Twig.js Contributors
+   * @license   Available under the BSD 2-Clause License
+   * @link      https://github.com/twigjs/twig.js
+   */
+		var n = { VERSION: "1.12.0" };r(27)(n), r(26)(n), r(25)(n), r(23)(n), r(22)(n), r(21)(n), r(12)(n), r(11)(n), r(8)(n), r(7)(n), r(6)(n), r(5)(n), r(4)(n), r(3)(n), r(2)(n), e.exports = n.exports;
+	}]);
+});
 //! moment.js
 //! version : 2.12.0
 //! authors : Tim Wood, Iskren Chernev, Moment.js contributors
