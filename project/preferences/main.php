@@ -60,12 +60,13 @@ $preferences = [
 	 * If FALSE then not used
 	 */
 	"authenticate" => [
-		"use"         => true,
-		"table"       => "users",
-		"domain"      => "/",
-		"redirect"    => false,
-		"changeable"  => [],
-		"preferences" => []
+		"use"           => true,
+		"table"         => "users",
+		"sessionsTable" => "usersSessions",
+		"domain"        => "/",
+		"redirect"      => false,
+		"changeable"    => [],
+		"preferences"   => []
 	],
 
 	/**

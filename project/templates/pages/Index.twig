@@ -33,6 +33,9 @@
 	<a href="/manage" class="button">Entity builder</a>
 	<span class="info">Database: {{ preferences.database.use ? "Yes" : "No" }}</span>
 	<span class="info">Auth: {{ preferences.authenticate.use ? "Yes" : "No" }}</span>
+	{% if me %}
+		<span class="info">User: {{ me.username }}</span>
+	{% endif %}
 	<template id="page-window">
 		<form action="">
 			<h2>Test form</h2>

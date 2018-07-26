@@ -34,6 +34,9 @@ class Auth {
 	/** Users table name @var string */
 	private $usersTable;
 
+	/** Users sessions table name @var string */
+	private $sessionsTable;
+
 	/** Users table name @var string */
 	private $authRedirect;
 
@@ -57,11 +60,9 @@ class Auth {
 
 		try {
 
-			# Logout if type
-			if($action === self::ACTION_LOGOUT) {
-				self::logout();
-				return;
-			}
+			# Maybe user loggedIn before
+			if(!self::isLoggedIn())
+				$this->isLoggedInBefore();
 
 			# Try to login if type
 			if($action === self::ACTION_LOGIN) {
@@ -78,7 +79,7 @@ class Auth {
 				if($user = self::authentication($username, $password)) {
 
 					# If user correct then we authorise him
-					self::authorisation($user);
+					self::authorisation($user, true);
 
 					# After login redirect
 					if($this->authRedirect)
@@ -87,9 +88,11 @@ class Auth {
 				}
 			}
 
-			# Maybe user loggedIn before
-			if(!self::isLoggedIn())
-				$this->isLoggedInBefore();
+			# Logout if type
+			if($action === self::ACTION_LOGOUT && self::isLoggedIn()) {
+				self::logout();
+				return;
+			}
 
 			# Login guest
 			if(!self::isLoggedIn())
@@ -127,17 +130,24 @@ class Auth {
 
 	/**
 	 * Creates new auth checker
-	 * @param string $usersTableAddress        Name of tables where stores user data
-	 * @param array  $options     				Array of authentication options
+	 * @param string $usersTable Name of tables where stores user data
+	 * @param string $sessionsTable	 Name of sessions ids table
+	 * @param array $options     Array of authentication options
 	 * @throws SystemErrorException
 	 */
-	private function __construct($usersTableAddress, $options = []) {
+	private function __construct($usersTable, $sessionsTable, $options = []) {
 
 		# Check
-		VarFilter::check($usersTableAddress)->typeFilter(FilterRule::TYPE_EMPTY_STRING)->exceptionOnError("Bad users table address");
+		VarFilter::check($usersTable)->typeFilter(FilterRule::TYPE_EMPTY_STRING)->exceptionOnError("Bad users table address");
 
 		# Set locals
-		$this->usersTable = $usersTableAddress;
+		$this->usersTable = $usersTable;
+
+		# Check
+		VarFilter::check($sessionsTable)->typeFilter(FilterRule::TYPE_EMPTY_STRING)->exceptionOnError("Bad sessions table address");
+
+		# Set locals
+		$this->sessionsTable = $sessionsTable;
 
 		# Set options
 		foreach($options as $name => $value) {
@@ -168,7 +178,8 @@ class Auth {
 	function logout($redirect = true) {
 
 		# Unset php cookies data
-		if(isset($_COOKIE['sessionId'])) unset($_COOKIE['sessionId']);
+		if(isset($_COOKIE['sessionId']))
+			unset($_COOKIE['sessionId']);
 
 		# Destroys session
 		session_unset();
@@ -177,6 +188,13 @@ class Auth {
 		# Unset user cookies
 		setcookie('sessionId', '', time() - 3600, $this->cookiesPath);
 		self::$me = null;
+
+		# Remove session
+		if(!empty(self::$me['session']))
+			Sky::$db->make($this->sessionsTable)
+				->where("userId", self::$me['id'])
+				->where("session", self::$me['session'])
+				->delete();
 
 		# Page redirect
 		if($redirect)
@@ -196,6 +214,13 @@ class Auth {
 		if($user["active"] == 0)
 			throw new UserAuthorisationException("Your account is not active");
 
+		# Remove session
+		if($updateSession && !empty(self::$me['session']))
+			Sky::$db->make($this->sessionsTable)
+				->where("userId", self::$me['id'])
+				->where("session", self::$me['session'])
+				->delete();
+
 		# Set me
 		self::$me = new UserController($user);
 
@@ -204,15 +229,16 @@ class Auth {
 			return;
 
 		# Generation of unique ID
-		$uniqueId = Utilities::getRandomString(32);
+		self::$me['session'] = $uniqueId = Utilities::getRandomString(32);
 
 		# Cookies set
 		setcookie('sessionId', $uniqueId, time() + 60 * 60 * 24 * 30, $this->cookiesPath);
 
 		# Update database
-		Sky::$db->make($this->usersTable)
-			->where($user['id'])
-			->set("sessionId", $uniqueId)->update();
+		Sky::$db->make($this->sessionsTable)
+			->set("userId", $user['id'])
+			->set("session", $uniqueId)
+			->insert();
 
 	}
 
@@ -237,7 +263,12 @@ class Auth {
 	function authenticationBySession($sessionId) {
 
 		# Get user by sessionId
-		return Sky::$db->make($this->usersTable)->where("sessionId", $sessionId)->get(Ret::SINGLE);
+		return Sky::$db->make($this->sessionsTable)
+			->join($this->usersTable, "$this->usersTable.id = $this->sessionsTable.userId")
+			->where("session", $sessionId)
+			->records("$this->usersTable.*")
+			->records("session")
+			->get(Ret::SINGLE);
 
 	}
 
