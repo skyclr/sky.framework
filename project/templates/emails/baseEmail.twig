@@ -3,11 +3,11 @@
         <div id="header" style="margin: 0; padding: 15px 25px; height: 48px; border-bottom: 1px solid #ddd; font-weight: bold;">
             <img src="cid:logo" alt="" style="float: left; height: 48px;">
             <div style="padding: 15px 0;float: right;font-size: 17px;">
-                {% block header %}{% endblock %}
+                {% block header %}{{ header }}{% endblock %}
             </div>
         </div>
         <div id="content" style="padding: 15px 25px; line-height: 150%;font-size: 14px">
-            {% block content %}{% endblock %}
+            {% block content %}{{ content }}{% endblock %}
             <div style="margin-top: 10px; color: #888;">
                 Данное сообщение сформировано автоматически, пожалуйста, не отвечайте на него.
             </div>

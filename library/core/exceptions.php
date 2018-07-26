@@ -39,8 +39,12 @@ class BaseException extends \Exception {
 
 		# Format backtrace
 		foreach($backtrace as $trace) {
-			if(!empty($trace["line"]))
-				$traceData .= "\t line: {$trace["line"]} \t file: {$trace["file"]}\n";
+			if(!empty($trace["line"])) {
+				if(isset($trace["file"]) && $trace["file"] == $this->file && ($trace["line"] == $this->line || $trace["line"] == ($this->line + 1)))
+					$traceData .= ">>>";
+				$traceData .= "\t line: {$trace["line"]} \t file: {$trace["file"]}";
+				$traceData .= "\n";
+			}
 		}
 
 		# Convert
@@ -73,22 +77,7 @@ class BaseException extends \Exception {
 				$text .= "<tr><td style='padding: 5px;'>{$trace["line"]}</td><td style='padding: 5px;'>{$trace["file"]}</td></tr>";
 		}
 
-		$text .= "</table>";
-
-		try {
-			if(class_exists('\sky\Sky') && !empty(Sky::$twig))
-				return Sky::$twig->render("/emails/ErrorNotify.twig", [
-					"header"  => "Error " . (isset($preferences["site"]["name"]) ? $preferences["site"]["name"] : ""),
-					"content" => $text,
-					"footer"  => isset(Sky::$config['site']['signature']) ? Sky::$config['site']['signature'] : date("d.m.y H:i")
-				]);
-		} catch(\Exception $e) {
-			return "<h1>Error " . (isset($preferences["site"]["name"]) ? $preferences["site"]["name"] : "") . "</h1><p>$text</p>";
-		}
-
-		# Simple string on default
-		return $this->__toString();
-
+		return $text . "</table>";
 	}
 
 	/**
@@ -103,7 +92,7 @@ class BaseException extends \Exception {
 
 		# If we need to show
 		if(!empty(Sky::$config['development']['traceExceptions']) && Sky::$config['development']['traceExceptions'] == "screen")
-			echo Sky::getType() == Sky::INIT_TYPE_CONSOLE ? "$this\n" : "<pre>$this</pre>\n";
+			echo Sky::getType() == Sky::INIT_TYPE_CONSOLE ? "$this\n" : "<pre>$this</pre>";
 
 		if(!empty(Sky::$config['development']['noLog']))
 			return;
@@ -113,12 +102,25 @@ class BaseException extends \Exception {
 			return;
 
 		# Email send
-		\Email::make()->from("TDS Admin")
-			->text($this->toHTML())
+		$email = \Email::make()->from("TDS Admin")
 			->plainText($this->__toString())
 			->to("am@waperz.com")
-			->subject("Error on TDS admin")
-			->send(true);
+			->subject("Error on TDS admin");
+
+		# Try to render email
+		try {
+			if(class_exists('\sky\Sky') && !empty(Sky::$twig))
+				$email->render("ErrorNotify", [
+					"header"  => "Error " . (isset($preferences["site"]["name"]) ? $preferences["site"]["name"] : ""),
+					"content" => $this->toHTML(),
+					"footer"  => isset(Sky::$config['site']['signature']) ? Sky::$config['site']['signature'] : date("d.m.y H:i")
+				]);
+		} catch(\Exception $e) {
+			$email->text("<h1>Error " . (isset($preferences["site"]["name"]) ? $preferences["site"]["name"] : "") . "</h1><p>$this</p>");
+		}
+
+		# Send
+		$email->send(true);
 
 		# Log
 		error_log($this->__toString(), 3, $filePath);

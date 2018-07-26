@@ -226,7 +226,7 @@ class Auth {
 	function authentication($username, $password) {
 
 		# Get user by name and password
-		if(!$user = Sky::$db->make($this->usersTable)->where("profileEmail", $username)->where(array("password", "md5"), $password)->get(Ret::SINGLE))
+		if(!$user = Sky::$db->make($this->usersTable)->where("username", $username)->where(array("password", "md5"), $password)->get(Ret::SINGLE))
 			throw new UserAuthorisationException("Wrong username/password pair");
 
 		# return
