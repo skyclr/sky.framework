@@ -6,56 +6,12 @@
 	<h1>
 		Sky framework works, good job! <br>
 	</h1>
-	<div class="tips">
 
-		<div class="tip">
-			<div class="tipContent">
-				test
-			</div>
-		</div>
-		<br>
-		<br>
-		<br>
-		<div class="tip menu top">
-			<div class="tipContent">
-				<p>
-					test
-				</p>
-			</div>
-		</div>
-		<br>
-		<br>
-		<br>
-		<div class="tip menu bottom">
-			<div class="tipContent">
-				<p>
-					test
-				</p>
-			</div>
-		</div>
-		<br>
-		<br>
-		<br>
-		<div class="tip menu left">
-			<div class="tipContent">
-				<p>
-					Sometimes there might be
-					<br>
-					more text that one string
-					<br>
-					can handle
-				</p>
-			</div>
-		</div>
-		<br>
-		<br>
-		<br>
-	</div>
 	<form action="" style="background: #fff;border-radius: 10px; margin: 25px;" data-event="submit: page.submit">
 		<fieldset class="">
 			<div class="label">
 				<span class="name">Select example</span>
-				{{ forms.selectReplace({ name: 'text', multiple: true }, [
+				{{ forms.selectReplace({ name: 'text', multiple: true, search: true }, [
 					{ value: 1, html: "First" },
 					{ value: 2, html: "Second" },
 				]) }}
@@ -99,6 +55,8 @@
 		</form>
 	</template>
 	<template id="page-menu">
-		<p>Page menu</p>
+		<p>Sometimes there might be <br>
+			more text that one string <br>
+			can handle</p>
 	</template>
 {% endblock %}

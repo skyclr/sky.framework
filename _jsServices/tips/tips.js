@@ -15,7 +15,7 @@ sky.service("tips", ["stackList", "callbacks"], function({ stackList, callbacks 
             list.each((tip) => {
                 if(withoutAutoHide)
 					tip.hide();
-                else if(tip.autoHide && (!caller || !caller.closest(tip.tip).length && !caller.closest(tip.holder).length)) {
+                else if(tip.autoHide && (!caller || !caller.closest(tip.tip).length && !caller.closest(tip.object).length)) {
 					tip.hide();
                 }
             });
@@ -60,13 +60,18 @@ sky.service("tips", ["stackList", "callbacks"], function({ stackList, callbacks 
          * @param close
          * @param ajax
          * @param highlight
+         * @param className
          * @constructor
          */
-        Tip: function(object, { autoHide = true, create = false, close = false, ajax = false, highlight = false } = {}) {
+        Tip: function(object, { autoHide = true, create = false, close = false, ajax = false, highlight = false, className = false } = {}) {
 
             /* Auto construct */
             if(!(this instanceof tips.Tip))
-                return new tips.Tip(object, { autoHide, create, close, ajax, highlight });
+                return new tips.Tip(object, { autoHide, create, close, ajax, highlight, className });
+
+            /* Old tip exists */
+            if($(object).data("tip"))
+                return $(object).data("tip");
 
             /* Add to list */
 			list.add(this);
@@ -122,6 +127,10 @@ sky.service("tips", ["stackList", "callbacks"], function({ stackList, callbacks 
             if(ajax)  ajax.on("always", () => this.hide());
 
             /* Add to list */
+            if(className)
+                this.tip.addClass(className);
+
+            /* Add to list */
             this.tip.css("display", "none");
 
             return this;
@@ -143,7 +152,7 @@ sky.service("tips", ["stackList", "callbacks"], function({ stackList, callbacks 
 
             /* Back link */
             let self   = this;
-            let offset = this.tip.css({left: "", top: "", marginLeft: "", marginTop: "", display: ""}).offset();
+            let offset = this.tip.css({left: "", top: "", marginLeft: "", marginTop: "", display: ""}).addClass(align).offset();
 
             /* Stop animation and shows */
             this.tip.stop();
@@ -161,7 +170,7 @@ sky.service("tips", ["stackList", "callbacks"], function({ stackList, callbacks 
                 /* If show righter than input */
                 case "right":
                 {
-                    this.tip.addClass("right").css({
+                    this.tip.css({
                         marginLeft: this.object.offset().left + this.object.outerWidth() - offset.left,
                         marginTop : this.object.offset().top - offset.top + parseInt((this.object.outerHeight() - this.tip.outerHeight()) / 2),
                         opacity   : 0
@@ -172,7 +181,7 @@ sky.service("tips", ["stackList", "callbacks"], function({ stackList, callbacks 
                 /* If show righter than input */
                 case "left":
                 {
-                    this.tip.addClass("left").css({
+                    this.tip.css({
                         marginLeft: this.object.offset().left - offset.left - this.tip.outerWidth(),
                         marginTop : this.object.offset().top - offset.top + parseInt((this.object.outerHeight() - this.tip.outerHeight()) / 2),
                         opacity   : 0
@@ -192,7 +201,7 @@ sky.service("tips", ["stackList", "callbacks"], function({ stackList, callbacks 
                         left = left - this.tip.outerWidth() + this.object.outerWidth();
 
                     /* Position */
-                    this.tip.addClass("top").css({
+                    this.tip.css({
                         marginLeft: left,
                         marginTop : this.object.offset().top - this.tip.outerHeight() - offset.top,
                         opacity   : 0
@@ -212,7 +221,7 @@ sky.service("tips", ["stackList", "callbacks"], function({ stackList, callbacks 
                         left = left - this.tip.outerWidth() + this.object.outerWidth();
 
                     /* Position */
-                    this.tip.addClass("bottom").css({
+                    this.tip.css({
                         marginLeft: left,
                         marginTop : this.object.offset().top + this.object.outerHeight() - offset.top,
                         opacity   : 0

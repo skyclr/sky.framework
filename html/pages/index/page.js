@@ -13,7 +13,7 @@ sky.action("page", function (_ref2) {
 			windows.Modal("page-window", {}).holder.formatForm();
 		},
 		showMenu: function showMenu(button) {
-			tips.Tip(button, { create: templates.render("page-menu") }).show('left').tip.addClass("menu");
+			tips.Tip(button, { create: templates.render("page-menu"), className: "menu" }).show('left');
 		}
 	};
 });

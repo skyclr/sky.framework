@@ -4275,7 +4275,7 @@ sky.service("tips", ["stackList", "callbacks"], function (_ref) {
 
             /* Hide all tips */
             list.each(function (tip) {
-                if (withoutAutoHide) tip.hide();else if (tip.autoHide && (!caller || !caller.closest(tip.tip).length && !caller.closest(tip.holder).length)) {
+                if (withoutAutoHide) tip.hide();else if (tip.autoHide && (!caller || !caller.closest(tip.tip).length && !caller.closest(tip.object).length)) {
                     tip.hide();
                 }
             });
@@ -4318,6 +4318,7 @@ sky.service("tips", ["stackList", "callbacks"], function (_ref) {
          * @param close
          * @param ajax
          * @param highlight
+         * @param className
          * @constructor
          */
         Tip: function Tip(object) {
@@ -4333,10 +4334,15 @@ sky.service("tips", ["stackList", "callbacks"], function (_ref) {
                 _ref2$ajax = _ref2.ajax,
                 ajax = _ref2$ajax === undefined ? false : _ref2$ajax,
                 _ref2$highlight = _ref2.highlight,
-                highlight = _ref2$highlight === undefined ? false : _ref2$highlight;
+                highlight = _ref2$highlight === undefined ? false : _ref2$highlight,
+                _ref2$className = _ref2.className,
+                className = _ref2$className === undefined ? false : _ref2$className;
 
             /* Auto construct */
-            if (!(this instanceof tips.Tip)) return new tips.Tip(object, { autoHide: autoHide, create: create, close: close, ajax: ajax, highlight: highlight });
+            if (!(this instanceof tips.Tip)) return new tips.Tip(object, { autoHide: autoHide, create: create, close: close, ajax: ajax, highlight: highlight, className: className });
+
+            /* Old tip exists */
+            if ($(object).data("tip")) return $(object).data("tip");
 
             /* Add to list */
             list.add(this);
@@ -4390,6 +4396,9 @@ sky.service("tips", ["stackList", "callbacks"], function (_ref) {
             });
 
             /* Add to list */
+            if (className) this.tip.addClass(className);
+
+            /* Add to list */
             this.tip.css("display", "none");
 
             return this;
@@ -4410,7 +4419,7 @@ sky.service("tips", ["stackList", "callbacks"], function (_ref) {
 
             /* Back link */
             var self = this;
-            var offset = this.tip.css({ left: "", top: "", marginLeft: "", marginTop: "", display: "" }).offset();
+            var offset = this.tip.css({ left: "", top: "", marginLeft: "", marginTop: "", display: "" }).addClass(align).offset();
 
             /* Stop animation and shows */
             this.tip.stop();
@@ -4427,7 +4436,7 @@ sky.service("tips", ["stackList", "callbacks"], function (_ref) {
                 /* If show righter than input */
                 case "right":
                     {
-                        this.tip.addClass("right").css({
+                        this.tip.css({
                             marginLeft: this.object.offset().left + this.object.outerWidth() - offset.left,
                             marginTop: this.object.offset().top - offset.top + parseInt((this.object.outerHeight() - this.tip.outerHeight()) / 2),
                             opacity: 0
@@ -4438,7 +4447,7 @@ sky.service("tips", ["stackList", "callbacks"], function (_ref) {
                 /* If show righter than input */
                 case "left":
                     {
-                        this.tip.addClass("left").css({
+                        this.tip.css({
                             marginLeft: this.object.offset().left - offset.left - this.tip.outerWidth(),
                             marginTop: this.object.offset().top - offset.top + parseInt((this.object.outerHeight() - this.tip.outerHeight()) / 2),
                             opacity: 0
@@ -4457,7 +4466,7 @@ sky.service("tips", ["stackList", "callbacks"], function (_ref) {
                         if (offset.left + left + this.tip.outerWidth() > $(window).outerWidth()) left = left - this.tip.outerWidth() + this.object.outerWidth();
 
                         /* Position */
-                        this.tip.addClass("top").css({
+                        this.tip.css({
                             marginLeft: left,
                             marginTop: this.object.offset().top - this.tip.outerHeight() - offset.top,
                             opacity: 0
@@ -4476,7 +4485,7 @@ sky.service("tips", ["stackList", "callbacks"], function (_ref) {
                         if (offset.left + _left + this.tip.outerWidth() > $(window).outerWidth()) _left = _left - this.tip.outerWidth() + this.object.outerWidth();
 
                         /* Position */
-                        this.tip.addClass("bottom").css({
+                        this.tip.css({
                             marginLeft: _left,
                             marginTop: this.object.offset().top + this.object.outerHeight() - offset.top,
                             opacity: 0

@@ -3,6 +3,8 @@
 @import "inputs";
 @import "labels";
 @import "buttons";
+@import "selectReplace";
+@import "../library/library";
 
 form {
   font-size : @fontSize;
@@ -14,10 +16,13 @@ form {
   h1, h2 {
     white-space : nowrap;
     padding     : @upDownMargin @leftRightMargin;
-    background  : #eee;
+    background  : #eeeeee;
     font-size   : 20px;
+    color       : #666666;
   }
 }
+
 .button {
   #buttons.button(@elementsUpDownPadding; @elementsLeftRightPadding; @fontSize; @labelsSpace);
+  #buttons.colors(@library_colors_interactive; #ffffff);
 }
