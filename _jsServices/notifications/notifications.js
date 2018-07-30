@@ -65,7 +65,7 @@ sky.service("notifications", ["stackList", "callbacks", "visibleCalculator", "te
 			}
 
 			/* Callbacks */
-			this.callbacks = callbacks();
+			this.events = callbacks();
 
 		}
 
@@ -82,7 +82,7 @@ sky.service("notifications", ["stackList", "callbacks", "visibleCalculator", "te
 			this.render.appendTo(modal.holder);
 
 			/* Restore on hide */
-			this.callbacks.on("hide", () => content.show());
+			this.events.on("hide", () => content.show());
 
 		}
 
@@ -111,7 +111,7 @@ sky.service("notifications", ["stackList", "callbacks", "visibleCalculator", "te
 				this.calc = visibleCalculator(contentHolder, this.render.outerHeight(), "body");
 
 				/* Re enable */
-				this.callbacks.on("hide", () => {
+				this.events.on("hide", () => {
 					content.enable();
 					$(window).off("scroll.notification");
 				});
@@ -134,7 +134,7 @@ sky.service("notifications", ["stackList", "callbacks", "visibleCalculator", "te
 				this.render.appendTo(this.holder);
 
 				/* Re enable */
-				this.callbacks.on("hide", function() {
+				this.events.on("hide", function() {
 					content.show();
 				});
 			}
@@ -162,7 +162,7 @@ sky.service("notifications", ["stackList", "callbacks", "visibleCalculator", "te
 				this.holder.removeClass("withLoading");
 
 			this.render.remove();
-			this.callbacks.fire("hide");
+			this.events.fire("hide");
 
 			/* Remove from list */
 			loadings.remove(this);

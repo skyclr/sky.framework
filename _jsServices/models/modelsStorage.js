@@ -6,7 +6,7 @@ sky.service("modelsStorage", function() {
 		add: function(model) {
 
 			// Search in cache
-			let cached = this.search(model.type, model.id);
+			let cached = this.search(model.type, model.id());
 
 			// If found extend
 			if(cached)
@@ -17,7 +17,7 @@ sky.service("modelsStorage", function() {
                 this.cache[model.type] = {};
 
             // Save model
-            this.cache[model.type][model.id] = model;
+            this.cache[model.type][model.id()] = model;
 
 		},
 
@@ -32,7 +32,7 @@ sky.service("modelsStorage", function() {
 		},
 
 		remove: function(model) {
-			delete cache[model.type][model.id];
+			delete cache[model.type][model.id()];
 		}
 	}
 });

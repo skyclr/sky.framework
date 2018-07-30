@@ -4,7 +4,7 @@ sky.service("modelsManager", ["callbacks", "model"], function({callbacks, model}
 
 			this.items = [];
 			this.type = type;
-			this.callbacks = callbacks();
+			this.events = callbacks();
 
 			$.each(arr, (_, model) => {
 				this.items.push(model)
@@ -20,10 +20,10 @@ sky.service("modelsManager", ["callbacks", "model"], function({callbacks, model}
 			return this.items.length;
 		}
 		addListener(func) {
-			this.callbacks.on("change", func);
+			this.events.on("change", func);
 		}
 		removeListener(func) {
-			this.callbacks.off("change", func);
+			this.events.off("change", func);
 		}
 	}
 

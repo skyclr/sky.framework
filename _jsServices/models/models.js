@@ -19,7 +19,7 @@ sky.service("model", [ "modelsStorage", "callbacks" ], function({ modelsStorage,
 			this.id = data[this.definition.id] || null;
 			this.type = type;
 			this.data = {};
-			this.callbacks = callbacks();
+			this.events = callbacks();
 			this.definition.creation.bind(this)($.extend({}, data, true));
 
 		}
@@ -28,17 +28,11 @@ sky.service("model", [ "modelsStorage", "callbacks" ], function({ modelsStorage,
 			return this.changed();
 		}
 		changed() {
-			this.callbacks.fire("change", {model: this});
+			this.events.fire("change", {model: this});
 			return this;
 		}
 		removeFromStorage() {
 			modelsStorage.remove(this);
-		}
-		addListener(func) {
-			this.callbacks.on("change", func);
-		}
-		removeListener(func) {
-			this.callbacks.off("change", func);
 		}
 	}
 
@@ -46,8 +40,10 @@ sky.service("model", [ "modelsStorage", "callbacks" ], function({ modelsStorage,
 	 * Base model definition witch would be parented
 	 */
 	let BaseDefinition = {
-		id: "id",
-		creation: function(data) {
+		id       : function() {
+			return this.data["id"]
+		},
+		creation : function(data) {
 			this.data = data;
 		},
 		extension: function(data) {
