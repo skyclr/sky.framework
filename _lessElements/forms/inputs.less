@@ -24,9 +24,10 @@ input[type=password], input[type=text], select, textarea, .selectReplace {
   color           : black !important;
   text-decoration : none;
   width           : @inputWidth;
-  &.date, &.datetime {
+  &.date, &.datetime, &.datePeriod {
     //noinspection CssUnknownTarget
-    background : white url(../img/icons/input.png) 100% -59px no-repeat;
+    background : white data-uri('inputs.svg') 100% -400px no-repeat;
+    background-origin: content-box !important;
     cursor     : pointer;
   }
   &:focus {

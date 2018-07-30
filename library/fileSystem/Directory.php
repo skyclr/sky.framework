@@ -101,17 +101,28 @@ class Directory {
 	/**
 	 * returns list of directory entries
 	 * @param string $pattern Regexp to find
+	 * @param int $limit
 	 * @return array
 	 * @throws SystemErrorException
 	 */
-	public function read($pattern = "*") {
+	public function read($pattern = "*", $limit = 0) {
+
+		if(!is_dir($this->path))
+			throw new SystemErrorException("Path is not a directory  $this->path");
+
+		if(!is_readable($this->path))
+			throw new SystemErrorException("Can't read directory $this->path");
 
 		# Get list
 		if(!is_array($list = glob($this->path . $pattern)))
-			throw new SystemErrorException("Невозможно прочитать директорию " . $this->path);
+			throw new SystemErrorException("Directory read failed $this->path");
 
 		# Files holder
 		$files = [];
+
+		# Limit truncate
+		if($limit && sizeof($list) > $limit)
+			$list = array_slice($list, 0, 100);
 
 		# Go through
 		if($list)

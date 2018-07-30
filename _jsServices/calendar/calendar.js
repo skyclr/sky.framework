@@ -198,9 +198,7 @@ sky.service("calendar", [ "templates" ], function ({ templates }) {
 				this.date.hour(23).minute(59);
 
 			/* Pick */
-			if (!this.useTime)
-				this.dayPick(element);
-			else
+			if (this.useTime)
 				this.setTime();
 
 		},

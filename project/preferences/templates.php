@@ -31,7 +31,7 @@ $preferences["templates"] = array(
 			"windows",
 			#"pagination",
 			#"suggester",
-			#"calendar"
+			"calendar"
 		),
 
 		/**

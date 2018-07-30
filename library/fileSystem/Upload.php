@@ -21,7 +21,7 @@ class Upload {
 	 * @param string $inputName
 	 * @return array|bool
 	 */
-	public static function getTempFiles($inputName = "userfile") {
+	public static function getTempFiles($inputName) {
 
 
 		# Checks of any files loaded
@@ -85,7 +85,7 @@ class Upload {
 	 * @throws SystemFatalException
 	 * @return UploadedFile[]|UploadedFile
 	 */
-	public static function uploadFiles($directory, $nameType = "random", $prefix = 0, $maxFiles = -1, $inputName = "userfile", $fileType = false) {
+	public static function uploadFiles($directory, $inputName, $nameType = "random", $prefix = 0, $maxFiles = -1, $fileType = false) {
 
 		# Local initialisations
 		$fileNum   = 0;
@@ -248,7 +248,7 @@ class Upload {
 	 * @param String $inputName Name of file input
 	 * @return int Number of uploaded files
 	 */
-	public static function filesUploaded($inputName = "userfile") {
+	public static function filesUploaded($inputName) {
 
 		# If no files
 		if(!isset($_FILES[$inputName]))

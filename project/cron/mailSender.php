@@ -28,13 +28,9 @@ try {
 		Sky::exitLog("Another process is running\n", "red");
 
 	# Get mails files
-	if(!$mails = $mailFolder->read("*.mail"))
-		if(!$mails = $mailNotifyFolder->read("*.mail"))
+	if(!$mails = $mailFolder->read("*.mail", 100))
+		if(!$mails = $mailNotifyFolder->read("*.mail", 100))
 			Sky::exitLog("No mails to proceed\n", "yellow");
-
-	# Get only 100
-	if(sizeof($mails) > 100)
-		$mails = array_slice($mails, 0, 100);
 
 	/** @var \sky\fs\File $file */
 	foreach($mails as $file) {
@@ -75,7 +71,7 @@ try {
 			Sky::output("Success\n", "green");
 
 			# Deleting task
-			unlink($file);
+			$file->delete();
 
 			# Close SMTP conn.
 			$mail->SmtpClose();

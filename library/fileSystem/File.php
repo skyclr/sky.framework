@@ -7,8 +7,6 @@ namespace sky\fs;
 use sky\images\Image;
 use sky\SystemErrorException;
 use sky\SystemNoticeException;
-use sky\UserException;
-
 /**
  * Class to work with single file
  * @package sky

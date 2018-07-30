@@ -43,8 +43,9 @@
 				<div class="label">
 					<span class="name"><span data-tip-hover="Tip test">Select example</span></span>
                     {{ forms.selectReplace({ name: 'text', multiple: true, value: "All" }, [
-                    { value: 1, html: "First" },
-                    { value: 2, html: "Second" },
+                    { value: 1, html: "First example value" },
+                    { value: 2, html: "Second example value" },
+                    { value: 3, html: "Third" },
                     ]) }}
 					<span class="desc">example description</span>
 				</div>
@@ -60,10 +61,28 @@
 					</div>
 				{% endverbatim %}
 				<label>
+					<span class="name">Calendar</span>
+					<input type="text" class="date" name="period">
+				</label>
+				<label>
+					<span class="name">Calendar period</span>
+					<input type="text" class="datePeriod" name="period">
+				</label>
+				<label>
 					<span class="name">Checkboxes</span>
 					<input type="checkbox">
 					<span class="desc">Yes i want em</span>
 				</label>
+				<div class="label">
+					<span class="name">Radios</span>
+					<label class="lined">
+						<input type="radio" name="rad" value="1">
+						<span class="desc">First</span>
+					</label>
+					<label class="lined">
+						<input type="radio" name="rad" value="2">
+						<span class="desc">Second</span>
+					</label>
 			</fieldset>
 			<fieldset class="submit">
 				<input type="submit" class="button">

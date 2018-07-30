@@ -1196,7 +1196,7 @@ sky.service("calendar", ["templates"], function (_ref) {
 			if (this.field.attr("name") === "since") this.date.hour(0).minute(0);else if (this.date.format("DD-MM-YYYY") === moment().format("DD-MM-YYYY")) this.date.hour(moment().hour()).minute(moment().minute());else this.date.hour(23).minute(59);
 
 			/* Pick */
-			if (!this.useTime) this.dayPick(element);else this.setTime();
+			if (this.useTime) this.setTime();
 		},
 
 		/**

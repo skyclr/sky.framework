@@ -58,13 +58,12 @@ class BaseException extends \Exception {
 	 */
 	public function toHTML() {
 
-		global $preferences;
-		$text = @date("d.m.Y H:i") . "<h3>" . ucfirst($this->type) . ": $this->message</h3>";
-
-		$text .= "<table>";
 
 		# Get backtrace
 		$backtrace = array_reverse(debug_backtrace());
+
+		$text = @date("d.m.Y H:i") . "<h3>" . ucfirst($this->type) . ": $this->message</h3>";
+		$text .= "<table>";
 
 		# Format backtrace
 		foreach($backtrace as $trace) {
@@ -94,6 +93,7 @@ class BaseException extends \Exception {
 		if(!empty(Sky::$config['development']['traceExceptions']) && Sky::$config['development']['traceExceptions'] == "screen")
 			echo Sky::getType() == Sky::INIT_TYPE_CONSOLE ? "$this\n" : "<pre>$this</pre>";
 
+		# Check key
 		if(!empty(Sky::$config['development']['noLog']))
 			return;
 
@@ -101,15 +101,25 @@ class BaseException extends \Exception {
 		if(!isset($filePath) || (!file_exists($filePath) && !touch($filePath)) || !is_writable($filePath))
 			return;
 
+		# Log
+		error_log($this->__toString(), 3, $filePath);
+
+	}
+
+	public function email() {
+
+		if(!class_exists("\\Email") || empty(Sky::$config["development"]["errorEmail"]))
+			return;
+
 		# Email send
-		$email = \Email::make()->from("TDS Admin")
+		$email = \Email::make()->from(Sky::$config["site"]["infoEmail"])
 			->plainText($this->__toString())
-			->to("am@waperz.com")
-			->subject("Error on TDS admin");
+			->to(Sky::$config["development"]["errorEmail"])
+			->subject("Error site " . Sky::$config["site"]["name"]);
 
 		# Try to render email
 		try {
-			if(class_exists('\sky\Sky') && !empty(Sky::$twig))
+			if(!empty(Sky::$twig))
 				$email->render("ErrorNotify", [
 					"header"  => "Error " . (isset($preferences["site"]["name"]) ? $preferences["site"]["name"] : ""),
 					"content" => $this->toHTML(),
@@ -121,9 +131,6 @@ class BaseException extends \Exception {
 
 		# Send
 		$email->send(true);
-
-		# Log
-		error_log($this->__toString(), 3, $filePath);
 
 	}
 

@@ -1,7 +1,7 @@
 {% verbatim %}
 
 <!-- Calendar -->
-<script type="text/template" id="calendar">
+<template id="calendar">
 	<div class="calendar">
 	    <div class="pickedDate"></div>
 		<div class="header">
@@ -29,10 +29,10 @@
 		    <a href="#" class="apply">Применить</a>
         </div>
 	</div>
-</script>
+</template>
 
 <!-- Calendar days -->
-<script type="text/template" id="calendar-dates">
+<template id="calendar-dates">
 	<div class="week">
 	{% for week in weeks %}
 		<div>{{ week.number }}</div>
@@ -46,6 +46,6 @@
 			    {{ day.date.date() }}
 			</div>{% endfor %}</div>{% endfor %}
 	</div>
-</script>
+</template>
 
 {% endverbatim %}
