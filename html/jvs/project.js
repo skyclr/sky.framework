@@ -3391,6 +3391,10 @@ sky.service("modelsStorage", function () {
 });
 "use strict";
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /**
  * For work with different type of notifications
  */
@@ -3402,195 +3406,217 @@ sky.service("notifications", ["stackList", "callbacks", "visibleCalculator", "te
 	    windows = _ref.windows,
 	    tips = _ref.tips;
 
+	var Message = function () {
+		function Message(_ref2) {
+			var text = _ref2.text,
+			    _ref2$type = _ref2.type,
+			    type = _ref2$type === undefined ? "error" : _ref2$type;
 
-	var notification = function notification(options) {
-		/* Self creation */
-		if (!(this instanceof notification)) return new notification(options);
+			_classCallCheck(this, Message);
 
-		this.render = templates.render("forms-notification", options);
-	};
-	var message = function message(options) {
-
-		/* Self creation */
-		if (!(this instanceof message)) return new message(options);
-
-		this.render = templates.render("forms-message", options);
-	};
-
-	message.prototype = {
-		modal: function modal() {
-			return windows.Modal(this.render);
-		},
+			this.render = templates.render("forms-message", { type: type, text: text });
+		}
 
 		/**
-   * Append to holder of modal window
-   * @param {object} modal
+   * Creates new modal window and appends message to it
+   * @returns {*}
    */
-		appendToModal: function appendToModal(modal) {
-			modal.holder.append(this.render);
-		},
 
-		tip: function tip(object, align) {
-			tips.Tip(object, { create: this.render, close: 5 }).show(align || "top");
-		}
-	};
+
+		_createClass(Message, [{
+			key: "modal",
+			value: function modal() {
+				return windows.Modal(this.render);
+			}
+
+			/**
+    * Append to holder of modal window
+    * @param {object} modal
+    */
+
+		}, {
+			key: "appendToModal",
+			value: function appendToModal(modal) {
+				modal.holder.append(this.render);
+			}
+
+			/**
+    * Shows notification in tip
+    * @param object
+    * @param align
+    */
+
+		}, {
+			key: "tip",
+			value: function tip(object, align) {
+				tips.Tip(object, { create: this.render, close: 5 }).show(align || "top");
+			}
+		}]);
+
+		return Message;
+	}();
 
 	var loadings = stackList();
 
 	/**
   * Loading
   */
-	var loading = function loading(ajax) {
-		var _this = this;
 
-		var global = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+	var Loading = function () {
+		function Loading(ajax) {
+			var _this = this;
 
+			var global = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
 
-		/* Self creation */
-		if (!(this instanceof loading)) return new loading(ajax, global);
+			_classCallCheck(this, Loading);
 
-		/* Back link */
-		this.global = global;
+			/* List save */
+			loadings.add(this);
 
-		/* Render */
-		this.render = $('<div><div></div></div>').addClass("ajaxLoading");
+			/* Back link */
+			this.global = global;
 
-		/* Global insert */
-		if (this.global) this.render.addClass("fixed").appendTo("body");
+			/* Render */
+			this.render = $('<div/>').html('<div></div>').addClass("ajaxLoading");
 
-		/* If stop possible */
-		if (ajax) {
-			$("<span/>").appendTo(this.render.addClass("cancelable")).click(function () {
-				ajax.stop();
-			});
-			ajax.on("always", function () {
-				_this.hide();
-			});
+			/* Global insert */
+			if (this.global) this.render.addClass("fixed").appendTo("body");
+
+			/* If stop possible */
+			if (ajax) {
+				$("<span/>").appendTo(this.render.addClass("cancelable")).click(function () {
+					ajax.stop();
+				});
+				ajax.on("always", function () {
+					return _this.hide();
+				});
+			}
+
+			/* Callbacks */
+			this.callbacks = callbacks();
 		}
-
-		/* Callbacks */
-		this.callbacks = callbacks();
-
-		/* List save */
-		loadings.add(this);
-	};
-
-	/**
-  * Prototype
-  * @type {{render: null, hide: hide}}
-  */
-	loading.prototype = {
 
 		/**
    * Loads loading in modal window
    * @param {object} modal Window
    */
-		inModalWindow: function inModalWindow(modal) {
 
-			/* Hide */
-			var content = modal.holder.children().hide();
 
-			/* Insert */
-			this.render.appendTo(modal.holder);
+		_createClass(Loading, [{
+			key: "inModalWindow",
+			value: function inModalWindow(modal) {
 
-			/* Restore on hide */
-			this.callbacks.on("hide", function () {
-				return content.show();
-			});
-		},
-
-		/**
-   *
-   * @param contentHolder
-   */
-		reloadContent: function reloadContent(contentHolder) {
-			var _this2 = this;
-
-			/* If no holder */
-			if (!this.holder.length) return;
-
-			/* Safe */
-			this.holder = contentHolder = $(contentHolder).addClass("withLoading");
-
-			/* Get children */
-			var content = contentHolder.children();
-
-			/* Different content disable */
-			if (this.global) {
-
-				content.disable();
-
-				/* Make sizes calculator */
-				this.calc = visibleCalculator(contentHolder, this.render.outerHeight(), "body");
-
-				/* Set position func */
-				this.setPosition = function () {
-					var position = this.calc.calculate();
-					this.render.css({
-						left: position.left + position.width / 2,
-						top: position.top + position.height / 2
-					});
-				};
-				this.setPosition();
-
-				/* Re enable */
-				this.callbacks.on("hide", function () {
-					content.enable();
-					$(window).off("scroll.notification");
-				});
-
-				$(window).on("scroll.notification", function () {
-					_this2.setPosition();
-				});
-			} else {
-
-				/*  Hide */
-				content.hide();
+				/* Hide */
+				var content = modal.holder.children().hide();
 
 				/* Insert */
-				this.render.appendTo(this.holder);
+				this.render.appendTo(modal.holder);
 
-				/* Re enable */
+				/* Restore on hide */
 				this.callbacks.on("hide", function () {
-					content.show();
+					return content.show();
 				});
 			}
 
-			return this;
-		},
+			/**
+    *
+    * @param contentHolder
+    */
 
-		setHolder: function setHolder(holder) {
+		}, {
+			key: "reloadContent",
+			value: function reloadContent(contentHolder) {
+				var _this2 = this;
 
-			/* Append and save */
-			this.holder = $(holder).addClass("withLoading").append(this.render);
+				this.setHolder(contentHolder);
 
-			/* Self return */
-			return this;
-		},
+				/* If no holder */
+				if (!this.holder.length) return;
 
-		/**
-   * Hides current loading
-   */
-		hide: function hide() {
+				/* Get children */
+				var content = this.holder.children();
 
-			if (this.holder) this.holder.removeClass("withLoading");
+				/* Different content disable */
+				if (this.global) {
 
-			this.render.remove();
-			this.callbacks.fire("hide");
+					/* Disable content */
+					content.disable();
 
-			/* Remove from list */
-			loadings.remove(this);
-		}
-	};
+					/* Make sizes calculator */
+					this.calc = visibleCalculator(contentHolder, this.render.outerHeight(), "body");
+
+					/* Re enable */
+					this.callbacks.on("hide", function () {
+						content.enable();
+						$(window).off("scroll.notification");
+					});
+
+					/* Bind scroll handler */
+					$(window).on("scroll.notification", function () {
+						var position = _this2.calc.calculate();
+						_this2.render.css({
+							left: position.left + position.width / 2,
+							top: position.top + position.height / 2
+						});
+					}).trigger("scroll");
+				} else {
+
+					/*  Hide */
+					content.hide();
+
+					/* Insert */
+					this.render.appendTo(this.holder);
+
+					/* Re enable */
+					this.callbacks.on("hide", function () {
+						content.show();
+					});
+				}
+
+				return this;
+			}
+		}, {
+			key: "setHolder",
+			value: function setHolder(holder) {
+
+				/* Append and save */
+				this.holder = $(holder).addClass("withLoading").append(this.render);
+
+				/* Self return */
+				return this;
+			}
+
+			/**
+    * Hides current loading
+    */
+
+		}, {
+			key: "hide",
+			value: function hide() {
+
+				if (this.holder) this.holder.removeClass("withLoading");
+
+				this.render.remove();
+				this.callbacks.fire("hide");
+
+				/* Remove from list */
+				loadings.remove(this);
+			}
+		}]);
+
+		return Loading;
+	}();
 
 	return {
-		loading: loading,
-		message: message,
-		reCalculate: function reCalculate() {
-			loadings.each(function (instance) {
-				instance.calc.init();
-				instance.setPosition();
-			});
+		loading: function loading(ajax) {
+			var global = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+			return new Loading(ajax, global);
+		},
+		message: function message(_ref3) {
+			var text = _ref3.text,
+			    _ref3$type = _ref3.type,
+			    type = _ref3$type === undefined ? "error" : _ref3$type;
+			return new Message({ text: text, type: type });
 		}
 	};
 });

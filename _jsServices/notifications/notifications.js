@@ -1,88 +1,79 @@
 /**
  * For work with different type of notifications
  */
-sky.service("notifications", [ "stackList", "callbacks", "visibleCalculator", "templates", "windows", "tips" ], function({ stackList, callbacks, visibleCalculator, templates, windows, tips }) {
+sky.service("notifications", ["stackList", "callbacks", "visibleCalculator", "templates", "windows", "tips"], function({stackList, callbacks, visibleCalculator, templates, windows, tips}) {
 
-	let notification = function(options) {
-		/* Self creation */
-		if(!(this instanceof notification))
-			return new notification(options);
+	class Message {
+		constructor({ text, type = "error" }) {
+			this.render = templates.render("forms-message", { type, text });
+		}
 
-		this.render = templates.render("forms-notification", options);
-	};
-	let message = function(options) {
-
-		/* Self creation */
-		if(!(this instanceof message))
-			return new message(options);
-
-		this.render = templates.render("forms-message", options);
-	};
-
-	message.prototype = {
-		modal: function() {
+		/**
+		 * Creates new modal window and appends message to it
+		 * @returns {*}
+		 */
+		modal() {
 			return windows.Modal(this.render);
-		},
+		}
 
 		/**
 		 * Append to holder of modal window
 		 * @param {object} modal
 		 */
-		appendToModal: function(modal) {
+		appendToModal(modal) {
 			modal.holder.append(this.render);
-		},
-
-		tip: function(object, align) {
-			tips.Tip(object, { create: this.render, close: 5 }).show(align || "top",);
 		}
-	};
+
+		/**
+		 * Shows notification in tip
+		 * @param object
+		 * @param align
+		 */
+		tip(object, align) {
+			tips.Tip(object, {create: this.render, close: 5}).show(align || "top");
+		}
+	}
+
 
 	let loadings = stackList();
 
 	/**
 	 * Loading
 	 */
-	let loading = function(ajax, global = true) {
+	class Loading {
+		constructor(ajax, global = true) {
 
-		/* Self creation */
-        if(!(this instanceof loading))
-            return new loading(ajax, global);
+			/* List save */
+			loadings.add(this);
 
-		/* Back link */
-		this.global = global;
+			/* Back link */
+			this.global = global;
 
-		/* Render */
-		this.render = $('<div><div></div></div>').addClass("ajaxLoading");
+			/* Render */
+			this.render = $('<div/>').html('<div></div>').addClass("ajaxLoading");
 
-		/* Global insert */
-		if(this.global)
-			this.render.addClass("fixed").appendTo("body");
+			/* Global insert */
+			if(this.global)
+				this.render.addClass("fixed").appendTo("body");
 
-		/* If stop possible */
-		if(ajax) {
-			$("<span/>").appendTo(this.render.addClass("cancelable")).click(function() { ajax.stop(); });
-			ajax.on("always", () => { this.hide(); });
+			/* If stop possible */
+			if(ajax) {
+				$("<span/>").appendTo(this.render.addClass("cancelable")).click(function() {
+					ajax.stop();
+				});
+				ajax.on("always", () => this.hide());
+			}
+
+			/* Callbacks */
+			this.callbacks = callbacks();
+
 		}
-
-		/* Callbacks */
-		this.callbacks = callbacks();
-
-		/* List save */
-		loadings.add(this);
-
-	};
-
-	/**
-	 * Prototype
-	 * @type {{render: null, hide: hide}}
-	 */
-	loading.prototype = {
 
 		/**
 		 * Loads loading in modal window
 		 * @param {object} modal Window
 		 */
-		inModalWindow: function(modal) {
+		inModalWindow(modal) {
 
 			/* Hide */
 			let content = modal.holder.children().hide();
@@ -93,41 +84,31 @@ sky.service("notifications", [ "stackList", "callbacks", "visibleCalculator", "t
 			/* Restore on hide */
 			this.callbacks.on("hide", () => content.show());
 
-		},
+		}
 
 		/**
 		 *
 		 * @param contentHolder
 		 */
-		reloadContent: function(contentHolder) {
+		reloadContent(contentHolder) {
+
+			this.setHolder(contentHolder);
 
 			/* If no holder */
 			if(!this.holder.length)
 				return;
 
-			/* Safe */
-			this.holder = contentHolder = $(contentHolder).addClass("withLoading");
-
 			/* Get children */
-			let content = contentHolder.children();
+			let content = this.holder.children();
 
 			/* Different content disable */
 			if(this.global) {
 
+				/* Disable content */
 				content.disable();
 
 				/* Make sizes calculator */
 				this.calc = visibleCalculator(contentHolder, this.render.outerHeight(), "body");
-
-				/* Set position func */
-				this.setPosition = function() {
-					let position = this.calc.calculate();
-					this.render.css({
-						left: position.left + (position.width) / 2,
-						top: position.top + (position.height) / 2
-					})
-				};
-				this.setPosition();
 
 				/* Re enable */
 				this.callbacks.on("hide", () => {
@@ -135,7 +116,14 @@ sky.service("notifications", [ "stackList", "callbacks", "visibleCalculator", "t
 					$(window).off("scroll.notification");
 				});
 
-				$(window).on("scroll.notification", () => { this.setPosition();	});
+				/* Bind scroll handler */
+				$(window).on("scroll.notification", () => {
+					let position = this.calc.calculate();
+					this.render.css({
+						left: position.left + (position.width) / 2,
+						top : position.top + (position.height) / 2
+					})
+				}).trigger("scroll");
 
 			} else {
 
@@ -153,9 +141,9 @@ sky.service("notifications", [ "stackList", "callbacks", "visibleCalculator", "t
 
 			return this;
 
-		},
+		}
 
-		setHolder: function(holder) {
+		setHolder(holder) {
 
 			/* Append and save */
 			this.holder = $(holder).addClass("withLoading").append(this.render);
@@ -163,12 +151,12 @@ sky.service("notifications", [ "stackList", "callbacks", "visibleCalculator", "t
 			/* Self return */
 			return this;
 
-		},
+		}
 
 		/**
 		 * Hides current loading
 		 */
-		hide: function() {
+		hide() {
 
 			if(this.holder)
 				this.holder.removeClass("withLoading");
@@ -180,17 +168,11 @@ sky.service("notifications", [ "stackList", "callbacks", "visibleCalculator", "t
 			loadings.remove(this);
 
 		}
-	};
+	}
 
 	return {
-		loading: loading,
-		message: message,
-		reCalculate: function() {
-			loadings.each(function(instance) {
-				instance.calc.init();
-				instance.setPosition();
-			})
-		}
+		loading    : (ajax, global = true) => new Loading(ajax, global),
+		message    : ({ text, type = "error" }) => new Message({ text, type })
 	}
 
 });
