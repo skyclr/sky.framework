@@ -210,6 +210,8 @@ class DateTime extends \DateTime {
 			return $diff->y . ($diff->y > 1 ? "года назад" : "год назад");
 		if($diff->m > 0)
 			return $diff->m . "мес. назад";
+		if($diff->d > 7)
+			return ceil($diff->d / 7) . "нед. назад";
 		if($diff->d > 0)
 			return $diff->d . "д. назад";
 		if($diff->h > 0)
