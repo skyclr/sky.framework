@@ -129,9 +129,9 @@ sky.action("selectReplace", function({ visibleCalculator }) {
 			let popup = element.closest(".selectReplaceChoose"),
 				inputs = popup.find("input:radio, input:checkbox"),
 				current, change, children = false, replace = popup.prev(),
-				val = "",
-				defaultValue = replace.html() || '-',
-				defaultAllValue = replace.text() || "Все";
+				val = "";
+
+			let { defaultValue, defaultAllValue } = replace.data("defaults");
 
 			/* Un select all */
 			popup.find("label").removeClass("selected");

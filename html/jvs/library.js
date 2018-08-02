@@ -4497,40 +4497,43 @@ Twig.extendFilter("pretty_phone", function (data, options) {
 /* Expose the internal Twig object for extension */
 Twig.extend(function (Twig) {
 
-	/* Exceptions remake */
-	Twig.log.error = function (text) {
-		throw new sky.exceptions.system.Error(text);
-	};
+	sky.Twig = Twig;
+	Twig.options = Twig.options || {};
+	Twig.options.rethrow = true;
+	//
+	// /* Exceptions remake */
+	// Twig.log.error = function(text) {
+	// 	throw new sky.exceptions.system.Error(text);
+	// };
 
 	/* Special import tag */
 	Twig.exports.extendTag({
 
-		/* Unique name for tag type */
-		type: "skyImport",
-
-		/* Regex match for tag (flag white-space anything) */
-		regex: /^skyImport\s+(.+)\s+as(.+)$/,
-
-		/* This is a standalone tag and doesn't require a following tag */
+		type: Twig.logic.type.import_,
+		regex: /^import\s+(.+)\s+as\s+([a-zA-Z0-9_]+)$/,
 		next: [],
 		open: true,
-
-		/* Runs on matched tokens when the template is loaded. (once per template) */
 		compile: function compile(token) {
-
 			var expression = token.match[1].trim(),
 			    contextName = token.match[2].trim();
-
 			delete token.match;
 
 			token.expression = expression;
 			token.contextName = contextName;
 
-			console.log("compile");
+			token.stack = Twig.expression.compile.call(this, {
+				type: Twig.expression.type.expression,
+				value: expression
+			}).stack;
 
 			return token;
 		},
 		parse: function parse(token, context, chain) {
+
+			if (token.expression === '_self') {
+				context[token.contextName] = this.macros;
+				return Twig.Promise.resolve({ chain: chain, output: '' });
+			}
 
 			var template = sky.service("templates").load(token.expression),
 			    compiled = new Twig.Template({ data: template });
@@ -4538,10 +4541,7 @@ Twig.extend(function (Twig) {
 			compiled.options = {};
 			context[token.contextName] = compiled.render({ globals: sky.service("templates").globals }, { output: 'macros' });
 
-			return {
-				chain: false,
-				output: ''
-			};
+			return { chain: chain, output: '' };
 		}
 	});
 });

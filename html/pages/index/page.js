@@ -10,7 +10,7 @@ sky.action("page", function (_ref2) {
 
 	return {
 		submit: function submit() {
-			windows.Modal("page-window", {}).holder.formatForm();
+			windows.modal("page-window", {}).holder.formatForm();
 		},
 		showMenu: function showMenu(button) {
 			tips.Tip(button, { create: templates.render("page-menu"), className: "menu" }).show('left');

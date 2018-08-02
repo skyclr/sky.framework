@@ -1,4 +1,4 @@
-sky.service("stackList", function() {
+sky.service("stackList", ["utils"], function({ utils }) {
 	let List = this.service = function() {
 
 		if(!(this instanceof List))
@@ -11,7 +11,7 @@ sky.service("stackList", function() {
 		this.last = function() {
 
 			/* Holder */
-			let last = false;
+			let last = undefined;
 
 			/* Apply for windows */
 			this.each(element => { last = element });
@@ -21,10 +21,10 @@ sky.service("stackList", function() {
 
 		};
 
-		this.add = function(element) {
+		this.add = function(element, id = false) {
 			lastId++;
 			total++;
-			elements[lastId] = element;
+			elements[id || lastId] = element;
 		};
 
 		this.remove = function(element) {
@@ -40,13 +40,17 @@ sky.service("stackList", function() {
 			return total;
 		};
 
+		this.getById = function(id) {
+			return elements[id];
+		};
+
 		this.elements = function() {
 			return elements;
 		};
 
 		this.each = function(callback) {
-			$.each(elements, (_, single) => {
-				callback.apply(single, [single]);
+			utils.each(elements, (id, single) => {
+				callback.apply(single, [single, id]);
 			});
 
 		};

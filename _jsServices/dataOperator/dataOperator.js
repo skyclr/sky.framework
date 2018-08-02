@@ -1,44 +1,4 @@
-sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils", "ajax", "actions" ], function ({ inputsIO, notifications, templates, utils, ajax, actions }) {
-
-	class searchField {
-		constructor(name, virtual) {
-			this.name = name;
-			this.inputName = name;
-			this.virtual = virtual || false;
-			this.default = null;
-			this.input = false;
-			this.value = null;
-		}
-		valueOrNullOnDefault() {
-			if ((this.default instanceof Array) && (this.value instanceof Array))
-				return utils.isObjectsEqual(this.value, this.default) ? null : this.value;
-
-			return this.value === this.default ? null : this.value;
-		}
-		read() {
-			if (this.virtual === "search")
-				return this.searchRead();
-			else if (this.virtual)
-				return this.hashRead();
-			else if (this.input)
-				this.value = inputsIO.readInputsValues(this.input);
-
-			return this.value;
-		}
-		write() {
-			if (this.input)
-				inputsIO.writeInputsValue(this.value === null ? this.default : this.value, this.input);
-			return this.value;
-		}
-		hashRead() {
-			let hashValue = page.history.hashObject[this.name];
-			return this.value = (typeof hashValue === "undefined") ? this.default : hashValue;
-		}
-		searchRead () {
-			let searchValue = page.history.searchObject[this.name];
-			return this.value = (typeof searchValue === "undefined") ? this.default : searchValue;
-		}
-	}
+sky.service("dataOperator", [ "searchField", "templates", "utils", "ajax", "stackList", "ajaxLoadingIndicator" ], function ({ searchField, templates, utils, ajax, stackList, ajaxLoadingIndicator }) {
 
 	/**
 	 * Default options
@@ -60,10 +20,10 @@ sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils",
 			this.beforeRequest = false;
 			
 			/* Fields list */
-			this.fields = {};
+			this.fields = stackList();
 
 			/* Add base options, but only not set, that's why so fun construction */
-			this.options = $.extend({}, baseOptions, true);
+			this.options = utils.extend({}, baseOptions, true);
 
 			/* Options init */
 			this.setOptions(options);
@@ -73,15 +33,12 @@ sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils",
 		/** Saves to options */
 		setOptions(options) {
 
-			/* Back link */
-			let self = this;
+			/* Add to options */
+			utils.extend(this.options, options, true);
 
 			/* Set submit handler */
-			if (options.form)
-				$(options.form).action("submit", this.onFormSubmit.bind(this));
-
-			/* Add to options */
-			$.extend(this.options, options, true);
+			if(this.options.form)
+				$(this.options.form).action("submit", this.onFormSubmit.bind(this));
 
 			/* Self return */
 			return this;
@@ -102,7 +59,7 @@ sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils",
 
 			let options = {force: true};
 
-			if (this.fields["page"])
+			if (this.fields.getById("page"))
 				options[this.options.historyType === "search" ? "search" : "hash"] = {page: 1};
 
 			/* Update */
@@ -148,17 +105,15 @@ sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils",
 
 			/* Add additional data */
 			if (this.options["requestData"])
-				data = $.extend(data, this.options["requestData"]);
+				data = utils.extend(data, this.options["requestData"]);
 
 			/* Check is same and no force requested */
 			if (this.lastRequestData !== false && utils.isObjectsEqual(this.lastRequestData, data) && !options["force"])
 				return false;
 
 			/* Set hash data */
-			if (!options.fromUrl && this.options.historyType === "search")
-				this.writeSearch();
-			else if (!options.fromUrl)
-				this.writeHash();
+			if (!options.fromUrl)
+				this.writeURI(this.options.historyType);
 
 			/* Before request call */
 			if (this.beforeRequest)
@@ -219,7 +174,7 @@ sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils",
 				});
 
 			/* Create loading, auto remove when ajax finishes */
-			notifications.loading(this.ajax).reloadContent(this.options.holder);
+			ajaxLoadingIndicator.loading(this.ajax).reloadContent(this.options.holder);
 
 		}
 
@@ -243,12 +198,9 @@ sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils",
 		 */
 		fieldsList(list, virtual) {
 
-			/* Back link */
-			let self = this;
-
 			/* Go through and push */
-			$.each(list, function (_, item) {
-				self.options.fields[item] = virtual;
+			utils.each(list, (_, item) => {
+				this.options.fields[item] = virtual;
 			});
 
 			/* Self return */
@@ -276,18 +228,19 @@ sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils",
 
 		/**
 		 * Reads real fields
+		 * @val {string} type Field type - "real" or "virtual"
 		 * @returns {{}}
 		 */
-		readReal() {
+		read(type = false) {
 
 			/* Data holder */
 			let data = {};
 
 			/* Go through */
-			$.each(this.fields, function (i, field) {
-				/** @let field searchField */
+			this.fields.each(field => {
 
-				if (field.virtual)
+				/** @let field searchField */
+				if (type && (type === "real" && field.virtual || !field.virtual))
 					return;
 
 				/* Read */
@@ -307,98 +260,37 @@ sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils",
 
 		}
 
-		/** Reads form to fields */
-		read() {
-
-			/* Data holder */
-			let data = {};
-
-			/* Go through */
-			$.each(this.fields, function (i, field) {
-				/** @let field searchField */
-
-				/* Read */
-				field.read();
-
-				/* Get non default or null */
-				let val = field.valueOrNullOnDefault();
-
-				/* If value not same as default */
-				if (val !== null)
-					data[field.name] = val;
-
-			});
-
-			/* Self return */
-			return data;
-		}
-
 		/** Write current field to form */
 		writeForm() {
-			$.each(this.fields, function (i, field) {
-				/** @let field searchField */
-				field.write();
-			});
-
-			/* Self return */
+			this.fields.each(field => field.write());
 			return this;
 		}
 
 		/** Reads hash to fields */
 		readHash() {
-			$.each(this.fields, function (i, field) {
-				/** @let field searchField */
-				field.hashRead();
-			});
-
-			/* Self return */
+			this.fields.each(field => field.hashRead());
 			return this;
 		}
 
 		/** Reads hash to fields */
 		readSearch() {
-			$.each(this.fields, function (i, field) {
-				/** @let field searchField */
-				field.searchRead();
-			});
-
-			/* Self return */
+			this.fields.each(field => field.searchRead());
 			return this;
 		}
 
 		/** Writes current fields to hash */
-		writeHash() {
+		writeURI(type = "hash") {
 
 			/* To write */
 			let write = {};
 
 			/* Go through */
-			$.each(this.fields, function (i, field) {
-				/** @let field searchField */
-				write[field.name] = field.valueOrNullOnDefault();
+			this.fields.each(field => {
+				write[field.name]  = field.valueOrNullOnDefault();
 			});
 
-			/* Write to hash */
-			page.history.set(write);
-
-			/* Self return */
-			return this;
-		}
-
-		/** Writes current fields to hash */
-		writeSearch() {
-
-			/* To write */
-			let write = {};
-
-			/* Go through */
-			$.each(this.fields, function (i, field) {
-				/** @let field searchField */
-				write[field.name] = field.valueOrNullOnDefault();
-			});
-
-			/* Write to hash */
-			page.history.search(write);
+			/* Write to URI */
+			type === "search" ? page.history.search(write) : page.history.set(write);
 
 			/* Self return */
 			return this;
@@ -411,7 +303,7 @@ sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils",
 			/* Back link */
 			let self = this;
 
-			$.each(this.options.fields, function (fieldName, virtual) {
+			utils.each(this.options.fields, (fieldName, virtual) => {
 
 				// Create search field
 				let field = new searchField(fieldName, virtual ? self.options.historyType : false);
@@ -440,8 +332,6 @@ sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils",
 					field.default = field.read();
 					field.value = null;
 				} else {
-					if (self.options.historyType === "search")
-						field.virtual = "search";
 					self.fields[fieldName] = field;
 				}
 			});
@@ -449,7 +339,7 @@ sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils",
 			/* Self return */
 			return this;
 		}
-	};
+	}
 
 	/* Interface */
 	this.service = {
@@ -459,7 +349,7 @@ sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils",
 
 			/* Add count */
 			loader.beforeRequest = function (data, options) {
-				if (!this.lastRequestData || options.force)
+				if (!loader.lastRequestData || options.force)
 					data["count"] = true;
 			};
 
@@ -467,13 +357,13 @@ sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils",
 			loader.render = function (response) {
 
 				// Re render
-				$(this.options.holder).html('').append(
+				$(loader.options.holder).html('').append(
 					templates.render("page-result-render", response)
 				);
 
 				// Remove old
-				if (this.pagination)
-					this.pagination = this.pagination.remove();
+				if (loader.pagination)
+					loader.pagination = loader.pagination.remove();
 
 				if (typeof response.pages !== "undefined") {
 
@@ -482,12 +372,12 @@ sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils",
 
 					// Create new
 					if (response.pages > 1 && pagination) {
-						this.pagination = pagination.add({
+						loader.pagination = pagination.add({
 							pages: response.pages,
 							current: response.page,
 							holder: holder
 						});
-						this.pagination.onPageChange = function (pageNum) {
+						loader.pagination.onPageChange = function (pageNum) {
 							loader.reload({virtual: {page: pageNum}});
 						}
 					}
@@ -499,11 +389,12 @@ sky.service("dataOperator", [ "inputsIO", "notifications", "templates", "utils",
 			loader.error = function (error) {
 
 				// Remove pagination on error
-				if (this.pagination)
-					this.pagination = this.pagination.remove();
+				if (loader.pagination)
+					loader.pagination = this.pagination.remove();
 
 				// Clear
-				$(this.options.holder).html('').append(notifications.message({text: error}).render);
+				$(loader.options.holder).html('').append(notifications.message({text: error}).render);
+
 			};
 
 			/* Reload */

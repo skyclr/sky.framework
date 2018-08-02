@@ -4,32 +4,33 @@ body {
   font-family : sans-serif;
   font-size   : 18px;
 }
+
 .mainPageHolder {
-  text-align  : center;
-  color       : white;
-}
-
-h1 {
-  display   : block;
-  font-size : 32px;
-}
-
-.logo {
-  margin     : 50px auto 25px;
-  display    : block;
-  content    : "";
-  width      : 120px;
-  height     : 120px;
-  background : data-uri('../../img/icons/sky.png') 0 0 no-repeat;
-}
-
-.info {
-  display    : block;
-  margin-top : 10px;
+  text-align : center;
+  color      : white;
 }
 
 .content {
-  > .button,  > input[type=text],  > select {
+  h1 {
+    display   : block;
+    font-size : 32px;
+  }
+
+  .logo {
+    margin     : 50px auto 25px;
+    display    : block;
+    content    : "";
+    width      : 120px;
+    height     : 120px;
+    background : data-uri('../../img/icons/sky.png') 0 0 no-repeat;
+  }
+
+  .info {
+    display    : block;
+    margin-top : 10px;
+  }
+
+  > .button, > input[type=text], > select {
     display         : block;
     margin          : 10px auto;
     background      : @mainColor;
@@ -42,26 +43,26 @@ h1 {
     float           : none;
   }
   > .button {
-    color: white;
+    color : white;
   }
-}
+  
+  input[type=text], input[type=password], select {
+    width      : 180px;
+    background : white;
+    color      : black;
+  }
 
-input[type=text], input[type=password], select {
-  width      : 180px;
-  background : white;
-  color      : black;
-}
+  select {
+    width              : 200px;
+    -webkit-appearance : none;
+  }
 
-select {
-  width              : 200px;
-  -webkit-appearance : none;
-}
-
-input[type=submit].info {
-  max-width  : 400px;
-  margin     : 10px auto;
-  background : transparent;
-  color      : white;
-  border     : none;
-  cursor     : pointer;
+  input[type=submit].info {
+    max-width  : 400px;
+    margin     : 10px auto;
+    background : transparent;
+    color      : white;
+    border     : none;
+    cursor     : pointer;
+  }
 }

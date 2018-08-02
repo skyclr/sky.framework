@@ -1,6 +1,14 @@
 sky.service("utils", function() {
 	this.service = {
 
+		extend: function() {
+			return $.extend.apply($, arguments);
+		},
+
+		each: function() {
+			return $.each.apply($, arguments);
+		},
+
 		/**
 		 * Checks if object has same data
 		 * @param first

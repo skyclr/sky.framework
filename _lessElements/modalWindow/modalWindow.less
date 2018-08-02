@@ -1,4 +1,5 @@
 @import "../fontAwesome/variables";
+@import "../library/library";
 
 .windowShadow {
   position                : fixed;
@@ -21,24 +22,30 @@
     margin   : auto;
     padding  : 25px 70px;
     position : relative;
+    @media (max-width : @library_adaptive_small) {
+      padding : 70px 0 0;
+    }
     .windowData {
       background : white;
       box-shadow : 0 5px 20px rgba(0, 0, 0, 0.2);
       overflow   : hidden;
     }
     > .close {
-      float  : right;
-      cursor : pointer;
+      cursor      : pointer;
+      position    : absolute;
+      right       : 0;
+      padding     : 10px;
+      font-size   : 40px;
+      color       : #bbbbbb;
+      font-family : FontAwesome, sans-serif;
+      z-index     : 100;
+      top         : 10px;
+      @media (max-width : @library_adaptive_mobile_horizontal) {
+        right : 10px;
+        top   : 0;
+      }
       &::before {
-        font-family : "FontAwesome", sans-serif;
-        content     : @fa-var-times;
-        position    : absolute;
-        margin-left : 15px;
-        margin-top  : -15px;
-        display     : block;
-        padding     : 10px;
-        font-size   : 30px;
-        color       : #bbbbbb;
+        content : @fa-var-times;
       }
     }
   }

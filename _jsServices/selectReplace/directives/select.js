@@ -1,70 +1,23 @@
-sky.directive(".selectReplaceChoose", function(popup, attrs) {
-
-		/* Get inputs */
-		let labels = popup.find("label"),
-			inputs = popup.find("input:radio, input:checkbox"),
-			current, change, children, replace = popup.prev(),
-			val = "",
-            defaultValue = replace.html() || '-',
-            defaultAllValue = replace.text() || "Все";
-
-		replace.data("addItem", function(item) {
-			let newInput = sky.templates.renderByText("{% skyImport forms as forms %}{{ forms.selectReplaceGroup(items, options) }}", { items: [item], options: {
-				name: replace.attr("input"),
-				multiple:  !replace.hasClass("single")
-			}});
-			newInput.insertAfter(inputs.filter(":last").parent());
-			inputs = popup.find("input");
-		});
-
-		/* On change */
-		$(document).on("change", '[data-input="'+ attrs["data-input"] + '"] input', change = function(event, data) {
-
-			/* Remove selected styles */
-			labels.removeClass("selected");
-
-			/* Base text */
-			val = "";
-			children = false;
-
-			/* Get checked */
-			let filtered = inputs.filter(":checked").each(function() {
-				current = $(this);
-				current.closest("label").addClass("selected");
-				val = (val && val + ", ") + current.next().text();
-				children = current.next();
-			});
-
-			/* Make text shorter */
-			if(val.length > 26)
-				val = val.substr(0, 26).trim() + "...";
-
-			if(filtered.length === inputs.length && !popup.hasClass("single"))
-				val = defaultAllValue;
-
-			if(popup.hasClass("single") && children)
-				replace.html('').prepend(children.clone().removeClass("name"));
-			else if(!children)
-				replace.html(defaultValue);
-			else
-				replace.text(val);
-
-			/* If not fake event */
-			if(event && current) {
-                replace.trigger("change", $.extend(data || {}, {
-                    value: current.val(),
-                    item: $(this)
-                }));
-            }
-
-            if(popup.hasClass("single"))
-				$(".selectReplaceChoose").addClass('hidden');
+sky.directive("select", (select, attrs) => {
+	let options = attrs || {};
+	options.items = [];
+	select.find("option").each(option => {
+		options.items.push({ html: option.html(), value: option.attr("value") });
+	});
+	let replace = sky.service("templates").renderByText("{% import forms as forms %}{{ forms.selectReplace(options) }}", { options: options });
+	replace.replaceElement(select);
+});
+sky.directive(".selectReplaceChoose", (popup, attrs) => {
+		let replace = popup.prev();
+		replace.data("defaults", {
+			defaultValue: replace.html() || '-',
+			defaultAllValue: replace.text() || "Все"
 		});
 
 		/* Trigger */
-		setTimeout(function() { change(false) }, 1);
+		setTimeout(function() { popup.find("input:radio, input:checkbox").first().trigger("change") }, 1);
 
-	});
+});
 
 sky.onReady(() => {
 	$(document).on("click touchstart", function(event) {

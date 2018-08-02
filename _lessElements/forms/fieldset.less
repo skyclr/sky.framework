@@ -1,6 +1,6 @@
 @import "variables";
 fieldset {
-  padding       : @upDownMargin 0 0 @leftRightMargin;
+  padding       : @upDownMargin (@leftRightMargin - @labelsSpace) 0 @leftRightMargin;
   border        : none;
   overflow      : hidden;
   &.subset {

@@ -1,4 +1,4 @@
-sky.service("calendar", [ "templates" ], function ({ templates }) {
+sky.service("calendar", [ "templates", "visibleCalculator" ], function ({ templates, visibleCalculator }) {
 
 	/* This class is for showing calendar to pick date on page */
 	let calendar = {
@@ -89,13 +89,14 @@ sky.service("calendar", [ "templates" ], function ({ templates }) {
 		 */
 		position: function (field) {
 
-			this.holder.insertAfter(field.parent()).css({
-				marginTop: 0,
-				marginLeft: 0,
-				position: "absolute"
-			}).css({
-				marginTop: field.offset().top - this.holder.offset().top + field.outerHeight() + 1,
-				marginLeft: field.offset().left - this.holder.offset().left + 1
+			this.holder.insertAfter(field.parent()).css("position", "absolute");
+
+			let calculator = new visibleCalculator(field),
+				offset = calculator.getDropOffset(field, this.holder);
+
+			this.holder.css({
+				marginTop: offset.top,
+				marginLeft: offset.left
 			});
 
 		},
@@ -325,7 +326,7 @@ sky.service("calendar", [ "templates" ], function ({ templates }) {
 		this.field = field;
 		this.period = false;
 		this.useTime = showTime ? showTime : false;
-		this.lastPicked = "none";
+		// this.lastPicked = "none";
 
 		if (field.is("input.datePeriod")) {
 			this.period = true;

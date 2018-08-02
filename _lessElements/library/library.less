@@ -1,8 +1,9 @@
 @import "../fontAwesome/variables";
 @import "baseClasses";
+
 #library {
   .colors() {
-    @base: #00f;
+    @base : #0000ff;
   }
   .fa-icons() {
     &::before {
@@ -59,5 +60,9 @@
     }
   }
 }
+
 @library_colors_interactive : #006fff;
 @library_colors_highlight : #bc8bff;
+@library_adaptive_small : 1000px;
+@library_adaptive_mobile_horizontal : 800px;
+@library_adaptive_mobile_vertical : 600px;

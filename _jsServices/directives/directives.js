@@ -1,6 +1,6 @@
-sky.service("directives", ["exceptions"], function ({exceptions}) {
+sky.service("directives", ["exceptions", "utils", "stackList"], function ({exceptions, utils, stackList}) {
 
-	let list = {},
+	let list = stackList(),
 		directives = this.service = {
 
 			/**
@@ -20,7 +20,7 @@ sky.service("directives", ["exceptions"], function ({exceptions}) {
 				options.selector = name;
 
 				/* Save */
-				list[name] = options;
+				list.add(options);
 
 				/* Self return*/
 				return this;
@@ -74,7 +74,7 @@ sky.service("directives", ["exceptions"], function ({exceptions}) {
 							let json = JSON.parse(jsonScript.text());
 
 							/* Extend */
-							$.extend(attributes, json);
+							utils.extend(attributes, json);
 
 							/* Save to data */
 							if (options["jsonToData"])
@@ -96,12 +96,12 @@ sky.service("directives", ["exceptions"], function ({exceptions}) {
 			 * @param element
 			 */
 			parse: function (element) {
-				$.each(list, function (tag, options) {
-					$(tag, element).each(function () {
-						directives.parseElement(this, options);
+				list.each((directive) => {
+					$(directive.selector, element).each(function () {
+						directives.parseElement(this, directive);
 					});
-					if (element.is(tag))
-						directives.parseElement(element, options);
+					if ($(element).is(directive.selector))
+						directives.parseElement(element, directive);
 				});
 			}
 

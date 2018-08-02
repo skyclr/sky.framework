@@ -6,65 +6,59 @@ sky.service('windows', ["templates", "callbacks", "stackList"], function ({templ
 	let tips = false,
 		list = stackList(),
 		windows = this.service = {
-
 			/**
 			 * Returns last open window if any
-			 * @returns {windows.Modal|boolean}
+			 * @returns {Modal|undefined}
 			 */
-			getLast: function () {
-				return list.last()
-			},
-
+			getLast: () => list.last(),
 			/**
-			 * Creates new modal window
-			 * @param {*} name Window name
-			 * @param {*} [data] Data to send with request
+			 * Returns new modal window
+			 * @returns {Modal}
 			 */
-			Modal: function (name, data) {
-
-				/* Self construct */
-				if (!(this instanceof windows.Modal))
-					return new windows.Modal(name, data);
-
-				/* Create window */
-				this.locked 		= false;
-				this.background 	= templates.render("windows-modal", {}).appendTo("#pageContentHolder").data("modalWindow", this);
-				this.dataContainer 	= this.background.children();
-				this.holder 		= this.dataContainer.children(".windowData");
-				this.closeButton 	= this.dataContainer.children(".close");
-
-				/* Make body un scrollable */
-				$(document.body).css("overflow", "hidden");
-
-				/* Callbacks */
-				this.callbacks = callbacks();
-
-				/* Render content */
-				try {
-					this.reRender(name, data);
-				} catch (e) {
-					this.close(false);
-					throw e;
-				}
-
-				/* Return */
-				return this;
-
-			}
-
+			modal: (name, data) => new Modal(name, data)
 		};
 
+
 	/**
-	 * Modal window prototype
+	 * Creates new modal window
+	 * @param {*} name Window name
+	 * @param {*} [data] Data to send with request
 	 */
-	windows.Modal.prototype = {
+	class Modal {
+		constructor (name, data) {
+
+			/* Create window */
+			this.locked 		= false;
+			this.background 	= templates.render("windows-modal", {}).appendTo("#pageContentHolder").data("modalWindow", this);
+			this.dataContainer 	= this.background.children();
+			this.holder 		= this.dataContainer.children(".windowData");
+			this.closeButton 	= this.dataContainer.children(".close");
+
+			/* Make body un scrollable */
+			$(document.body).css("overflow", "hidden");
+
+			/* Callbacks */
+			this.callbacks = callbacks();
+
+			/* Render content */
+			try {
+				this.reRender(name, data);
+			} catch (e) {
+				this.close(false);
+				throw e;
+			}
+
+			/* Return */
+			return this;
+
+		}
 
 		/**
 		 * Renders window content
 		 * @param {*} name Window name
 		 * @param {*} [data] Data to send with request
 		 */
-		reRender: function (name, data) {
+		reRender(name, data) {
 
 			/* Close all tips */
 			if(tips) tips.hideAll(true);
@@ -80,29 +74,31 @@ sky.service('windows', ["templates", "callbacks", "stackList"], function ({templ
 
 			/* Self return */
 			return this;
-		},
+		}
 
 		/**
 		 * Removes all except that was rendered
 		 */
-		clearExceptTemplate: function () {
+		clearExceptTemplate() {
 			this.holder.children().detach();
 			this.holder.append(this.template);
-		},
+		}
 
 		/**
 		 * Removes all except that was rendered
 		 */
-		removeMessages: function () {
-			this.holder.find(".notificationMessage").remove();
-			return this;
-		},
+		removeNotifications() {
+			try {
+				sky.service("notifications").findInElement(this.holder).remove();
+			} catch(e) {}
+		}
 
 		/**
 		 * Locks window so it can't be closed
-		 * @returns {windows.Modal}
+		 * @var {*} ajax Ajax object
+		 * @returns {Modal}
 		 */
-		lock: function (ajax) {
+		lock(ajax = false) {
 			this.locked = true;
 			this.closeButton.hide();
 			if (ajax) ajax
@@ -121,23 +117,23 @@ sky.service('windows', ["templates", "callbacks", "stackList"], function ({templ
 					this.unlock().close();
 				}, this);
 			return this;
-		},
+		}
 
 		/**
 		 * Unlocks window so it can be closed
-		 * @returns {windows.Modal}
+		 * @returns {Modal}
 		 */
-		unlock: function () {
+		unlock() {
 			this.locked = false;
 			this.closeButton.show();
 			return this;
-		},
+		}
 
 		/**
 		 * Closes current window
 		 * @param {boolean} [byUser] Indicates that window was closed not by user
 		 */
-		close: function (byUser = false) {
+		close(byUser = false) {
 
 			/* If windows is locked */
 			if (this.locked)
@@ -155,7 +151,9 @@ sky.service('windows', ["templates", "callbacks", "stackList"], function ({templ
 			this.callbacks.fire("close", {byUser: byUser});
 
 			/* Close all tips */
-			if(tips) tips.hideAll(true);
+			try {
+				tips = sky.service("tips").hideAll(true);
+			} catch (e) {}
 
 			/* Make body scrollable */
 			if (list.total() < 1)
@@ -164,8 +162,7 @@ sky.service('windows', ["templates", "callbacks", "stackList"], function ({templ
 			return this;
 
 		}
-
-	};
+	}
 
 	try {
 		tips = sky.service("tips");

@@ -124,10 +124,10 @@ sky.service("visibleCalculator", function() {
 
 			// Drop down
 			if(visible.bottom + popupHeight <= visible.windowHeight)
-				top = topDifference + visible.realHeight + 1;
+				top = -topDifference + visible.realHeight + 1;
 			// Drop up
 			else if(visible.top > popupHeight)
-				top = -topDifference - 1;
+				top = -topDifference - 1 - popupHeight;
 			// Drop left
 			else {
 				top = -topDifference - (popupHeight - visible.realHeight) / 2;

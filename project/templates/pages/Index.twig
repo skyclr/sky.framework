@@ -12,7 +12,7 @@
     {% endfor %}
 	</div>
 	{% if preferences.authenticate.use %}
-	<form action="" method="post" style="background: #fff;border-radius: 10px; margin: 25px auto;width: 250px;" data-event="submit: shared.validForm">
+	<form action="" method="post" style="background: #fff;border-radius: 10px; margin: 25px auto;display: inline-block;" data-event="submit: shared.validForm">
 		<input type="hidden" name="action" value="login">
 		<fieldset class="upper">
 			<label>
@@ -40,6 +40,15 @@
 		<form action="">
 			<h2>Test form</h2>
 			<fieldset class="">
+				<label>
+					<span class="name"><span data-tip-hover="Tip test">Select example</span></span>
+					<select name="test" multiple="multiple">
+						<option value="1">First example value</option>
+						<option value="2">Second example value</option>
+						<option value="3">Third</option>
+					</select>
+					<span class="desc">example description</span>
+				</label>
 				<div class="label">
 					<span class="name"><span data-tip-hover="Tip test">Select example</span></span>
                     {{ forms.selectReplace({ name: 'text', multiple: true, value: "All" }, [
@@ -50,7 +59,7 @@
 					<span class="desc">example description</span>
 				</div>
 				{% verbatim %}
-					{% skyImport forms as forms %}
+					{% import forms as forms %}
 					<div class="label">
 						<span class="name"><a href="#" data-event="click: page.showMenu">Another example</a></span>
 						{{ forms.selectReplace({ name: 'text2', value: 'Pick value' }, [
