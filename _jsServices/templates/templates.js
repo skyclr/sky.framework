@@ -36,7 +36,7 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 
 			},
 
-			renderByTextWithHolder: function(name, data, noDirectives) {
+			renderByTextWithHolder: function(text, data, noDirectives) {
 
 
 				/* Add globals */
@@ -98,7 +98,7 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 			 * @returns {XMLList|*}
 			 */
 			renderByText: function(text, data, noDirectives) {
-				return $(this.renderByTextWithHolder(name, data, noDirectives).childNodes);
+				return $(this.renderByTextWithHolder(text, data, noDirectives).childNodes);
 			},
 
 			/**
@@ -109,7 +109,7 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 			 * @returns {XMLList|*}
 			 */
 			renderByTextToText: function(text, data, noDirectives) {
-				return this.renderByTextWithHolder(name, data, noDirectives).innerHTML;
+				return this.renderByTextWithHolder(text, data, noDirectives).innerHTML;
 			},
 
 			/**

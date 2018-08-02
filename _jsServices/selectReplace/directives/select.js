@@ -1,10 +1,10 @@
 sky.directive("select", (select, attrs) => {
 	let options = attrs || {};
 	options.items = [];
-	select.find("option").each(option => {
-		options.items.push({ html: option.html(), value: option.attr("value") });
+	select.find("option").each((_, option) => {
+		options.items.push({ html: option.innerHTML, value: option.value, checked: !!option.selected });
 	});
-	let replace = sky.service("templates").renderByText("{% import forms as forms %}{{ forms.selectReplace(options) }}", { options: options });
+	let replace = sky.service("templates").renderByText("{% import forms as forms %}{{ forms.selectReplace(options, items) }}", { options: options, items: options.items });
 	replace.replaceElement(select);
 });
 sky.directive(".selectReplaceChoose", (popup, attrs) => {
@@ -15,7 +15,7 @@ sky.directive(".selectReplaceChoose", (popup, attrs) => {
 		});
 
 		/* Trigger */
-		setTimeout(function() { popup.find("input:radio, input:checkbox").first().trigger("change") }, 1);
+		setTimeout(() => { popup.find("input:radio, input:checkbox").first().trigger("change"); }, 1);
 
 });
 

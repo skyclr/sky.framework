@@ -149,6 +149,881 @@ sky.service("actions", ["exceptions"], function (_ref) {
 });
 "use strict";
 
+sky.service("ajax", ["callbacks"], function (_ref) {
+	var callbacks = _ref.callbacks;
+
+
+	/**
+  * Advanced ajax execution
+  * To abort call stop() method instead of abort() because it's used for abort callback set, or .ajax.abort()
+  * You may skip type, don't skip it if lock is string set false in object and data
+  * @param {string} url				Requested url
+  * @param {object} [data]			Holds request parameters
+  * @param {jQuery} [object]			Object which performs request, to disable it during request
+  * @param {object} [ajaxExtend]		Additional ajax options, see http://api.jquery.com/jQuery.ajaxSetup/
+  * @param {object} [callbackData]	Additional params that passed to any callback
+  */
+	this.service = function (url, data, _ref2) {
+		var _ref2$object = _ref2.object,
+		    object = _ref2$object === undefined ? null : _ref2$object,
+		    _ref2$callbackData = _ref2.callbackData,
+		    callbackData = _ref2$callbackData === undefined ? {} : _ref2$callbackData,
+		    _ref2$ajaxExtend = _ref2.ajaxExtend,
+		    ajaxExtend = _ref2$ajaxExtend === undefined ? {} : _ref2$ajaxExtend;
+
+
+		/* Lock button */
+		if (object) object = $(object).filter(":not(.disabled)").disable();
+
+		/* New object to store callbacks */
+		var ajaxCallbacks = new callbacks();
+		ajaxCallbacks.stop = function () {
+			ajaxCallbacks.ajax.abort();
+		};
+
+		/* Perform ajax request */
+		ajaxCallbacks.ajax = $.ajax($.extend(true, {
+
+			/* Set base options */
+			url: url,
+			data: data,
+			dataType: "json",
+			type: "post",
+			timeout: 480 * 1000,
+			success: function (response, textStatus, jqXHR) {
+
+				/* Possible params list */
+				var params = $.extend({ jqXHR: jqXHR, textStatus: textStatus, object: object }, callbackData);
+
+				/* If empty response */
+				if (response === null) {
+					params.error = "Данные небыли переданы";
+					params.type = "noData";
+				}
+
+				/* If response returned with error */
+				if (response.error) {
+					params.error = response.text;
+					params.type = "php";
+				}
+
+				/* If error type set */
+				if (params.type) return ajaxCallbacks.fire("notSuccess, error", params); // No data
+
+				/* Set response in possible params */
+				params.response = params.data = response;
+
+				/* User success function */
+				return ajaxCallbacks.fire("preSuccess, success, notAbort", params);
+			}.safe(),
+			error: function (jqXHR, textStatus, errorThrown) {
+
+				/* Defaults */
+				var type = "Unknown",
+				    errorText = "Во время выполнения запроса произошла ошибка, пожалуйста попробуйте позже";
+
+				/* Get error text according to response data */
+				if (textStatus === "abort") {
+					type = "abort";
+					errorText = 'Выполнение запроса прервано';
+				} else if (textStatus === 'parsererror') {
+					type = "parse";
+					errorText = "Ответ пришел в неверном формате, пожалуйста попробуйте позже, текст:<br/>" + jqXHR.responseText;
+				} else if (textStatus === 'timeout') {
+					type = "timeout";
+					errorText = 'Время ожидания ответа истекло';
+				} else if (jqXHR.status === 0) {
+					type = "stopped";
+					errorText = 'Загрузка остановлена, проверьте свои настройки сети';
+				} else if (codes[jqXHR.status]) {
+					type = jqXHR.status;
+					errorText = 'Ошибка во времы выполнения запроса <br/> ' + codes[jqXHR.status];
+				}
+
+				/* Possible params list */
+				var params = $.extend({
+					error: errorText,
+					type: type,
+					code: type,
+					jqXHR: jqXHR,
+					textStatus: textStatus,
+					status: textStatus,
+					errorThrown: errorThrown,
+					object: object
+				}, callbackData);
+
+				/* Execute callback */
+				ajaxCallbacks.fire("notSuccess", params);
+
+				/* Execute special ajaxCallbacks */
+				ajaxCallbacks.fire(textStatus === "abort" ? "abort" : "error, notAbort", params);
+			}.safe()
+
+		}, ajaxExtend));
+
+		/* On always set */
+		ajaxCallbacks.ajax.promise().always(function (jqXHR, textStatus, errorThrown) {
+
+			/* Unlock objects */
+			if (object) object.enable();
+
+			/* Always callback */
+			ajaxCallbacks.fire("always", { errorThrown: errorThrown, textStatus: textStatus, jqXHR: jqXHR, object: object });
+		}.safe());
+
+		return ajaxCallbacks;
+	};
+
+	/**
+  * Contains http codes
+  */
+	var codes = {
+
+		/* Request errors */
+		400: "Неверный запрос",
+		401: "Для выполнеия запроса нужня авторизация",
+		402: "Для доступа к ресурсу необходима оплата",
+		403: "Доступ к ресурсу запрещен",
+		404: "Сервер для выполнения запроса не найден или запрос выполнялся слишком долго",
+		405: "Не поддерживаемый метод HTTP",
+		406: "Не приемлемо",
+		407: "Необходима аутентификация прокси",
+		408: "Истекло время ожидания",
+		409: "Конфликт",
+		410: "Ресурс удален",
+		411: "В запросе не указана длинна",
+		412: "Условие ложно",
+		413: "Размер запроса слишком велик",
+		414: "Запрашиваемый URI слишком длинный",
+		415: "Неподдерживаемый тип данных",
+		416: "Запрашиваемый диапазон не достижим",
+		417: "Ожидаемое неприемлемо",
+		422: "Необрабатываемый экземпляр",
+		423: "Ресурс заблокирован",
+		424: "Невыполненная зависимость",
+		425: "Неупорядоченный набор",
+		426: "Необходимо обновление",
+		428: "Необходимо предусловие",
+		429: "Слишком много запросов",
+		431: "Поля заголовка запроса слишком большие",
+		451: "Недоступно по юридическим причинам",
+		456: "Некорректируемая ошибка",
+		499: "Используется Nginx, соединение закрыто до получения ответа",
+
+		/* Server error */
+		500: "Внутренняя ошибка сервера",
+		501: "Не реализовано",
+		502: "Плохой или ошибочный шлюз",
+		503: "Сервис недоступен",
+		504: "Шлюз не отвечает",
+		505: "Версия HTTP не поддерживается",
+		506: "Вариант тоже проводит согласование",
+		507: "Переполнение хранилища",
+		508: "Запрос зациклен",
+		509: "Исчерпана пропускная ширина канала",
+		510: "Не расширено",
+		511: "Требуется сетевая аутентификация"
+
+	};
+});
+"use strict";
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/** Class to work with drop zone for File api */
+sky.service("ajaxFilesDropZone", ["supported", "callbacks"], function (_ref) {
+	var supported = _ref.supported,
+	    callbacks = _ref.callbacks;
+
+	this.service = function () {
+		function _class(_ref2) {
+			var zone = _ref2.zone,
+			    data = _ref2.data,
+			    url = _ref2.url,
+			    options = _ref2.options;
+
+			_classCallCheck(this, _class);
+
+			/* Save options */
+			this.options = options;
+			this.zone = zone;
+			this.callbacks = callbacks();
+			this.data = data;
+			this.url = url;
+			this.files = [];
+
+			/* If no XHR supported, no file drop needed */
+			if (!supported.XHRUpload) {
+				this.callbacks.fire("nonSupported");
+				return this;
+			}
+
+			/* Bind events */
+			this.attachEvents();
+		}
+
+		_createClass(_class, [{
+			key: "attachEvents",
+			value: function attachEvents() {
+				var _this = this;
+
+				/* While over event */
+				this.zone.on({
+
+					dragenter: function dragenter(event) {
+						_this.callbacks.fire("dragenter", _this, [event]);
+					},
+					dragleave: function dragleave(event) {
+						_this.callbacks.fire("dragleave", _this, [event]);
+					},
+					dragend: function dragend(event) {
+						_this.callbacks.fire("dragend", _this, [event]);
+					},
+					drop: function drop(event) {
+						_this.callbacks.fire("drop", _this, [event]);
+					},
+					dragover: function dragover(event) {
+
+						/* Get event */
+						event = event.originalEvent;
+
+						/* Check if drag is valid */
+						if (!_this.isValidFileDrag(event)) return;
+
+						/* Get effect */
+						var effect = event.dataTransfer.effectAllowed;
+
+						/* Set proper */
+						if (effect === 'move' || effect === 'linkMove') {
+							event.dataTransfer.dropEffect = 'move'; // for FF (only move allowed)
+						} else {
+							event.dataTransfer.dropEffect = 'copy'; // for Chrome
+						}
+
+						/* Prevent */
+						event.preventDefault();
+					}
+				});
+
+				/* Stop file opening when drop on browser window */
+				$(document).bind({
+					dragover: function dragover(e) {
+						e = e.originalEvent;
+						if (e.dataTransfer) {
+							e.dataTransfer.dropEffect = 'none';
+							e.preventDefault();
+						}
+					},
+					dragenter: function dragenter(e) {
+						if (typeof self.options.onStart !== "undefined") self.options.onStart.apply(self, [e]);
+					}
+				});
+			}
+		}], [{
+			key: "isValidFileDrag",
+			value: function isValidFileDrag(event) {
+
+				var dt = event.dataTransfer,
+
+				// do not check dt.types.contains in webkit, because it crashes safari 4
+				isWebkit = navigator.userAgent.indexOf("AppleWebKit") > -1;
+
+				// dt.effectAllowed is none in Safari 5
+				// dt.types.contains check is for firefox
+				return dt && dt.effectAllowed !== 'none' && (dt.files || !isWebkit && dt.types.contains && dt.types.contains('Files'));
+			}
+		}]);
+
+		return _class;
+	}();
+});
+"use strict";
+
+sky.service("ajaxFilesIFrame", function () {
+
+	var AjaxFilesIFrame = function AjaxFilesIFrame(options) {
+
+		/* Save options */
+		this.options = options;
+		this.files = options.files;
+		this.input = options.input;
+		this.url = options.url;
+		this.data = options.data;
+		this.callbacks = options.callbacks;
+	};
+
+	AjaxFilesIFrame.prototype = {
+
+		getName: function getName(name) {
+
+			// get input value and remove path to normalize
+			return name.replace(/.*(\/|\\)/, "");
+		},
+
+		cancel: function cancel(id) {
+
+			this.options.onAbort(id, this.getName(this.input.value));
+
+			this.IFrame.setAttribute('src', 'javascript:false;').remove();
+		},
+
+		/**
+   * Upload file function
+   */
+		send: function send() {
+
+			/* letiables */
+			var self = this;
+			var input = this.input;
+			var fileName = this.getName(input.value);
+
+			/* Create new input */
+			$(input).clone().val("").insertBefore(input);
+
+			/* Create elements */
+			this.IFrame = this.createIframe();
+			this.form = this.createForm(this.IFrame, this.options.data).append(input);
+
+			this.attachLoadEvent(this.IFrame, function () {
+
+				var response = self.getIframeContentJSON(self.IFrame);
+
+				if (response) self.options.onSuccess(response);
+
+				// timeout added to fix busy state in FF3.6
+				setTimeout(function () {
+					self.IFrame.remove();
+				}, 1);
+			});
+
+			this.form.trigger("submit");
+		},
+
+		/**
+   * Attach load event to IFrame
+   */
+		attachLoadEvent: function attachLoadEvent(iframe, callback) {
+
+			iframe.load(function () {
+
+				if (!this.parentNode) return;
+
+				// fixing Opera 10.53
+				if (this.contentDocument && this.contentDocument.body && this.contentDocument.body.innerHTML === "false") return;
+
+				callback();
+			});
+		},
+
+		/**
+   * Returns json object received by IFrame from server.
+   */
+		getIframeContentJSON: function getIframeContentJSON(iframe) {
+
+			/* IFrame.contentWindow.document - for IE<7 */
+			var doc = iframe.get(0).contentDocument ? iframe.get(0).contentDocument : iframe.get(0).contentWindow.document;
+
+			var response = doc.body.innerHTML;
+
+			/* Check for empty response */
+			if (response === "") {
+				if (self.callbacks) self.callbacks.onError("Данные небыли переданы"); // No data
+				return false;
+			}
+
+			/* Try to get json data */
+			try {
+				response = jQuery.parseJSON(response);
+			} catch (e) {
+				if (self.callbacks) {
+					self.callbacks.onError("Неверный формат данных"); // No data
+					console.log(response);
+				}
+				return false;
+			}
+
+			/* If response returned with error */
+			if (response.error) {
+				if (self.callbacks) self.callbacks.onError(response.text); // Execute user error handler
+				return false;
+			}
+
+			return response;
+		},
+
+		/**
+   * Creates IFrame with unique name
+   */
+		createIframe: function createIframe() {
+
+			return $('<IFrame/>', { src: "javascript:false;", name: "uploadIFrame" + Math.floor(Math.random() * 1000000) }).css("display", "none").appendTo('body');
+		},
+
+		/**
+   * Creates form, that will be submitted to IFrame
+   */
+		createForm: function createForm(iframe, params) {
+
+			var queryString = this.url + "?" + jQuery.param(params);
+
+			return $('<form/>', {
+				method: "post", enctype: "multipart/form-data", action: queryString, target: iframe.attr("name")
+			}).css("display", "none").appendTo('body');
+		}
+
+	};
+});
+"use strict";
+
+/**
+ * Module to work with ajax file upload
+ */
+sky.service("ajaxFiles", ["supported", "callbacks", "ajaxFilesXHR", "ajaxFilesIFrame"], function (_ref) {
+	var callbacks = _ref.callbacks,
+	    supported = _ref.supported,
+	    ajaxFilesXHR = _ref.ajaxFilesXHR,
+	    ajaxFilesIFrame = _ref.ajaxFilesIFrame;
+
+
+	/**
+  * Class to work with dynamic file upload
+  * @param {html|string} input Input to be used to upload
+  * @param {string} url Url to upload
+  * @param {object} data Data to be send with request
+  */
+	var AjaxFiles = this.service = function (input, url, data) {
+
+		/* Self construct */
+		if (!(this instanceof AjaxFiles)) return new AjaxFiles(input, url, data);
+
+		/* Save items */
+		this.inputs = $(input);
+		this.url = url;
+		this.data = data;
+		this.callbacks = callbacks();
+		this.files = [];
+
+		/**
+   * Function to handle file input change
+   */
+		this.saveFiles = function (input) {
+
+			/* Get files list */
+			if (supported.XHRUpload) {
+
+				/* Get files from event */
+				var files = input.get(0).files;
+
+				/* Save them to this */
+				var _iteratorNormalCompletion = true;
+				var _didIteratorError = false;
+				var _iteratorError = undefined;
+
+				try {
+					for (var _iterator = files[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+						var file = _step.value;
+
+						this.files.push({ file: file, input: input, inputName: input.attr("name") });
+					}
+				} catch (err) {
+					_didIteratorError = true;
+					_iteratorError = err;
+				} finally {
+					try {
+						if (!_iteratorNormalCompletion && _iterator.return) {
+							_iterator.return();
+						}
+					} finally {
+						if (_didIteratorError) {
+							throw _iteratorError;
+						}
+					}
+				}
+			} else this.files.push(input.get(0));
+		};
+
+		/**
+   * Sends ajax files
+   * @param {bool} parallel If try files would be send in parallel
+   * @returns {*}
+   */
+		this.send = function (parallel) {
+			var _this = this;
+
+			/* Clear */
+			this.files = [];
+
+			/* Get files list */
+			this.inputs.each(function (_, input) {
+				_this.saveFiles($(input));
+			});
+
+			/* If no files */
+			if (!this.files.length) return false;
+
+			/* Create supported handler */
+			var handler = void 0;
+			if (supported.XHRUpload) handler = new ajaxFilesXHR(this);else handler = new ajaxFilesIFrame(this);
+
+			/* Send files */
+			if (parallel) this.sendParallel(handler);else this.sendConsequentially(handler);
+
+			/* return send handler */
+			return handler;
+		};
+
+		/**
+   * Sends files consequentially
+   * @param handler
+   */
+		this.sendConsequentially = function (handler) {
+			var _this2 = this;
+
+			/* First id */
+			var id = 0;
+
+			/* Set sending next after this one */
+			this.callbacks.on("always", function () {
+				id++;
+				if (_this2.files[id]) handler.send(_this2.files[id]);
+			});
+
+			/* Send first */
+			handler.send(self.files[id]);
+		};
+
+		/**
+   * Sends files parallel
+   * @param handler
+   */
+		this.sendParallel = function (handler) {
+
+			/* Send files through them */
+			var _iteratorNormalCompletion2 = true;
+			var _didIteratorError2 = false;
+			var _iteratorError2 = undefined;
+
+			try {
+				for (var _iterator2 = this.files[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+					var file = _step2.value;
+
+					handler.send(file);
+				}
+			} catch (err) {
+				_didIteratorError2 = true;
+				_iteratorError2 = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion2 && _iterator2.return) {
+						_iterator2.return();
+					}
+				} finally {
+					if (_didIteratorError2) {
+						throw _iteratorError2;
+					}
+				}
+			}
+		};
+
+		/* Self return */
+		return this;
+	};
+
+	/**
+  * Performs default file send
+  * @param {string} url
+  * @param element
+  * @param data
+  */
+	AjaxFiles.defaultSend = function (url, element, data) {
+
+		// Get input
+		var input = element.is("input[type=file]") ? element : element.closest("label, .label").find("input[type=file]"),
+		    exceptions = sky.service("exceptions"),
+		    templates = sky.service("templates"),
+		    notifications = sky.service("notifications"),
+		    windows = sky.service.windows("windows");
+
+		// Check
+		if (!input.length) throw new exceptions.system.Error("No proper input provided for file send");
+
+		// Init
+		var filesAjax = AjaxFiles(input, url, data),
+		    modal = windows.getLast(),
+		    currentFile = void 0;
+
+		/*  Bind events */
+		filesAjax.callbacks.on("begin", function (file) {
+			if (modal) {
+				modal.holder.find(".preview").remove();
+				modal.lock();
+			}
+			currentFile = templates.render("files-single-upload", file).insertAfter(element.parent());
+		}).on("always", function () {
+			currentFile.remove();
+			if (modal) modal.unlock();
+		}).on("notSuccess", function (error) {
+			modal.clearExceptTemplate();
+			notifications.message({ text: error }).appendToModal(modal);
+		}).on("progress", function (totalPercent, percent) {
+			currentFile.find(".total").html(percent + "%");
+			currentFile.find(".progressBar div").css("width", percent + "%");
+
+			// If loaded
+			if (percent === 100) currentFile.find(".total").html("100%, обработка");
+		}).on("start", function () {});
+
+		/* Send */
+		filesAjax.send();
+		return filesAjax;
+	};
+});
+"use strict";
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/** Sends file data via HttpRequest */
+sky.service("ajaxFilesXHR", ["supported", "ajax", "stackList"], function (_ref) {
+	var supported = _ref.supported,
+	    ajax = _ref.ajax,
+	    stackList = _ref.stackList;
+
+	this.service = function () {
+		function _class(options) {
+			_classCallCheck(this, _class);
+
+			/* Save options */
+			this.options = options;
+			this.files = options.files;
+			this.input = options.input;
+			this.url = options.url;
+			this.data = options.data;
+			this.callbacks = options.callbacks;
+			this.toProceed = options.files.length;
+			this.inProgress = 0;
+			this.total = options.files.length;
+			this.totalLoaded = 0;
+			this.totalSize = 0;
+			this.totalPercent = 0;
+			this.current = 0;
+			this.fileRequests = stackList();
+
+			/* Go through */
+			var _iteratorNormalCompletion = true;
+			var _didIteratorError = false;
+			var _iteratorError = undefined;
+
+			try {
+				for (var _iterator = options.files[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+					file = _step.value;
+
+					this.totalSize += file.size;
+				}
+			} catch (err) {
+				_didIteratorError = true;
+				_iteratorError = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion && _iterator.return) {
+						_iterator.return();
+					}
+				} finally {
+					if (_didIteratorError) {
+						throw _iteratorError;
+					}
+				}
+			}
+		}
+
+		/**
+   * Get file name
+   * @param {*} file File
+   * @returns {string}
+   */
+
+
+		_createClass(_class, [{
+			key: "send",
+
+
+			/**
+    * Uploads file
+    * @param {*} file File name in files stack
+    */
+			value: function send(file) {
+				var _this = this;
+
+				/* This obj will store data associated with XHR */
+				$.extend(file, {
+					id: Math.random(),
+					name: this.getName(file.file),
+					size: file.file.size,
+					ajax: false,
+					percent: false,
+					loaded: 0
+				});
+
+				/* Prepare params */
+				var self = this,
+				    params = this.data || {},
+				    queryString = this.url + "?ajaxFile=" + file.name + "&" + jQuery.param(params);
+
+				/**
+     * Params extend
+     * @param {object} args Object to be extended
+     * @returns {*}
+     */
+				this.extend = function (args) {
+					return jQuery.extend(args, {
+						totalLoaded: self.totalLoaded,
+						totalSize: self.totalSize,
+						totalPercent: self.totalPercent,
+						file: file,
+						loaded: file.loaded,
+						size: file.size,
+						percent: file.percent,
+						toProceed: self.toProceed,
+						current: self.current,
+						total: self.total
+					});
+				};
+
+				/* Send */
+				if (supported.formData) {
+
+					/* Create form data sender */
+					var form = new FormData();
+					form.append(file.inputName, file.file);
+
+					/* Send start */
+					file.ajax = ajax(queryString, form, { ajaxExtend: {
+							processData: false,
+							contentType: false,
+							type: "POST",
+							xhr: function () {
+								try {
+
+									/* Create XHR */
+									var xhr = new XMLHttpRequest();
+
+									/* Set special upload api handlers */
+									xhr.upload["onloadstart"] = function () {
+										this.inProgress++;
+										this.callbacks.fire("begin", this.extend({}));
+									};
+									xhr.upload["onprogress"] = function (event) {
+										this.totalLoaded += event.loaded - file.loaded;
+										this.totalPercent = (this.totalLoaded / this.totalSize * 100).toFixed(0);
+										this.onProgress(event, file);
+									};
+
+									/* Return create XHR */
+									return xhr;
+								} catch (e) {
+									return undefined;
+								}
+							}.safe()
+						}
+					});
+				} else {
+
+					/* Send start */
+					file.ajax = ajax(queryString, file.file, {
+						processData: false,
+						contentType: false,
+						type: "POST",
+						beforeSend: sky.func(function (jqXHR) {
+							jqXHR.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+							jqXHR.setRequestHeader("X-File-Name", encodeURI(file.name));
+							jqXHR.setRequestHeader("Content-Type", "multipart/form-data");
+							jqXHR.setRequestHeader("Content-Disposition", 'attachment; filename="' + encodeURI(file.name) + '"');
+							jqXHR.setRequestHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9");
+						})
+					});
+				}
+
+				/* Set ajax callbacks */
+				file.ajax.on({
+					success: function success(all) {
+						_this.callbacks.fire("success", _this.extend(all));
+					},
+					error: function error(all) {
+						_this.callbacks.fire("error", _this.extend(all));
+					},
+					notSuccess: function notSuccess(all) {
+						_this.callbacks.fire("notSuccess", _this.extend(all));
+					},
+					always: function always(all) {
+
+						/* Counters */
+						_this.inProgress--;
+						_this.toProceed--;
+
+						/* Call always method */
+						_this.callbacks.fire("always", _this.extend(all));
+
+						/* Delete connection */
+						_this.fileRequests.delete(file);
+					}
+				});
+
+				/* Save */
+				this.fileRequests.add(file);
+			}
+
+			/**
+    * Fores on progress change
+    * @param event
+    * @param fileRequestData
+    */
+
+		}, {
+			key: "onProgress",
+			value: function onProgress(event, fileRequestData) {
+
+				/* Count percentage */
+				var percent = (event.loaded / event["total"] * 100).toFixed(0);
+				fileRequestData.loaded = event.loaded;
+
+				/* If percent changed */
+				if (percent !== fileRequestData.percent && event["lengthComputable"]) {
+					fileRequestData.percent = percent;
+					this.callbacks.fire("progress", this.extend({}));
+				}
+			}
+
+			/**
+    * Aborts current download
+    */
+
+		}, {
+			key: "abort",
+			value: function abort() {
+
+				/* Stop each request */
+				this.fileRequests.each(function (request) {
+					request.ajax.stop();
+				});
+
+				/* Call always method */
+				this.callbacks.fire("abort", this.extend({}));
+			}
+		}], [{
+			key: "getName",
+			value: function getName(file) {
+				return file.name.replace(/.*(\/|\\)/, "");
+			}
+		}]);
+
+		return _class;
+	}();
+});
+"use strict";
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -314,6 +1189,458 @@ sky.service("ajaxLoadingIndicator", ["stackList"], function (_ref) {
 			return new Loading(ajax, global);
 		}
 	};
+});
+"use strict";
+
+sky.service("calendar", ["templates", "visibleCalculator"], function (_ref) {
+	var templates = _ref.templates,
+	    visibleCalculator = _ref.visibleCalculator;
+
+
+	/* This class is for showing calendar to pick date on page */
+	var calendar = {
+
+		/* Days set */
+		monthsNames: window.page.data.monthsNames || ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+
+		renderDays: function renderDays() {
+
+			/* Clone */
+			var current = moment(this.date),
+			    weeks = [],
+			    currentWeek = false;
+
+			/* From first */
+			current.date(1);
+
+			/* Go through */
+			while (current.month() === this.date.month()) {
+
+				/* Make week if new */
+				if (!currentWeek || current.day() === 1) {
+					currentWeek = { number: current.isoWeek(), days: [] };
+					weeks.push(currentWeek);
+				}
+
+				/* Push */
+				currentWeek.days.push({ date: current.clone(), dateStr: current.format("YYYY.MM.DD"), day: current.day() === 0 ? 6 : current.day() - 1 });
+
+				/* Go next day */
+				current.add(1, "d");
+			}
+
+			/* Render */
+			this.dates.html('').append(templates.render("calendar-dates", {
+				weeks: weeks,
+				dateStr: this.date.format("YYYY.MM.DD"),
+				current: this.date,
+				period: this.period,
+				since: this.since,
+				till: this.till
+			}));
+
+			/* Render */
+			this.setTime();
+		},
+
+		/**
+   * When user picks date
+   * @param {*} dayDiv Div that user clicked, if he did
+   * @param notClose
+   */
+		dayPick: function dayPick(dayDiv, notClose) {
+
+			/* Set date */
+			if (dayDiv) this.date.date(parseInt(dayDiv.html()));
+
+			this.field.val(this.getInputValue()).trigger("change").trigger("keyup");
+			if (!notClose) this.close();
+		},
+
+		getInputValue: function getInputValue() {
+
+			/* Get field new value */
+			if (this.useTime) return this.date.format("DD.MM.YYYY HH:mm");else if (this.period && this.since.isSame(this.till)) return this.since.format("DD.MM.YYYY");else if (this.period) return this.since.format("DD.MM.YYYY") + ' - ' + this.till.format("DD.MM.YYYY");
+
+			/* Default */
+			return this.date.format("DD.MM.YYYY");
+		},
+
+		setDayPick: function setDayPick() {
+			this.pickedDateView.html(this.getInputValue());
+		},
+
+		/**
+   * Position date picker
+   * @param {*} field Item that we should position under
+   */
+		position: function position(field) {
+
+			this.holder.insertAfter(field.parent()).css("position", "absolute");
+
+			var calculator = new visibleCalculator(field),
+			    offset = calculator.getDropOffset(field, this.holder);
+
+			this.holder.css({
+				marginTop: offset.top,
+				marginLeft: offset.left
+			});
+		},
+
+		/**
+   * Sets time inputs in calendar values
+   */
+		setTime: function setTime() {
+
+			/* Set time */
+			this.holder.find(".time .hour").val(this.date.format("HH"));
+			this.holder.find(".time .minute").val(this.date.format("mm"));
+		},
+
+		periodChangeDay: function periodChangeDay() {
+
+			var reset = function reset() {
+				calendar.since = calendar.date.clone();
+				calendar.till = calendar.date.clone();
+				calendar.lastModified = "none";
+			};
+
+			if (this.date.isBefore(this.since)) {
+				if (this.lastModified !== "since") {
+					this.since = this.date.clone();
+					this.lastModified = "since";
+				} else reset();
+			} else if (this.date.isAfter(this.till)) {
+				if (this.lastModified !== "till") {
+					this.till = this.date.clone();
+					this.lastModified = "till";
+				} else reset();
+			} else if (this.date.isSame(this.till) || this.date.isSame(this.since)) reset();else {
+				if (this.lastModified === "since") {
+					this.till = this.date.clone();
+					this.lastModified = "till";
+				} else {
+					this.since = this.date.clone();
+					this.lastModified = "since";
+				}
+			}
+
+			calendar.markSelected();
+		},
+
+		markSelected: function markSelected() {
+
+			this.dates.find(".day").removeClass("selected").removeClass("subSelected").each(function () {
+
+				var element = $(this),
+				    date = calendar.date.clone().date(parseInt(element.html()));
+
+				if (!calendar.period) {
+					if (date.format("DD.MM.YYYY") === calendar.date.format("DD.MM.YYYY")) element.addClass("subSelected");
+					return;
+				}
+
+				if (date.isAfter(calendar.since) && date.isBefore(calendar.till)) element.addClass("subSelected");else if (date.isSame(calendar.since) || date.isSame(calendar.till)) element.addClass("selected");
+			});
+		},
+
+		/**
+   * Changes day
+   * @param {*} element Day picker
+   * @returns {undefined}
+   */
+		changeDay: function changeDay(element) {
+
+			/* If pick today */
+			this.date.date(parseInt(element.html()));
+
+			/* No more for period */
+			if (this.period) {
+				this.periodChangeDay();
+				return;
+			}
+
+			calendar.markSelected();
+
+			/* Set time */
+			if (this.field.attr("name") === "since") this.date.hour(0).minute(0);else if (this.date.format("DD-MM-YYYY") === moment().format("DD-MM-YYYY")) this.date.hour(moment().hour()).minute(moment().minute());else this.date.hour(23).minute(59);
+
+			/* Pick */
+			if (this.useTime) this.setTime();
+		},
+
+		/**
+   * Sets specified year
+   * @param {int} year Year that need to be set
+   */
+		changeYear: function changeYear(year) {
+
+			/* Set year */
+			this.date.year(year);
+
+			/* Update */
+			this.yearView.html(year);
+
+			/* Dates redraw */
+			this.renderDays();
+		},
+
+		/**
+   * Sets specified month
+   * @param {int} month Month to be set
+   */
+		changeMonth: function changeMonth(month) {
+
+			/* Set year */
+			this.date.month(month);
+
+			/* Updates */
+			this.monthView.html(this.monthsNames[this.date.month()] + ' ' + this.date.year());
+
+			/* Reload year */
+			this.changeYear(this.date.year());
+		},
+
+		getDatePeriod: function getDatePeriod(dateString) {
+
+			// Split and get since
+			var parts = dateString.split('-'),
+			    till = void 0,
+			    since = this.getDate(parts[0].trim());
+
+			// Get till
+			if (parts.length > 1) till = this.getDate(parts[1].trim());else till = this.getDate(parts[0].trim());
+
+			// Set inner lets
+			this.since = since;
+			this.till = till;
+			this.date = since.clone();
+		},
+
+		/**
+   * Creates today date
+   */
+		getDate: function getDate(dateString) {
+
+			/* Set calendar date */
+			var date = false;
+
+			/* If input has datetime format value */
+			if (dateString.match(/^\d{4}-\d{2}-\d{2} \d{1,2}:\d{1,2}$/)) date = moment(dateString, "YYYY-MM-DD HH:mm");
+
+			/* Id input has date format value */
+			if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) date = moment(dateString, "YYYY-MM-DD");
+
+			/* Id input has date format value */
+			if (dateString.match(/^\d{2}.\d{2}.\d{4}$/)) date = moment(dateString, "DD.MM.YYYY");
+
+			/* Id input has date format value */
+			if (dateString.match(/^\d{2}.\d{2}.\d{4} \d{2}:\d{2}$/)) date = moment(dateString, "DD.MM.YYYY HH:mm");
+
+			/*  If still no */
+			if (!date) {
+				date = moment();
+
+				/* Set time */
+				if (this.field.attr("name") === "since") date.hour(0).minute(0);
+			}
+
+			/* Reset time */
+			if (!this.useTime) date.hour(0).minute(0);
+
+			/* Additional check */
+			return this.date = date;
+		},
+
+		/**
+   * Closes windows
+   */
+		close: function close() {
+
+			/* Remove calendar */
+			if (this.holder) this.holder.remove();
+
+			/* Unset */
+			if (this.field) {
+				this.field.off("keyup.calendar");
+				this.field = false;
+			}
+		}
+	};
+
+	var show = function (field, showTime) {
+
+		/* Remove old calendars */
+		this.close();
+
+		/* Begins from current date */
+		this.field = field;
+		this.period = false;
+		this.useTime = showTime ? showTime : false;
+		// this.lastPicked = "none";
+
+		if (field.is("input.datePeriod")) {
+			this.period = true;
+			this.getDatePeriod(field.val());
+		} else this.getDate(field.val());
+
+		/* Render */
+		this.holder = templates.render("calendar", this);
+
+		/* Actions */
+		this.holder
+
+		/* Months changer */
+		.action("click", ".month .next", function (event) {
+			event.preventDefault();
+			calendar.changeMonth(calendar.date.month() + 1);
+		}).action("click", ".month .prev", function (event) {
+			event.preventDefault();
+			calendar.changeMonth(calendar.date.month() - 1);
+		})
+
+		/* Years */
+		.action("click", ".year .next", function (event) {
+			event.preventDefault();
+			calendar.changeYear(calendar.date.year() + 1);
+		}).action("click", ".year .prev", function (event) {
+			event.preventDefault();
+			calendar.changeYear(calendar.date.year() - 1);
+		}).action("click", ".setNow", function (event) {
+			event.preventDefault();
+			calendar.date = moment();
+			calendar.renderDays();
+			calendar.setTime();
+		}).action("click", ".setToday", function (event) {
+			event.preventDefault();
+			calendar.date = moment();
+			calendar.date.hour(0);
+			calendar.date.minute(0);
+			calendar.renderDays();
+			calendar.setTime();
+		}).action("click", ".setWeek", function (event) {
+			event.preventDefault();
+			calendar.date = moment();
+			calendar.date.subtract(7, "d");
+			calendar.renderDays();
+			calendar.setTime();
+		})
+
+		/* Day */
+		.action("click", ".dates .day", function (event) {
+			event.preventDefault();
+			var self = $(this);
+
+			if (self.is(".selected") && !calendar.period) calendar.dayPick($(this));else {
+				calendar.changeDay($(this));
+				calendar.dayPick(false, true);
+			}
+		})
+
+		/* Apply button */
+		.action("click", ".apply", function (event) {
+			event.preventDefault();
+			calendar.dayPick();
+		})
+
+		/* Time */
+		.action("click", ".time a", function (event) {
+			event.preventDefault();
+			calendar.date.hour(moment().hour());
+			calendar.date.minute(moment().minute());
+			calendar.setTime();
+		}).action("keyup", ".time .hour", function () {
+			calendar.date.hour(this.value);
+		}).action("keyup", ".time .minute", function () {
+			calendar.date.minute(this.value);
+		});
+
+		/* Close and containers */
+		this.dates = this.holder.find(".dates");
+		this.yearView = this.holder.find(".year .value");
+		this.monthView = this.holder.find(".month .value");
+		this.pickedDateView = this.holder.find(".pickedDate");
+
+		/* Refresh days */
+		this.renderDays();
+
+		/* Reposition */
+		this.position(field);
+		this.setDayPick();
+
+		/* Auto change */
+		this.field.on("keyup.calendar", function () {
+			show(field, showTime);
+		});
+
+		var dateOriginal = void 0;
+		this.dates.on("touchstart", function (event) {
+
+			var element = $(event.target);
+			if (!element.is(".day")) return;
+			dateOriginal = calendar.date.clone().date(parseInt(element.html()));
+		}).on("touchmove", function (event) {
+
+			/* No original event */
+			event.preventDefault();
+
+			var element = document.elementFromPoint(event.clientX || event.originalEvent.touches[0].clientX, event.clientY || event.originalEvent.touches[0].clientY);
+			element = $(element);
+
+			if (!element.is(".day")) return;
+
+			var date = dateOriginal.clone().date(parseInt(element.html()));
+
+			if (date.isBefore(dateOriginal)) {
+				calendar.since = date.clone();
+				calendar.till = dateOriginal.clone();
+			} else {
+				calendar.since = dateOriginal.clone();
+				calendar.till = date.clone();
+			}
+			calendar.lastModified = "none";
+			calendar.markSelected();
+			// $(this).trigger("click");
+		});
+	}.bind(calendar);
+
+	/* Return */
+	this.service = show;
+});
+
+sky.onReady(function (_ref2) {
+	var calendar = _ref2.calendar;
+
+
+	/* Calendar show */
+	$(document).action("click.calendar", function (event) {
+
+		/* Get element */
+		var element = $(event.target || event.srcElement);
+
+		/* Remove calendar */
+		if (!element.is(".calendar") && !element.parents(".calendar").length) $(".calendar").remove();
+
+		/* Calendar show */
+		if (element.is("input.date")) calendar(element);
+
+		/* Calendar show */
+		if (element.is("input.datePeriod")) calendar(element, false, true);
+
+		/* Calendar show */
+		if (element.is("input.datetime")) calendar(element, true);
+
+		/* Calendar show */
+		if (element.is("input.datehour")) calendar(element, true);
+	}).action("keydown.calendar", function (event) {
+		if (event.keyCode === 13) {
+			var calendars = $(".calendar");
+			if (calendars.length) {
+				calendars.find(".day.selected").trigger("click");
+				event.preventDefault();
+			}
+		}
+	});
 });
 "use strict";
 
@@ -624,185 +1951,6 @@ sky.service("callbacks", ["callback"], function (_ref) {
 	};
 
 	this.service = Callbacks;
-});
-"use strict";
-
-sky.service("ajax", ["callbacks"], function (_ref) {
-	var callbacks = _ref.callbacks;
-
-
-	/**
-  * Advanced ajax execution
-  * To abort call stop() method instead of abort() because it's used for abort callback set, or .ajax.abort()
-  * You may skip type, don't skip it if lock is string set false in object and data
-  * @param {string} url				Requested url
-  * @param {object} [data]			Holds request parameters
-  * @param {jQuery} [object]			Object which performs request, to disable it during request
-  * @param {object} [ajaxExtend]		Additional ajax options, see http://api.jquery.com/jQuery.ajaxSetup/
-  * @param {object} [callbackData]	Additional params that passed to any callback
-  */
-	this.service = function (url, data, _ref2) {
-		var _ref2$object = _ref2.object,
-		    object = _ref2$object === undefined ? null : _ref2$object,
-		    _ref2$callbackData = _ref2.callbackData,
-		    callbackData = _ref2$callbackData === undefined ? {} : _ref2$callbackData,
-		    _ref2$ajaxExtend = _ref2.ajaxExtend,
-		    ajaxExtend = _ref2$ajaxExtend === undefined ? {} : _ref2$ajaxExtend;
-
-
-		/* Lock button */
-		if (object) object = $(object).filter(":not(.disabled)").disable();
-
-		/* New object to store callbacks */
-		var ajaxCallbacks = new callbacks();
-		ajaxCallbacks.stop = function () {
-			ajaxCallbacks.ajax.abort();
-		};
-
-		/* Perform ajax request */
-		ajaxCallbacks.ajax = $.ajax($.extend(true, {
-
-			/* Set base options */
-			url: url,
-			data: data,
-			dataType: "json",
-			type: "post",
-			timeout: 480 * 1000,
-			success: function (response, textStatus, jqXHR) {
-
-				/* Possible params list */
-				var params = $.extend({ jqXHR: jqXHR, textStatus: textStatus, object: object }, callbackData);
-
-				/* If empty response */
-				if (response === null) {
-					params.error = "Данные небыли переданы";
-					params.type = "noData";
-				}
-
-				/* If response returned with error */
-				if (response.error) {
-					params.error = response.text;
-					params.type = "php";
-				}
-
-				/* If error type set */
-				if (params.type) return ajaxCallbacks.fire("notSuccess, error", params); // No data
-
-				/* Set response in possible params */
-				params.response = params.data = response;
-
-				/* User success function */
-				return ajaxCallbacks.fire("preSuccess, success, notAbort", params);
-			}.safe(),
-			error: function (jqXHR, textStatus, errorThrown) {
-
-				/* Defaults */
-				var type = "Unknown",
-				    errorText = "Во время выполнения запроса произошла ошибка, пожалуйста попробуйте позже";
-
-				/* Get error text according to response data */
-				if (textStatus === "abort") {
-					type = "abort";
-					errorText = 'Выполнение запроса прервано';
-				} else if (textStatus === 'parsererror') {
-					type = "parse";
-					errorText = "Ответ пришел в неверном формате, пожалуйста попробуйте позже, текст:<br/>" + jqXHR.responseText;
-				} else if (textStatus === 'timeout') {
-					type = "timeout";
-					errorText = 'Время ожидания ответа истекло';
-				} else if (jqXHR.status === 0) {
-					type = "stopped";
-					errorText = 'Загрузка остановлена, проверьте свои настройки сети';
-				} else if (codes[jqXHR.status]) {
-					type = jqXHR.status;
-					errorText = 'Ошибка во времы выполнения запроса <br/> ' + codes[jqXHR.status];
-				}
-
-				/* Possible params list */
-				var params = $.extend({
-					error: errorText,
-					type: type,
-					code: type,
-					jqXHR: jqXHR,
-					textStatus: textStatus,
-					status: textStatus,
-					errorThrown: errorThrown,
-					object: object
-				}, callbackData);
-
-				/* Execute callback */
-				ajaxCallbacks.fire("notSuccess", params);
-
-				/* Execute special ajaxCallbacks */
-				ajaxCallbacks.fire(textStatus === "abort" ? "abort" : "error, notAbort", params);
-			}.safe()
-
-		}, ajaxExtend));
-
-		/* On always set */
-		ajaxCallbacks.ajax.promise().always(function (jqXHR, textStatus, errorThrown) {
-
-			/* Unlock objects */
-			if (object) object.enable();
-
-			/* Always callback */
-			ajaxCallbacks.fire("always", { errorThrown: errorThrown, textStatus: textStatus, jqXHR: jqXHR, object: object });
-		}.safe());
-
-		return ajaxCallbacks;
-	};
-
-	/**
-  * Contains http codes
-  */
-	var codes = {
-
-		/* Request errors */
-		400: "Неверный запрос",
-		401: "Для выполнеия запроса нужня авторизация",
-		402: "Для доступа к ресурсу необходима оплата",
-		403: "Доступ к ресурсу запрещен",
-		404: "Сервер для выполнения запроса не найден или запрос выполнялся слишком долго",
-		405: "Не поддерживаемый метод HTTP",
-		406: "Не приемлемо",
-		407: "Необходима аутентификация прокси",
-		408: "Истекло время ожидания",
-		409: "Конфликт",
-		410: "Ресурс удален",
-		411: "В запросе не указана длинна",
-		412: "Условие ложно",
-		413: "Размер запроса слишком велик",
-		414: "Запрашиваемый URI слишком длинный",
-		415: "Неподдерживаемый тип данных",
-		416: "Запрашиваемый диапазон не достижим",
-		417: "Ожидаемое неприемлемо",
-		422: "Необрабатываемый экземпляр",
-		423: "Ресурс заблокирован",
-		424: "Невыполненная зависимость",
-		425: "Неупорядоченный набор",
-		426: "Необходимо обновление",
-		428: "Необходимо предусловие",
-		429: "Слишком много запросов",
-		431: "Поля заголовка запроса слишком большие",
-		451: "Недоступно по юридическим причинам",
-		456: "Некорректируемая ошибка",
-		499: "Используется Nginx, соединение закрыто до получения ответа",
-
-		/* Server error */
-		500: "Внутренняя ошибка сервера",
-		501: "Не реализовано",
-		502: "Плохой или ошибочный шлюз",
-		503: "Сервис недоступен",
-		504: "Шлюз не отвечает",
-		505: "Версия HTTP не поддерживается",
-		506: "Вариант тоже проводит согласование",
-		507: "Переполнение хранилища",
-		508: "Запрос зациклен",
-		509: "Исчерпана пропускная ширина канала",
-		510: "Не расширено",
-		511: "Требуется сетевая аутентификация"
-
-	};
 });
 "use strict";
 
@@ -1582,6 +2730,63 @@ sky.service("directives", ["exceptions", "utils", "stackList"], function (_ref) 
 });
 "use strict";
 
+sky.service("drag", ["callbacks"], function (_ref) {
+	var callbacks = _ref.callbacks;
+
+	var self = {
+		bindEvents: function bindEvents(event, events) {
+			self.bind(event).on("start", events.start).on("move", events.move).on("stop", events.stop);
+		},
+		bind: function bind(event) {
+
+			// Get original event
+			event = event.originalEvent || event;
+
+			// Init vars
+			var started = false,
+			    callbacks = callbacks();
+
+			// Check button
+			if (event.button && event.button !== 1) return callbacks;
+
+			// Stop default action
+			event.preventDefault();
+
+			$(document).on("mousemove.drag", function (event) {
+
+				// Start
+				if (!started) {
+					started = true;
+					callbacks.fire("start", { event: event, x: event.pageX, y: event.pageY });
+				}
+				// Move
+				else callbacks.fire("move", { event: event, x: event.pageX, y: event.pageY });
+
+				// Prevent default
+				event.preventDefault();
+				return false;
+			}).on("mouseup.drag", function (event) {
+
+				// Off events
+				$(document).off("mousemove.drag").off("mouseup.drag");
+
+				// If not started
+				if (!started) return;
+
+				// Stop default action
+				event.preventDefault();
+
+				// Call stop callback
+				callbacks.fire("stop", { event: event, x: event.pageX, y: event.pageY });
+			});
+
+			return callbacks;
+		}
+	};
+	return self;
+});
+"use strict";
+
 sky.service("history", ["callbacks", "supported"], function (_ref) {
   var callbacks = _ref.callbacks,
       supported = _ref.supported;
@@ -2104,1287 +3309,6 @@ sky.service("localStorage", ["callbacks"], function (_ref) {
 });
 "use strict";
 
-sky.service("drag", ["callbacks"], function (_ref) {
-	var callbacks = _ref.callbacks;
-
-	var self = {
-		bindEvents: function bindEvents(event, events) {
-			self.bind(event).on("start", events.start).on("move", events.move).on("stop", events.stop);
-		},
-		bind: function bind(event) {
-
-			// Get original event
-			event = event.originalEvent || event;
-
-			// Init vars
-			var started = false,
-			    callbacks = callbacks();
-
-			// Check button
-			if (event.button && event.button !== 1) return callbacks;
-
-			// Stop default action
-			event.preventDefault();
-
-			$(document).on("mousemove.drag", function (event) {
-
-				// Start
-				if (!started) {
-					started = true;
-					callbacks.fire("start", { event: event, x: event.pageX, y: event.pageY });
-				}
-				// Move
-				else callbacks.fire("move", { event: event, x: event.pageX, y: event.pageY });
-
-				// Prevent default
-				event.preventDefault();
-				return false;
-			}).on("mouseup.drag", function (event) {
-
-				// Off events
-				$(document).off("mousemove.drag").off("mouseup.drag");
-
-				// If not started
-				if (!started) return;
-
-				// Stop default action
-				event.preventDefault();
-
-				// Call stop callback
-				callbacks.fire("stop", { event: event, x: event.pageX, y: event.pageY });
-			});
-
-			return callbacks;
-		}
-	};
-	return self;
-});
-"use strict";
-
-sky.service("calendar", ["templates", "visibleCalculator"], function (_ref) {
-	var templates = _ref.templates,
-	    visibleCalculator = _ref.visibleCalculator;
-
-
-	/* This class is for showing calendar to pick date on page */
-	var calendar = {
-
-		/* Days set */
-		monthsNames: window.page.data.monthsNames || ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
-
-		renderDays: function renderDays() {
-
-			/* Clone */
-			var current = moment(this.date),
-			    weeks = [],
-			    currentWeek = false;
-
-			/* From first */
-			current.date(1);
-
-			/* Go through */
-			while (current.month() === this.date.month()) {
-
-				/* Make week if new */
-				if (!currentWeek || current.day() === 1) {
-					currentWeek = { number: current.isoWeek(), days: [] };
-					weeks.push(currentWeek);
-				}
-
-				/* Push */
-				currentWeek.days.push({ date: current.clone(), dateStr: current.format("YYYY.MM.DD"), day: current.day() === 0 ? 6 : current.day() - 1 });
-
-				/* Go next day */
-				current.add(1, "d");
-			}
-
-			/* Render */
-			this.dates.html('').append(templates.render("calendar-dates", {
-				weeks: weeks,
-				dateStr: this.date.format("YYYY.MM.DD"),
-				current: this.date,
-				period: this.period,
-				since: this.since,
-				till: this.till
-			}));
-
-			/* Render */
-			this.setTime();
-		},
-
-		/**
-   * When user picks date
-   * @param {*} dayDiv Div that user clicked, if he did
-   * @param notClose
-   */
-		dayPick: function dayPick(dayDiv, notClose) {
-
-			/* Set date */
-			if (dayDiv) this.date.date(parseInt(dayDiv.html()));
-
-			this.field.val(this.getInputValue()).trigger("change").trigger("keyup");
-			if (!notClose) this.close();
-		},
-
-		getInputValue: function getInputValue() {
-
-			/* Get field new value */
-			if (this.useTime) return this.date.format("DD.MM.YYYY HH:mm");else if (this.period && this.since.isSame(this.till)) return this.since.format("DD.MM.YYYY");else if (this.period) return this.since.format("DD.MM.YYYY") + ' - ' + this.till.format("DD.MM.YYYY");
-
-			/* Default */
-			return this.date.format("DD.MM.YYYY");
-		},
-
-		setDayPick: function setDayPick() {
-			this.pickedDateView.html(this.getInputValue());
-		},
-
-		/**
-   * Position date picker
-   * @param {*} field Item that we should position under
-   */
-		position: function position(field) {
-
-			this.holder.insertAfter(field.parent()).css("position", "absolute");
-
-			var calculator = new visibleCalculator(field),
-			    offset = calculator.getDropOffset(field, this.holder);
-
-			this.holder.css({
-				marginTop: offset.top,
-				marginLeft: offset.left
-			});
-		},
-
-		/**
-   * Sets time inputs in calendar values
-   */
-		setTime: function setTime() {
-
-			/* Set time */
-			this.holder.find(".time .hour").val(this.date.format("HH"));
-			this.holder.find(".time .minute").val(this.date.format("mm"));
-		},
-
-		periodChangeDay: function periodChangeDay() {
-
-			var reset = function reset() {
-				calendar.since = calendar.date.clone();
-				calendar.till = calendar.date.clone();
-				calendar.lastModified = "none";
-			};
-
-			if (this.date.isBefore(this.since)) {
-				if (this.lastModified !== "since") {
-					this.since = this.date.clone();
-					this.lastModified = "since";
-				} else reset();
-			} else if (this.date.isAfter(this.till)) {
-				if (this.lastModified !== "till") {
-					this.till = this.date.clone();
-					this.lastModified = "till";
-				} else reset();
-			} else if (this.date.isSame(this.till) || this.date.isSame(this.since)) reset();else {
-				if (this.lastModified === "since") {
-					this.till = this.date.clone();
-					this.lastModified = "till";
-				} else {
-					this.since = this.date.clone();
-					this.lastModified = "since";
-				}
-			}
-
-			calendar.markSelected();
-		},
-
-		markSelected: function markSelected() {
-
-			this.dates.find(".day").removeClass("selected").removeClass("subSelected").each(function () {
-
-				var element = $(this),
-				    date = calendar.date.clone().date(parseInt(element.html()));
-
-				if (!calendar.period) {
-					if (date.format("DD.MM.YYYY") === calendar.date.format("DD.MM.YYYY")) element.addClass("subSelected");
-					return;
-				}
-
-				if (date.isAfter(calendar.since) && date.isBefore(calendar.till)) element.addClass("subSelected");else if (date.isSame(calendar.since) || date.isSame(calendar.till)) element.addClass("selected");
-			});
-		},
-
-		/**
-   * Changes day
-   * @param {*} element Day picker
-   * @returns {undefined}
-   */
-		changeDay: function changeDay(element) {
-
-			/* If pick today */
-			this.date.date(parseInt(element.html()));
-
-			/* No more for period */
-			if (this.period) {
-				this.periodChangeDay();
-				return;
-			}
-
-			calendar.markSelected();
-
-			/* Set time */
-			if (this.field.attr("name") === "since") this.date.hour(0).minute(0);else if (this.date.format("DD-MM-YYYY") === moment().format("DD-MM-YYYY")) this.date.hour(moment().hour()).minute(moment().minute());else this.date.hour(23).minute(59);
-
-			/* Pick */
-			if (this.useTime) this.setTime();
-		},
-
-		/**
-   * Sets specified year
-   * @param {int} year Year that need to be set
-   */
-		changeYear: function changeYear(year) {
-
-			/* Set year */
-			this.date.year(year);
-
-			/* Update */
-			this.yearView.html(year);
-
-			/* Dates redraw */
-			this.renderDays();
-		},
-
-		/**
-   * Sets specified month
-   * @param {int} month Month to be set
-   */
-		changeMonth: function changeMonth(month) {
-
-			/* Set year */
-			this.date.month(month);
-
-			/* Updates */
-			this.monthView.html(this.monthsNames[this.date.month()] + ' ' + this.date.year());
-
-			/* Reload year */
-			this.changeYear(this.date.year());
-		},
-
-		getDatePeriod: function getDatePeriod(dateString) {
-
-			// Split and get since
-			var parts = dateString.split('-'),
-			    till = void 0,
-			    since = this.getDate(parts[0].trim());
-
-			// Get till
-			if (parts.length > 1) till = this.getDate(parts[1].trim());else till = this.getDate(parts[0].trim());
-
-			// Set inner lets
-			this.since = since;
-			this.till = till;
-			this.date = since.clone();
-		},
-
-		/**
-   * Creates today date
-   */
-		getDate: function getDate(dateString) {
-
-			/* Set calendar date */
-			var date = false;
-
-			/* If input has datetime format value */
-			if (dateString.match(/^\d{4}-\d{2}-\d{2} \d{1,2}:\d{1,2}$/)) date = moment(dateString, "YYYY-MM-DD HH:mm");
-
-			/* Id input has date format value */
-			if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) date = moment(dateString, "YYYY-MM-DD");
-
-			/* Id input has date format value */
-			if (dateString.match(/^\d{2}.\d{2}.\d{4}$/)) date = moment(dateString, "DD.MM.YYYY");
-
-			/* Id input has date format value */
-			if (dateString.match(/^\d{2}.\d{2}.\d{4} \d{2}:\d{2}$/)) date = moment(dateString, "DD.MM.YYYY HH:mm");
-
-			/*  If still no */
-			if (!date) {
-				date = moment();
-
-				/* Set time */
-				if (this.field.attr("name") === "since") date.hour(0).minute(0);
-			}
-
-			/* Reset time */
-			if (!this.useTime) date.hour(0).minute(0);
-
-			/* Additional check */
-			return this.date = date;
-		},
-
-		/**
-   * Closes windows
-   */
-		close: function close() {
-
-			/* Remove calendar */
-			if (this.holder) this.holder.remove();
-
-			/* Unset */
-			if (this.field) {
-				this.field.off("keyup.calendar");
-				this.field = false;
-			}
-		}
-	};
-
-	var show = function (field, showTime) {
-
-		/* Remove old calendars */
-		this.close();
-
-		/* Begins from current date */
-		this.field = field;
-		this.period = false;
-		this.useTime = showTime ? showTime : false;
-		// this.lastPicked = "none";
-
-		if (field.is("input.datePeriod")) {
-			this.period = true;
-			this.getDatePeriod(field.val());
-		} else this.getDate(field.val());
-
-		/* Render */
-		this.holder = templates.render("calendar", this);
-
-		/* Actions */
-		this.holder
-
-		/* Months changer */
-		.action("click", ".month .next", function (event) {
-			event.preventDefault();
-			calendar.changeMonth(calendar.date.month() + 1);
-		}).action("click", ".month .prev", function (event) {
-			event.preventDefault();
-			calendar.changeMonth(calendar.date.month() - 1);
-		})
-
-		/* Years */
-		.action("click", ".year .next", function (event) {
-			event.preventDefault();
-			calendar.changeYear(calendar.date.year() + 1);
-		}).action("click", ".year .prev", function (event) {
-			event.preventDefault();
-			calendar.changeYear(calendar.date.year() - 1);
-		}).action("click", ".setNow", function (event) {
-			event.preventDefault();
-			calendar.date = moment();
-			calendar.renderDays();
-			calendar.setTime();
-		}).action("click", ".setToday", function (event) {
-			event.preventDefault();
-			calendar.date = moment();
-			calendar.date.hour(0);
-			calendar.date.minute(0);
-			calendar.renderDays();
-			calendar.setTime();
-		}).action("click", ".setWeek", function (event) {
-			event.preventDefault();
-			calendar.date = moment();
-			calendar.date.subtract(7, "d");
-			calendar.renderDays();
-			calendar.setTime();
-		})
-
-		/* Day */
-		.action("click", ".dates .day", function (event) {
-			event.preventDefault();
-			var self = $(this);
-
-			if (self.is(".selected") && !calendar.period) calendar.dayPick($(this));else {
-				calendar.changeDay($(this));
-				calendar.dayPick(false, true);
-			}
-		})
-
-		/* Apply button */
-		.action("click", ".apply", function (event) {
-			event.preventDefault();
-			calendar.dayPick();
-		})
-
-		/* Time */
-		.action("click", ".time a", function (event) {
-			event.preventDefault();
-			calendar.date.hour(moment().hour());
-			calendar.date.minute(moment().minute());
-			calendar.setTime();
-		}).action("keyup", ".time .hour", function () {
-			calendar.date.hour(this.value);
-		}).action("keyup", ".time .minute", function () {
-			calendar.date.minute(this.value);
-		});
-
-		/* Close and containers */
-		this.dates = this.holder.find(".dates");
-		this.yearView = this.holder.find(".year .value");
-		this.monthView = this.holder.find(".month .value");
-		this.pickedDateView = this.holder.find(".pickedDate");
-
-		/* Refresh days */
-		this.renderDays();
-
-		/* Reposition */
-		this.position(field);
-		this.setDayPick();
-
-		/* Auto change */
-		this.field.on("keyup.calendar", function () {
-			show(field, showTime);
-		});
-
-		var dateOriginal = void 0;
-		this.dates.on("touchstart", function (event) {
-
-			var element = $(event.target);
-			if (!element.is(".day")) return;
-			dateOriginal = calendar.date.clone().date(parseInt(element.html()));
-		}).on("touchmove", function (event) {
-
-			/* No original event */
-			event.preventDefault();
-
-			var element = document.elementFromPoint(event.clientX || event.originalEvent.touches[0].clientX, event.clientY || event.originalEvent.touches[0].clientY);
-			element = $(element);
-
-			if (!element.is(".day")) return;
-
-			var date = dateOriginal.clone().date(parseInt(element.html()));
-
-			if (date.isBefore(dateOriginal)) {
-				calendar.since = date.clone();
-				calendar.till = dateOriginal.clone();
-			} else {
-				calendar.since = dateOriginal.clone();
-				calendar.till = date.clone();
-			}
-			calendar.lastModified = "none";
-			calendar.markSelected();
-			// $(this).trigger("click");
-		});
-	}.bind(calendar);
-
-	/* Return */
-	this.service = show;
-});
-
-sky.onReady(function (_ref2) {
-	var calendar = _ref2.calendar;
-
-
-	/* Calendar show */
-	$(document).action("click.calendar", function (event) {
-
-		/* Get element */
-		var element = $(event.target || event.srcElement);
-
-		/* Remove calendar */
-		if (!element.is(".calendar") && !element.parents(".calendar").length) $(".calendar").remove();
-
-		/* Calendar show */
-		if (element.is("input.date")) calendar(element);
-
-		/* Calendar show */
-		if (element.is("input.datePeriod")) calendar(element, false, true);
-
-		/* Calendar show */
-		if (element.is("input.datetime")) calendar(element, true);
-
-		/* Calendar show */
-		if (element.is("input.datehour")) calendar(element, true);
-	}).action("keydown.calendar", function (event) {
-		if (event.keyCode === 13) {
-			var calendars = $(".calendar");
-			if (calendars.length) {
-				calendars.find(".day.selected").trigger("click");
-				event.preventDefault();
-			}
-		}
-	});
-});
-"use strict";
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/** Class to work with drop zone for File api */
-sky.service("ajaxFilesDropZone", ["supported", "callbacks"], function (_ref) {
-	var supported = _ref.supported,
-	    callbacks = _ref.callbacks;
-
-	this.service = function () {
-		function _class(_ref2) {
-			var zone = _ref2.zone,
-			    data = _ref2.data,
-			    url = _ref2.url,
-			    options = _ref2.options;
-
-			_classCallCheck(this, _class);
-
-			/* Save options */
-			this.options = options;
-			this.zone = zone;
-			this.callbacks = callbacks();
-			this.data = data;
-			this.url = url;
-			this.files = [];
-
-			/* If no XHR supported, no file drop needed */
-			if (!supported.XHRUpload) {
-				this.callbacks.fire("nonSupported");
-				return this;
-			}
-
-			/* Bind events */
-			this.attachEvents();
-		}
-
-		_createClass(_class, [{
-			key: "attachEvents",
-			value: function attachEvents() {
-				var _this = this;
-
-				/* While over event */
-				this.zone.on({
-
-					dragenter: function dragenter(event) {
-						_this.callbacks.fire("dragenter", _this, [event]);
-					},
-					dragleave: function dragleave(event) {
-						_this.callbacks.fire("dragleave", _this, [event]);
-					},
-					dragend: function dragend(event) {
-						_this.callbacks.fire("dragend", _this, [event]);
-					},
-					drop: function drop(event) {
-						_this.callbacks.fire("drop", _this, [event]);
-					},
-					dragover: function dragover(event) {
-
-						/* Get event */
-						event = event.originalEvent;
-
-						/* Check if drag is valid */
-						if (!_this.isValidFileDrag(event)) return;
-
-						/* Get effect */
-						var effect = event.dataTransfer.effectAllowed;
-
-						/* Set proper */
-						if (effect === 'move' || effect === 'linkMove') {
-							event.dataTransfer.dropEffect = 'move'; // for FF (only move allowed)
-						} else {
-							event.dataTransfer.dropEffect = 'copy'; // for Chrome
-						}
-
-						/* Prevent */
-						event.preventDefault();
-					}
-				});
-
-				/* Stop file opening when drop on browser window */
-				$(document).bind({
-					dragover: function dragover(e) {
-						e = e.originalEvent;
-						if (e.dataTransfer) {
-							e.dataTransfer.dropEffect = 'none';
-							e.preventDefault();
-						}
-					},
-					dragenter: function dragenter(e) {
-						if (typeof self.options.onStart !== "undefined") self.options.onStart.apply(self, [e]);
-					}
-				});
-			}
-		}], [{
-			key: "isValidFileDrag",
-			value: function isValidFileDrag(event) {
-
-				var dt = event.dataTransfer,
-
-				// do not check dt.types.contains in webkit, because it crashes safari 4
-				isWebkit = navigator.userAgent.indexOf("AppleWebKit") > -1;
-
-				// dt.effectAllowed is none in Safari 5
-				// dt.types.contains check is for firefox
-				return dt && dt.effectAllowed !== 'none' && (dt.files || !isWebkit && dt.types.contains && dt.types.contains('Files'));
-			}
-		}]);
-
-		return _class;
-	}();
-});
-"use strict";
-
-sky.service("ajaxFilesIFrame", function () {
-
-	var AjaxFilesIFrame = function AjaxFilesIFrame(options) {
-
-		/* Save options */
-		this.options = options;
-		this.files = options.files;
-		this.input = options.input;
-		this.url = options.url;
-		this.data = options.data;
-		this.callbacks = options.callbacks;
-	};
-
-	AjaxFilesIFrame.prototype = {
-
-		getName: function getName(name) {
-
-			// get input value and remove path to normalize
-			return name.replace(/.*(\/|\\)/, "");
-		},
-
-		cancel: function cancel(id) {
-
-			this.options.onAbort(id, this.getName(this.input.value));
-
-			this.IFrame.setAttribute('src', 'javascript:false;').remove();
-		},
-
-		/**
-   * Upload file function
-   */
-		send: function send() {
-
-			/* letiables */
-			var self = this;
-			var input = this.input;
-			var fileName = this.getName(input.value);
-
-			/* Create new input */
-			$(input).clone().val("").insertBefore(input);
-
-			/* Create elements */
-			this.IFrame = this.createIframe();
-			this.form = this.createForm(this.IFrame, this.options.data).append(input);
-
-			this.attachLoadEvent(this.IFrame, function () {
-
-				var response = self.getIframeContentJSON(self.IFrame);
-
-				if (response) self.options.onSuccess(response);
-
-				// timeout added to fix busy state in FF3.6
-				setTimeout(function () {
-					self.IFrame.remove();
-				}, 1);
-			});
-
-			this.form.trigger("submit");
-		},
-
-		/**
-   * Attach load event to IFrame
-   */
-		attachLoadEvent: function attachLoadEvent(iframe, callback) {
-
-			iframe.load(function () {
-
-				if (!this.parentNode) return;
-
-				// fixing Opera 10.53
-				if (this.contentDocument && this.contentDocument.body && this.contentDocument.body.innerHTML === "false") return;
-
-				callback();
-			});
-		},
-
-		/**
-   * Returns json object received by IFrame from server.
-   */
-		getIframeContentJSON: function getIframeContentJSON(iframe) {
-
-			/* IFrame.contentWindow.document - for IE<7 */
-			var doc = iframe.get(0).contentDocument ? iframe.get(0).contentDocument : iframe.get(0).contentWindow.document;
-
-			var response = doc.body.innerHTML;
-
-			/* Check for empty response */
-			if (response === "") {
-				if (self.callbacks) self.callbacks.onError("Данные небыли переданы"); // No data
-				return false;
-			}
-
-			/* Try to get json data */
-			try {
-				response = jQuery.parseJSON(response);
-			} catch (e) {
-				if (self.callbacks) {
-					self.callbacks.onError("Неверный формат данных"); // No data
-					console.log(response);
-				}
-				return false;
-			}
-
-			/* If response returned with error */
-			if (response.error) {
-				if (self.callbacks) self.callbacks.onError(response.text); // Execute user error handler
-				return false;
-			}
-
-			return response;
-		},
-
-		/**
-   * Creates IFrame with unique name
-   */
-		createIframe: function createIframe() {
-
-			return $('<IFrame/>', { src: "javascript:false;", name: "uploadIFrame" + Math.floor(Math.random() * 1000000) }).css("display", "none").appendTo('body');
-		},
-
-		/**
-   * Creates form, that will be submitted to IFrame
-   */
-		createForm: function createForm(iframe, params) {
-
-			var queryString = this.url + "?" + jQuery.param(params);
-
-			return $('<form/>', {
-				method: "post", enctype: "multipart/form-data", action: queryString, target: iframe.attr("name")
-			}).css("display", "none").appendTo('body');
-		}
-
-	};
-});
-"use strict";
-
-/**
- * Module to work with ajax file upload
- */
-sky.service("ajaxFiles", ["supported", "callbacks", "ajaxFilesXHR", "ajaxFilesIFrame"], function (_ref) {
-	var callbacks = _ref.callbacks,
-	    supported = _ref.supported,
-	    ajaxFilesXHR = _ref.ajaxFilesXHR,
-	    ajaxFilesIFrame = _ref.ajaxFilesIFrame;
-
-
-	/**
-  * Class to work with dynamic file upload
-  * @param {html|string} input Input to be used to upload
-  * @param {string} url Url to upload
-  * @param {object} data Data to be send with request
-  */
-	var AjaxFiles = this.service = function (input, url, data) {
-
-		/* Self construct */
-		if (!(this instanceof AjaxFiles)) return new AjaxFiles(input, url, data);
-
-		/* Save items */
-		this.inputs = $(input);
-		this.url = url;
-		this.data = data;
-		this.callbacks = callbacks();
-		this.files = [];
-
-		/**
-   * Function to handle file input change
-   */
-		this.saveFiles = function (input) {
-
-			/* Get files list */
-			if (supported.XHRUpload) {
-
-				/* Get files from event */
-				var files = input.get(0).files;
-
-				/* Save them to this */
-				var _iteratorNormalCompletion = true;
-				var _didIteratorError = false;
-				var _iteratorError = undefined;
-
-				try {
-					for (var _iterator = files[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-						var file = _step.value;
-
-						this.files.push({ file: file, input: input, inputName: input.attr("name") });
-					}
-				} catch (err) {
-					_didIteratorError = true;
-					_iteratorError = err;
-				} finally {
-					try {
-						if (!_iteratorNormalCompletion && _iterator.return) {
-							_iterator.return();
-						}
-					} finally {
-						if (_didIteratorError) {
-							throw _iteratorError;
-						}
-					}
-				}
-			} else this.files.push(input.get(0));
-		};
-
-		/**
-   * Sends ajax files
-   * @param {bool} parallel If try files would be send in parallel
-   * @returns {*}
-   */
-		this.send = function (parallel) {
-			var _this = this;
-
-			/* Clear */
-			this.files = [];
-
-			/* Get files list */
-			this.inputs.each(function (_, input) {
-				_this.saveFiles($(input));
-			});
-
-			/* If no files */
-			if (!this.files.length) return false;
-
-			/* Create supported handler */
-			var handler = void 0;
-			if (supported.XHRUpload) handler = new ajaxFilesXHR(this);else handler = new ajaxFilesIFrame(this);
-
-			/* Send files */
-			if (parallel) this.sendParallel(handler);else this.sendConsequentially(handler);
-
-			/* return send handler */
-			return handler;
-		};
-
-		/**
-   * Sends files consequentially
-   * @param handler
-   */
-		this.sendConsequentially = function (handler) {
-			var _this2 = this;
-
-			/* First id */
-			var id = 0;
-
-			/* Set sending next after this one */
-			this.callbacks.on("always", function () {
-				id++;
-				if (_this2.files[id]) handler.send(_this2.files[id]);
-			});
-
-			/* Send first */
-			handler.send(self.files[id]);
-		};
-
-		/**
-   * Sends files parallel
-   * @param handler
-   */
-		this.sendParallel = function (handler) {
-
-			/* Send files through them */
-			var _iteratorNormalCompletion2 = true;
-			var _didIteratorError2 = false;
-			var _iteratorError2 = undefined;
-
-			try {
-				for (var _iterator2 = this.files[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-					var file = _step2.value;
-
-					handler.send(file);
-				}
-			} catch (err) {
-				_didIteratorError2 = true;
-				_iteratorError2 = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion2 && _iterator2.return) {
-						_iterator2.return();
-					}
-				} finally {
-					if (_didIteratorError2) {
-						throw _iteratorError2;
-					}
-				}
-			}
-		};
-
-		/* Self return */
-		return this;
-	};
-
-	/**
-  * Performs default file send
-  * @param {string} url
-  * @param element
-  * @param data
-  */
-	AjaxFiles.defaultSend = function (url, element, data) {
-
-		// Get input
-		var input = element.is("input[type=file]") ? element : element.closest("label, .label").find("input[type=file]"),
-		    exceptions = sky.service("exceptions"),
-		    templates = sky.service("templates"),
-		    notifications = sky.service("notifications"),
-		    windows = sky.service.windows("windows");
-
-		// Check
-		if (!input.length) throw new exceptions.system.Error("No proper input provided for file send");
-
-		// Init
-		var filesAjax = AjaxFiles(input, url, data),
-		    modal = windows.getLast(),
-		    currentFile = void 0;
-
-		/*  Bind events */
-		filesAjax.callbacks.on("begin", function (file) {
-			if (modal) {
-				modal.holder.find(".preview").remove();
-				modal.lock();
-			}
-			currentFile = templates.render("files-single-upload", file).insertAfter(element.parent());
-		}).on("always", function () {
-			currentFile.remove();
-			if (modal) modal.unlock();
-		}).on("notSuccess", function (error) {
-			modal.clearExceptTemplate();
-			notifications.message({ text: error }).appendToModal(modal);
-		}).on("progress", function (totalPercent, percent) {
-			currentFile.find(".total").html(percent + "%");
-			currentFile.find(".progressBar div").css("width", percent + "%");
-
-			// If loaded
-			if (percent === 100) currentFile.find(".total").html("100%, обработка");
-		}).on("start", function () {});
-
-		/* Send */
-		filesAjax.send();
-		return filesAjax;
-	};
-});
-"use strict";
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/** Sends file data via HttpRequest */
-sky.service("ajaxFilesXHR", ["supported", "ajax", "stackList"], function (_ref) {
-	var supported = _ref.supported,
-	    ajax = _ref.ajax,
-	    stackList = _ref.stackList;
-
-	this.service = function () {
-		function _class(options) {
-			_classCallCheck(this, _class);
-
-			/* Save options */
-			this.options = options;
-			this.files = options.files;
-			this.input = options.input;
-			this.url = options.url;
-			this.data = options.data;
-			this.callbacks = options.callbacks;
-			this.toProceed = options.files.length;
-			this.inProgress = 0;
-			this.total = options.files.length;
-			this.totalLoaded = 0;
-			this.totalSize = 0;
-			this.totalPercent = 0;
-			this.current = 0;
-			this.fileRequests = stackList();
-
-			/* Go through */
-			var _iteratorNormalCompletion = true;
-			var _didIteratorError = false;
-			var _iteratorError = undefined;
-
-			try {
-				for (var _iterator = options.files[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					file = _step.value;
-
-					this.totalSize += file.size;
-				}
-			} catch (err) {
-				_didIteratorError = true;
-				_iteratorError = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion && _iterator.return) {
-						_iterator.return();
-					}
-				} finally {
-					if (_didIteratorError) {
-						throw _iteratorError;
-					}
-				}
-			}
-		}
-
-		/**
-   * Get file name
-   * @param {*} file File
-   * @returns {string}
-   */
-
-
-		_createClass(_class, [{
-			key: "send",
-
-
-			/**
-    * Uploads file
-    * @param {*} file File name in files stack
-    */
-			value: function send(file) {
-				var _this = this;
-
-				/* This obj will store data associated with XHR */
-				$.extend(file, {
-					id: Math.random(),
-					name: this.getName(file.file),
-					size: file.file.size,
-					ajax: false,
-					percent: false,
-					loaded: 0
-				});
-
-				/* Prepare params */
-				var self = this,
-				    params = this.data || {},
-				    queryString = this.url + "?ajaxFile=" + file.name + "&" + jQuery.param(params);
-
-				/**
-     * Params extend
-     * @param {object} args Object to be extended
-     * @returns {*}
-     */
-				this.extend = function (args) {
-					return jQuery.extend(args, {
-						totalLoaded: self.totalLoaded,
-						totalSize: self.totalSize,
-						totalPercent: self.totalPercent,
-						file: file,
-						loaded: file.loaded,
-						size: file.size,
-						percent: file.percent,
-						toProceed: self.toProceed,
-						current: self.current,
-						total: self.total
-					});
-				};
-
-				/* Send */
-				if (supported.formData) {
-
-					/* Create form data sender */
-					var form = new FormData();
-					form.append(file.inputName, file.file);
-
-					/* Send start */
-					file.ajax = ajax(queryString, form, { ajaxExtend: {
-							processData: false,
-							contentType: false,
-							type: "POST",
-							xhr: function () {
-								try {
-
-									/* Create XHR */
-									var xhr = new XMLHttpRequest();
-
-									/* Set special upload api handlers */
-									xhr.upload["onloadstart"] = function () {
-										this.inProgress++;
-										this.callbacks.fire("begin", this.extend({}));
-									};
-									xhr.upload["onprogress"] = function (event) {
-										this.totalLoaded += event.loaded - file.loaded;
-										this.totalPercent = (this.totalLoaded / this.totalSize * 100).toFixed(0);
-										this.onProgress(event, file);
-									};
-
-									/* Return create XHR */
-									return xhr;
-								} catch (e) {
-									return undefined;
-								}
-							}.safe()
-						}
-					});
-				} else {
-
-					/* Send start */
-					file.ajax = ajax(queryString, file.file, {
-						processData: false,
-						contentType: false,
-						type: "POST",
-						beforeSend: sky.func(function (jqXHR) {
-							jqXHR.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-							jqXHR.setRequestHeader("X-File-Name", encodeURI(file.name));
-							jqXHR.setRequestHeader("Content-Type", "multipart/form-data");
-							jqXHR.setRequestHeader("Content-Disposition", 'attachment; filename="' + encodeURI(file.name) + '"');
-							jqXHR.setRequestHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9");
-						})
-					});
-				}
-
-				/* Set ajax callbacks */
-				file.ajax.on({
-					success: function success(all) {
-						_this.callbacks.fire("success", _this.extend(all));
-					},
-					error: function error(all) {
-						_this.callbacks.fire("error", _this.extend(all));
-					},
-					notSuccess: function notSuccess(all) {
-						_this.callbacks.fire("notSuccess", _this.extend(all));
-					},
-					always: function always(all) {
-
-						/* Counters */
-						_this.inProgress--;
-						_this.toProceed--;
-
-						/* Call always method */
-						_this.callbacks.fire("always", _this.extend(all));
-
-						/* Delete connection */
-						_this.fileRequests.delete(file);
-					}
-				});
-
-				/* Save */
-				this.fileRequests.add(file);
-			}
-
-			/**
-    * Fores on progress change
-    * @param event
-    * @param fileRequestData
-    */
-
-		}, {
-			key: "onProgress",
-			value: function onProgress(event, fileRequestData) {
-
-				/* Count percentage */
-				var percent = (event.loaded / event["total"] * 100).toFixed(0);
-				fileRequestData.loaded = event.loaded;
-
-				/* If percent changed */
-				if (percent !== fileRequestData.percent && event["lengthComputable"]) {
-					fileRequestData.percent = percent;
-					this.callbacks.fire("progress", this.extend({}));
-				}
-			}
-
-			/**
-    * Aborts current download
-    */
-
-		}, {
-			key: "abort",
-			value: function abort() {
-
-				/* Stop each request */
-				this.fileRequests.each(function (request) {
-					request.ajax.stop();
-				});
-
-				/* Call always method */
-				this.callbacks.fire("abort", this.extend({}));
-			}
-		}], [{
-			key: "getName",
-			value: function getName(file) {
-				return file.name.replace(/.*(\/|\\)/, "");
-			}
-		}]);
-
-		return _class;
-	}();
-});
-"use strict";
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/**
- * For work with different type of notifications
- */
-sky.service("notifications", ["templates", "windows", "tips"], function (_ref) {
-	var templates = _ref.templates,
-	    windows = _ref.windows,
-	    tips = _ref.tips;
-
-	var Message = function () {
-		function Message(_ref2) {
-			var text = _ref2.text,
-			    _ref2$type = _ref2.type,
-			    type = _ref2$type === undefined ? "error" : _ref2$type;
-
-			_classCallCheck(this, Message);
-
-			this.render = templates.render("forms-message", { type: type, text: text });
-		}
-
-		/**
-   * Creates new modal window and appends message to it
-   * @returns {*}
-   */
-
-
-		_createClass(Message, [{
-			key: "modal",
-			value: function modal() {
-				return windows.modal(this.render);
-			}
-
-			/**
-    * Append to holder of modal window
-    * @param {object} modal
-    */
-
-		}, {
-			key: "appendToModal",
-			value: function appendToModal(modal) {
-				modal.holder.append(this.render);
-			}
-
-			/**
-    * Shows notification in tip
-    * @param object
-    * @param align
-    */
-
-		}, {
-			key: "tip",
-			value: function tip(object, align) {
-				tips.Tip(object, { create: this.render, close: 5 }).show(align || "top");
-			}
-		}]);
-
-		return Message;
-	}();
-
-	return {
-		message: function message(_ref3) {
-			var text = _ref3.text,
-			    _ref3$type = _ref3.type,
-			    type = _ref3$type === undefined ? "error" : _ref3$type;
-			return new Message({ text: text, type: type });
-		},
-		findInElement: function findInElement(element) {
-			return element.find(".notificationMessage");
-		}
-	};
-});
-"use strict";
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -3575,6 +3499,82 @@ sky.service("modelsStorage", function () {
 
 		remove: function remove(model) {
 			delete cache[model.type][model.id()];
+		}
+	};
+});
+"use strict";
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+ * For work with different type of notifications
+ */
+sky.service("notifications", ["templates", "windows", "tips"], function (_ref) {
+	var templates = _ref.templates,
+	    windows = _ref.windows,
+	    tips = _ref.tips;
+
+	var Message = function () {
+		function Message(_ref2) {
+			var text = _ref2.text,
+			    _ref2$type = _ref2.type,
+			    type = _ref2$type === undefined ? "error" : _ref2$type;
+
+			_classCallCheck(this, Message);
+
+			this.render = templates.render("forms-message", { type: type, text: text });
+		}
+
+		/**
+   * Creates new modal window and appends message to it
+   * @returns {*}
+   */
+
+
+		_createClass(Message, [{
+			key: "modal",
+			value: function modal() {
+				return windows.modal(this.render);
+			}
+
+			/**
+    * Append to holder of modal window
+    * @param {object} modal
+    */
+
+		}, {
+			key: "appendToModal",
+			value: function appendToModal(modal) {
+				modal.holder.append(this.render);
+			}
+
+			/**
+    * Shows notification in tip
+    * @param object
+    * @param align
+    */
+
+		}, {
+			key: "tip",
+			value: function tip(object, align) {
+				tips.Tip(object, { create: this.render, close: 5 }).show(align || "top");
+			}
+		}]);
+
+		return Message;
+	}();
+
+	return {
+		message: function message(_ref3) {
+			var text = _ref3.text,
+			    _ref3$type = _ref3.type,
+			    type = _ref3$type === undefined ? "error" : _ref3$type;
+			return new Message({ text: text, type: type });
+		},
+		findInElement: function findInElement(element) {
+			return element.find(".notificationMessage");
 		}
 	};
 });
@@ -4111,7 +4111,7 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 			return this.coverWithHolder(template.render(data), noDirectives);
 		},
 
-		renderByTextWithHolder: function renderByTextWithHolder(name, data, noDirectives) {
+		renderByTextWithHolder: function renderByTextWithHolder(text, data, noDirectives) {
 
 			/* Add globals */
 			data = utils.extend(true, {}, data, { globals: this.globals });
@@ -4167,7 +4167,7 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
    * @returns {XMLList|*}
    */
 		renderByText: function renderByText(text, data, noDirectives) {
-			return $(this.renderByTextWithHolder(name, data, noDirectives).childNodes);
+			return $(this.renderByTextWithHolder(text, data, noDirectives).childNodes);
 		},
 
 		/**
@@ -4178,7 +4178,7 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
    * @returns {XMLList|*}
    */
 		renderByTextToText: function renderByTextToText(text, data, noDirectives) {
-			return this.renderByTextWithHolder(name, data, noDirectives).innerHTML;
+			return this.renderByTextWithHolder(text, data, noDirectives).innerHTML;
 		},
 
 		/**
@@ -5568,6 +5568,205 @@ sky.action("pagination", {
 });
 "use strict";
 
+sky.action("selectReplace", function (_ref) {
+    var visibleCalculator = _ref.visibleCalculator;
+
+
+    var filter = function filter(self, event) {
+
+        /* Get drop */
+        var popup = self.closest(".selectReplaceChoose"),
+            inputs = popup.find("input[name]");
+
+        /* On enter */
+        if (event.which === 13) {
+            var visible = popup.find("label:visible");
+            if (visible.length > 0) {
+                inputs.prop("checked", false);
+                visible.children("input").prop("checked", true).trigger("change");
+            }
+            event.stopPropagation();
+        }
+
+        /* Get value */
+        var value = self.val(),
+            rus = "йцукенгшщзхъфывапролджэёячсмитьбю",
+            eng = "qwertyuiop[]asdfghjkl;'\\zxcvbnm,.",
+            expression = new RegExp(value.toLowerCase()),
+            expressionInvert = new RegExp(value.toLowerCase().replace(/[a-zа-яё]/g, function (character) {
+            if (rus.indexOf(character) > -1) return eng[rus.indexOf(character)];
+            if (eng.indexOf(character) > -1) return rus[eng.indexOf(character)];
+            return character;
+        }));
+
+        /* Hide */
+        inputs.each(function (_, input) {
+
+            input = $(input);
+
+            if (input.parent().hasClass('hidden')) return;
+
+            var inputHtml = input.next().html().toLowerCase();
+
+            try {
+                if (!inputHtml.match(expression) && !inputHtml.match(expressionInvert)) input.parent().hide();else input.parent().show();
+            } catch (e) {}
+        });
+    };
+
+    return {
+
+        filter: filter,
+
+        selectAll: function selectAll(button) {
+
+            /* Get drop */
+            var popup = button.closest(".selectReplaceChoose");
+            popup.find(":checkbox:visible").prop("checked", true).first().trigger("change");
+        },
+
+        unSelectAll: function unSelectAll(button) {
+
+            /* Get drop */
+            var popup = button.closest(".selectReplaceChoose");
+            popup.find(":checkbox:visible").prop("checked", false).first().trigger("change");
+        },
+
+        close: function close(element, event) {
+            if (element.get(0) === event.target) $(".selectReplaceChoose").addClass('hidden');
+        },
+
+        showTip: function showTip(label) {
+
+            var originalTip = label.find(".checkItemTip");
+
+            /* If no tip element or tip already shown */
+            if (!originalTip.length || label.data("tip")) return;
+
+            var popup = label.closest(".selectReplaceChoose");
+            var tip = originalTip.clone().removeClass("hidden").appendTo("body");
+            tip.css({
+                left: popup.offset().left,
+                top: popup.offset().top + popup.outerHeight() + 5
+            });
+            label.data("tip", tip);
+        },
+
+        hideTip: function hideTip(label) {
+            if (!label.data("tip")) return;
+            label.data("tip").remove();
+            label.removeData("tip");
+        },
+
+        /**
+         * Shows drop down
+         * @param replace Input
+         */
+        drop: function drop(replace) {
+
+            /* Hide all */
+            $(".selectReplaceChoose").addClass('hidden');
+
+            /* Get drop */
+            var popup = replace.next(),
+                dropOffset = new visibleCalculator(replace).getDropOffset(replace, popup.removeClass('hidden'));
+
+            /* If cant calculate offset */
+            if (!dropOffset) return;
+
+            popup.css({ marginLeft: dropOffset.left, marginTop: dropOffset.top });
+
+            if (replace.outerWidth() > popup.outerWidth()) popup.css("width", replace.outerWidth());
+
+            /* Search focus */
+            if (popup.find(".search").length) popup.find(".search input").val('').focus();
+        },
+
+        change: function change(element, event) {
+
+            /* Get inputs */
+            var popup = element.closest(".selectReplaceChoose"),
+                inputs = popup.find("input:radio, input:checkbox"),
+                current = void 0,
+                change = void 0,
+                children = false,
+                replace = popup.prev(),
+                val = "";
+
+            var _replace$data = replace.data("defaults"),
+                defaultValue = _replace$data.defaultValue,
+                defaultAllValue = _replace$data.defaultAllValue;
+
+            /* Un select all */
+
+
+            popup.find("label").removeClass("selected");
+
+            /* Get checked */
+            var filtered = inputs.filter(":checked").each(function () {
+                current = $(this);
+                current.closest("label").addClass("selected");
+                children = current.next();
+                val = (val && val + ", ") + children.text();
+            });
+
+            /* Make text shorter */
+            if (val.length > 26) val = val.substr(0, 26).trim() + "...";
+
+            /* If all checked */
+            if (filtered.length === inputs.length && !popup.hasClass("single")) val = defaultAllValue;
+
+            /* Set input html */
+            if (popup.hasClass("single") && children) replace.html('').prepend(children.clone().removeClass("name"));else if (!children) replace.html(defaultValue);else replace.text(val);
+
+            /* If not fake event */
+            if (event && current) replace.trigger("change", { value: current.val(), item: element });
+
+            /* Hide on single-select */
+            if (popup.hasClass("single")) popup.addClass('hidden');
+        }
+
+    };
+});
+"use strict";
+
+sky.directive("select", function (select, attrs) {
+	var options = attrs || {};
+	options.items = [];
+	select.find("option").each(function (_, option) {
+		options.items.push({ html: option.innerHTML, value: option.value, checked: !!option.checked });
+	});
+	var replace = sky.service("templates").renderByText("{% import forms as forms %}{{ forms.selectReplace(options, items) }}", { options: options, items: options.items });
+	replace.replaceElement(select);
+});
+sky.directive(".selectReplaceChoose", function (popup, attrs) {
+	var replace = popup.prev();
+	replace.data("defaults", {
+		defaultValue: replace.html() || '-',
+		defaultAllValue: replace.text() || "Все"
+	});
+
+	/* Trigger */
+	setTimeout(function () {
+		popup.find("input:radio, input:checkbox").first().trigger("change");
+	}, 1);
+});
+
+sky.onReady(function () {
+	$(document).on("click touchstart", function (event) {
+
+		/* Get element */
+		var element = $(event.target || event.srcElement);
+
+		/* If click in replace we should not hide it */
+		if (element.closest(".selectReplaceChoose").length || element.closest(".selectReplace").length) return;
+
+		/* Hide all */
+		$(".selectReplaceChoose").addClass('hidden');
+	});
+});
+"use strict";
+
 sky.action("suggest", function (suggester) {
     return {
         adverts: function adverts(input, event) {
@@ -5783,205 +5982,6 @@ sky.directive("[data-tip-hover]", function (button, attributes) {
 
 	// Add
 	button.attr("data-event", events).addClass("dashed");
-});
-"use strict";
-
-sky.action("selectReplace", function (_ref) {
-    var visibleCalculator = _ref.visibleCalculator;
-
-
-    var filter = function filter(self, event) {
-
-        /* Get drop */
-        var popup = self.closest(".selectReplaceChoose"),
-            inputs = popup.find("input[name]");
-
-        /* On enter */
-        if (event.which === 13) {
-            var visible = popup.find("label:visible");
-            if (visible.length > 0) {
-                inputs.prop("checked", false);
-                visible.children("input").prop("checked", true).trigger("change");
-            }
-            event.stopPropagation();
-        }
-
-        /* Get value */
-        var value = self.val(),
-            rus = "йцукенгшщзхъфывапролджэёячсмитьбю",
-            eng = "qwertyuiop[]asdfghjkl;'\\zxcvbnm,.",
-            expression = new RegExp(value.toLowerCase()),
-            expressionInvert = new RegExp(value.toLowerCase().replace(/[a-zа-яё]/g, function (character) {
-            if (rus.indexOf(character) > -1) return eng[rus.indexOf(character)];
-            if (eng.indexOf(character) > -1) return rus[eng.indexOf(character)];
-            return character;
-        }));
-
-        /* Hide */
-        inputs.each(function (_, input) {
-
-            input = $(input);
-
-            if (input.parent().hasClass('hidden')) return;
-
-            var inputHtml = input.next().html().toLowerCase();
-
-            try {
-                if (!inputHtml.match(expression) && !inputHtml.match(expressionInvert)) input.parent().hide();else input.parent().show();
-            } catch (e) {}
-        });
-    };
-
-    return {
-
-        filter: filter,
-
-        selectAll: function selectAll(button) {
-
-            /* Get drop */
-            var popup = button.closest(".selectReplaceChoose");
-            popup.find(":checkbox:visible").prop("checked", true).first().trigger("change");
-        },
-
-        unSelectAll: function unSelectAll(button) {
-
-            /* Get drop */
-            var popup = button.closest(".selectReplaceChoose");
-            popup.find(":checkbox:visible").prop("checked", false).first().trigger("change");
-        },
-
-        close: function close(element, event) {
-            if (element.get(0) === event.target) $(".selectReplaceChoose").addClass('hidden');
-        },
-
-        showTip: function showTip(label) {
-
-            var originalTip = label.find(".checkItemTip");
-
-            /* If no tip element or tip already shown */
-            if (!originalTip.length || label.data("tip")) return;
-
-            var popup = label.closest(".selectReplaceChoose");
-            var tip = originalTip.clone().removeClass("hidden").appendTo("body");
-            tip.css({
-                left: popup.offset().left,
-                top: popup.offset().top + popup.outerHeight() + 5
-            });
-            label.data("tip", tip);
-        },
-
-        hideTip: function hideTip(label) {
-            if (!label.data("tip")) return;
-            label.data("tip").remove();
-            label.removeData("tip");
-        },
-
-        /**
-         * Shows drop down
-         * @param replace Input
-         */
-        drop: function drop(replace) {
-
-            /* Hide all */
-            $(".selectReplaceChoose").addClass('hidden');
-
-            /* Get drop */
-            var popup = replace.next(),
-                dropOffset = new visibleCalculator(replace).getDropOffset(replace, popup.removeClass('hidden'));
-
-            /* If cant calculate offset */
-            if (!dropOffset) return;
-
-            popup.css({ marginLeft: dropOffset.left, marginTop: dropOffset.top });
-
-            if (replace.outerWidth() > popup.outerWidth()) popup.css("width", replace.outerWidth());
-
-            /* Search focus */
-            if (popup.find(".search").length) popup.find(".search input").val('').focus();
-        },
-
-        change: function change(element, event) {
-
-            /* Get inputs */
-            var popup = element.closest(".selectReplaceChoose"),
-                inputs = popup.find("input:radio, input:checkbox"),
-                current = void 0,
-                change = void 0,
-                children = false,
-                replace = popup.prev(),
-                val = "";
-
-            var _replace$data = replace.data("defaults"),
-                defaultValue = _replace$data.defaultValue,
-                defaultAllValue = _replace$data.defaultAllValue;
-
-            /* Un select all */
-
-
-            popup.find("label").removeClass("selected");
-
-            /* Get checked */
-            var filtered = inputs.filter(":checked").each(function () {
-                current = $(this);
-                current.closest("label").addClass("selected");
-                children = current.next();
-                val = (val && val + ", ") + children.text();
-            });
-
-            /* Make text shorter */
-            if (val.length > 26) val = val.substr(0, 26).trim() + "...";
-
-            /* If all checked */
-            if (filtered.length === inputs.length && !popup.hasClass("single")) val = defaultAllValue;
-
-            /* Set input html */
-            if (popup.hasClass("single") && children) replace.html('').prepend(children.clone().removeClass("name"));else if (!children) replace.html(defaultValue);else replace.text(val);
-
-            /* If not fake event */
-            if (event && current) replace.trigger("change", { value: current.val(), item: element });
-
-            /* Hide on single-select */
-            if (popup.hasClass("single")) popup.addClass('hidden');
-        }
-
-    };
-});
-"use strict";
-
-sky.directive("select", function (select, attrs) {
-	var options = attrs || {};
-	options.items = [];
-	select.find("option").each(function (option) {
-		options.items.push({ html: option.html(), value: option.attr("value") });
-	});
-	var replace = sky.service("templates").renderByText("{% import forms as forms %}{{ forms.selectReplace(options) }}", { options: options });
-	replace.replaceElement(select);
-});
-sky.directive(".selectReplaceChoose", function (popup, attrs) {
-	var replace = popup.prev();
-	replace.data("defaults", {
-		defaultValue: replace.html() || '-',
-		defaultAllValue: replace.text() || "Все"
-	});
-
-	/* Trigger */
-	setTimeout(function () {
-		change(false);
-	}, 1);
-});
-
-sky.onReady(function () {
-	$(document).on("click touchstart", function (event) {
-
-		/* Get element */
-		var element = $(event.target || event.srcElement);
-
-		/* If click in replace we should not hide it */
-		if (element.closest(".selectReplaceChoose").length || element.closest(".selectReplace").length) return;
-
-		/* Hide all */
-		$(".selectReplaceChoose").addClass('hidden');
-	});
 });
 "use strict";
 

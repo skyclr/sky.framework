@@ -1,8 +1,7 @@
-{% macro test() %}test{% endmacro %}
 {# Draws select replace input #}
 {% macro selectReplace(options, items) %}
     {% import _self as forms %}
-	<a class="selectReplace {{ options.className }} {% if not options.multiple %}single{% endif %}" data-input="{{ options.name }}" {% if options.validation %}data-validate="{{ options.validation }}"{% endif %} data-event="click: selectReplace.drop(){% if options.event %}; {{  options.event }}{% endif %}">{{ options.value ? options.value : '' }}</a>
+	<a class="selectReplace {{ options.className }} {% if not options.multiple %}single{% endif %}" data-input="{{ options.name }}" {% if options.validation %}data-validate="{{ options.validation }}"{% endif %} data-event="click: selectReplace.drop(){% if options.event %}; {{  options.event }}{% endif %}">{{ options.value ? options.value : '&nbsp;' }}</a>
 	{% if items is iterable %}
 		{{ forms.selectDropDown(options, items) }}
 	{% endif %}
