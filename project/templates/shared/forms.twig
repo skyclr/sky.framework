@@ -46,7 +46,7 @@
         {% set value = item.value ? item.value : item %}
         {% set html = item.html ? item.html : item %}
 		{% set checked = 	(not (options.selected is null) and (value == options.selected or value in options.selected)) or
-							(options.selected is null and item.checked) or
+							(not options.selected and item.checked) or
 							(not options.selected is null and item.value == options.selected) or
 							(not options.selected is null and options.selected is iterable and item.value in options.selected) or
 							(options.checkAll) %}
@@ -56,7 +56,8 @@
 				   name="{{ options.name }}"
 				   value="{{ item.value }}"
 				   data-event="change: selectReplace.change" {% if checked %}checked="checked"{% endif %} />
-			<span class="name">{% if item.raw  %}{{ item.html|raw }}{%  else  %}{{ item.html }}{% endif %}</span>
+			<span class="name">
+			{% if item.raw  %}{{ item.html|raw }}{%  else  %}{{ item.html }}{% endif %}</span>
 			{% if item.tip %}
 				<div class="hidden checkItemTip">{{ item.tip|raw }}</div>
 			{% endif %}

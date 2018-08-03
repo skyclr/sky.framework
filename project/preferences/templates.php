@@ -43,7 +43,7 @@ $preferences["templates"] = array(
 		/**
 		 * Client cache
 		 */
-		"clientCache" => true
+		"clientCache" => false
 
 	)
 );

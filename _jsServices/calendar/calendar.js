@@ -96,7 +96,8 @@ sky.service("calendar", [ "templates", "visibleCalculator" ], function ({ templa
 
 			this.holder.css({
 				marginTop: offset.top,
-				marginLeft: offset.left
+				marginLeft: offset.left,
+				width: offset.width
 			});
 
 		},

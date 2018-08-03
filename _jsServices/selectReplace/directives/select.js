@@ -1,6 +1,7 @@
 sky.directive("select", (select, attrs) => {
 	let options = attrs || {};
 	options.items = [];
+	options.selected = null;
 	select.find("option").each((_, option) => {
 		options.items.push({ html: option.innerHTML, value: option.value, checked: !!option.selected });
 	});

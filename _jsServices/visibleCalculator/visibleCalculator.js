@@ -106,7 +106,8 @@ sky.service("visibleCalculator", function() {
 			popup.removeClass('hidden').css({left: 0, top: 0});
 
 			/* Init */
-			let popupWidth  = popup.outerWidth(),
+			let popupInnerWidth  = popup.innerWidth(),
+				popupWidth  = popup.outerWidth(),
 				popupHeight = popup.outerHeight();
 
 			/* Reset position */
@@ -147,7 +148,7 @@ sky.service("visibleCalculator", function() {
 					left = replaceOffset.left - popupOffset.left - popupWidth;
 			}
 
-			return { top, left };
+			return { top, left, width: popupInnerWidth };
 			
 		}
 	};

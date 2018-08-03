@@ -40,15 +40,15 @@
 		<form action="">
 			<h2>Test form</h2>
 			<fieldset class="">
-				<label>
+				<div class="label">
 					<span class="name"><span data-tip-hover="Tip test">Select example</span></span>
-					<select name="test" multiple="multiple">
+					<select name="test">
 						<option value="1" selected="selected">First example value</option>
 						<option value="2">Second example value</option>
 						<option value="3">Third</option>
 					</select>
 					<span class="desc">example description</span>
-				</label>
+				</div>
 				<div class="label">
 					<span class="name"><span data-tip-hover="Tip test">Select example</span></span>
                     {{ forms.selectReplace({ name: 'text', multiple: true, value: "All" }, [

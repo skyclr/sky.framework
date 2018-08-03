@@ -5,10 +5,6 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 	class Pagination {
 		constructor({ pages, holder, current = 1, }) {
 
-			/* Self creation */
-			if(!(this instanceof Pagination))
-				return new Pagination({ pages, holder, current });
-
 			/* Save */
 			list.add(this);
 
@@ -207,11 +203,7 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 		 * @param {int} page Page number
 		 * @returns {Pagination}
 		 */
-		goToPage(page) {
-
-			/* If no pages */
-			if(this.pages < 2)
-				return this;
+		goToPage(page = 1) {
 
 			/* Parse */
 			page = parseInt(page);
@@ -233,15 +225,13 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 			}
 
 			/* Make active */
-			this.dom.pages.children().removeClass("active").filter("[page=" + page +"]").addClass("active");
+			this.dom.pages.children().removeClass("active").filter("[data-page=" + page +"]").addClass("active");
 
 			/* Forward buttons disable */
-			if(page > 1) this.dom.back.enable();
-			else this.dom.back.disable();
+			page > 1 ? this.dom.back.enable() : this.dom.back.disable();
 
 			/* Backward button disable */
-			if(page === this.pages) this.dom.forward.disable();
-			else this.dom.forward.enable();
+			page === this.pages ? this.dom.forward.disable() : this.dom.forward.enable();
 
 			/* Callback */
 			if(this.current !== page)

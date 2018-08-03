@@ -1283,7 +1283,8 @@ sky.service("calendar", ["templates", "visibleCalculator"], function (_ref) {
 
 			this.holder.css({
 				marginTop: offset.top,
-				marginLeft: offset.left
+				marginLeft: offset.left,
+				width: offset.width
 			});
 		},
 
@@ -5262,7 +5263,8 @@ sky.service("visibleCalculator", function () {
 				popup.removeClass('hidden').css({ left: 0, top: 0 });
 
 				/* Init */
-				var popupWidth = popup.outerWidth(),
+				var popupInnerWidth = popup.innerWidth(),
+				    popupWidth = popup.outerWidth(),
 				    popupHeight = popup.outerHeight();
 
 				/* Reset position */
@@ -5296,7 +5298,7 @@ sky.service("visibleCalculator", function () {
 					if (win.width() > replaceOffset.left + popupWidth + visible.width) left = replaceOffset.left - popupOffset.left + visible.width;else left = replaceOffset.left - popupOffset.left - popupWidth;
 				}
 
-				return { top: top, left: left };
+				return { top: top, left: left, width: popupInnerWidth };
 			}
 		}]);
 
@@ -5733,8 +5735,9 @@ sky.action("selectReplace", function (_ref) {
 sky.directive("select", function (select, attrs) {
 	var options = attrs || {};
 	options.items = [];
+	options.selected = null;
 	select.find("option").each(function (_, option) {
-		options.items.push({ html: option.innerHTML, value: option.value, checked: !!option.checked });
+		options.items.push({ html: option.innerHTML, value: option.value, checked: !!option.selected });
 	});
 	var replace = sky.service("templates").renderByText("{% import forms as forms %}{{ forms.selectReplace(options, items) }}", { options: options, items: options.items });
 	replace.replaceElement(select);
