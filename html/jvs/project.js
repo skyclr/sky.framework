@@ -3666,7 +3666,6 @@ sky.service("pagination", ["templates", "stackList"], function (_ref) {
 			this.pages = pages;
 			this.current = current;
 			this.pageWidth = 50;
-			this.id = last;
 
 			/* No pages needed */
 			if (this.pages < 2) return this;
@@ -3926,10 +3925,8 @@ sky.service("pagination", ["templates", "stackList"], function (_ref) {
 
 
 	$(window).on("resize", function () {
-		var _this = this;
-
-		list.each(function () {
-			_this.redraw();
+		list.each(function (pages) {
+			pages.redraw();
 		});
 	});
 
@@ -4002,6 +3999,110 @@ sky.service("stackList", ["utils"], function (_ref) {
 				callback.apply(single, [single, id]);
 			});
 		};
+	};
+});
+"use strict";
+
+sky.onReady(function (_ref) {
+	var suggester = _ref.suggester;
+
+	$(document).on("click", function (event) {
+
+		/* Get element */
+		var element = $(event.target || event.srcElement);
+
+		/* If click in replace we should not hide it */
+		if (element.is("[type=submit]") || element.closest(".suggester").length || element.data("suggester")) return;
+
+		/* Hide all */
+		suggester.hide();
+	});
+});
+
+sky.service("suggester", ["templates"], function (_ref2) {
+	var templates = _ref2.templates;
+
+
+	var render = void 0,
+	    object = void 0,
+	    lastList = void 0,
+	    suggester = this.service = {
+		hide: function hide() {
+
+			if (render) {
+				render.remove();
+				render = false;
+			}
+			if (object) {
+				object.removeData("suggester");
+				object = false;
+			}
+			$(document).off("keyup.suggester, keydown.suggester");
+		},
+		show: function show(input, list) {
+
+			/* Hide previous */
+			suggester.hide();
+
+			/* Save */
+			lastList = list;
+			render = templates.render("suggester", { items: list }).insertAfter(input.closest("label, .label"));
+			object = input.data("suggester", render);
+
+			/* Get positions */
+			var elementPosition = input.offset(),
+			    renderPosition = render.offset();
+
+			/* Show */
+			render.css({
+				"margin-left": elementPosition.left - renderPosition.left,
+				"margin-top": elementPosition.top - renderPosition.top + input.outerHeight()
+			});
+
+			/* Add handlers */
+			var children = render.children().on("click", function () {
+				input.val($(this).html());
+				suggester.hide();
+				if (lastList[$(this).attr("data-index")].callback) lastList[$(this).attr("data-index")].callback();
+			});
+
+			$(document).on("keyup.suggester", function (event) {
+
+				if (event.keyCode === 38 || event.keyCode === 40) {
+
+					var selected = children.filter(".selected");
+					children.removeClass("selected");
+
+					// Up
+					if (event.keyCode === 38) {
+						if (!selected.length || !selected.prev().length) children.last().addClass("selected");else selected.prev().addClass("selected");
+					}
+					// Down
+					if (event.keyCode === 40) {
+						children.removeClass("selected");
+						if (!selected.length || !selected.next().length) {
+							children.first().addClass("selected");
+						} else {
+							selected.next().addClass("selected");
+						}
+					}
+				}
+				// Esc
+				if (event.keyCode === 27) suggester.hide();
+			}).on("keydown.suggester", function (event) {
+
+				// Enter
+				if (event.keyCode !== 13) return;
+
+				var selected = children.filter(".selected");
+				if (selected.length) {
+					selected.trigger("click");
+					event.preventDefault();
+				} else {
+					suggester.hide();
+				}
+			});
+		}
 	};
 });
 "use strict";
@@ -4200,244 +4301,6 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 			});
 		}
 	});
-});
-"use strict";
-
-sky.onReady(function (_ref) {
-	var suggester = _ref.suggester;
-
-	$(document).on("click", function (event) {
-
-		/* Get element */
-		var element = $(event.target || event.srcElement);
-
-		/* If click in replace we should not hide it */
-		if (element.is("[type=submit]") || element.closest(".suggester").length || element.data("suggester")) return;
-
-		/* Hide all */
-		suggester.hide();
-	});
-});
-
-sky.service("suggester", ["templates"], function (_ref2) {
-	var templates = _ref2.templates;
-
-
-	var render = void 0,
-	    object = void 0,
-	    lastList = void 0,
-	    suggester = this.service = {
-		hide: function hide() {
-
-			if (render) {
-				render.remove();
-				render = false;
-			}
-			if (object) {
-				object.removeData("suggester");
-				object = false;
-			}
-			$(document).off("keyup.suggester, keydown.suggester");
-		},
-		show: function show(input, list) {
-
-			/* Hide previous */
-			suggester.hide();
-
-			/* Save */
-			lastList = list;
-			render = templates.render("suggester", { items: list }).insertAfter(input.closest("label, .label"));
-			object = input.data("suggester", render);
-
-			/* Get positions */
-			var elementPosition = input.offset(),
-			    renderPosition = render.offset();
-
-			/* Show */
-			render.css({
-				"margin-left": elementPosition.left - renderPosition.left,
-				"margin-top": elementPosition.top - renderPosition.top + input.outerHeight()
-			});
-
-			/* Add handlers */
-			var children = render.children().on("click", function () {
-				input.val($(this).html());
-				suggester.hide();
-				if (lastList[$(this).attr("data-index")].callback) lastList[$(this).attr("data-index")].callback();
-			});
-
-			$(document).on("keyup.suggester", function (event) {
-
-				if (event.keyCode === 38 || event.keyCode === 40) {
-
-					var selected = children.filter(".selected");
-					children.removeClass("selected");
-
-					// Up
-					if (event.keyCode === 38) {
-						if (!selected.length || !selected.prev().length) children.last().addClass("selected");else selected.prev().addClass("selected");
-					}
-					// Down
-					if (event.keyCode === 40) {
-						children.removeClass("selected");
-						if (!selected.length || !selected.next().length) {
-							children.first().addClass("selected");
-						} else {
-							selected.next().addClass("selected");
-						}
-					}
-				}
-				// Esc
-				if (event.keyCode === 27) suggester.hide();
-			}).on("keydown.suggester", function (event) {
-
-				// Enter
-				if (event.keyCode !== 13) return;
-
-				var selected = children.filter(".selected");
-				if (selected.length) {
-					selected.trigger("click");
-					event.preventDefault();
-				} else {
-					suggester.hide();
-				}
-			});
-		}
-	};
-});
-"use strict";
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-sky.service("utils", function () {
-	this.service = {
-
-		extend: function extend() {
-			return $.extend.apply($, arguments);
-		},
-
-		each: function each() {
-			return $.each.apply($, arguments);
-		},
-
-		/**
-   * Checks if object has same data
-   * @param first
-   * @param second
-   */
-		isObjectsEqual: function isObjectsEqual(first, second) {
-
-			/* Different types */
-			if ((typeof first === "undefined" ? "undefined" : _typeof(first)) !== (typeof second === "undefined" ? "undefined" : _typeof(second))) return false;
-
-			/* If object or array we will compare each element */
-			if (first instanceof Array || first instanceof Object) {
-				var key = void 0;
-				/* Check first */
-				for (key in first) {
-					if (!first.hasOwnProperty(key)) continue;
-					if (typeof second[key] === "undefined") return false;else if (!this.isObjectsEqual(first[key], second[key])) return false;
-				}
-
-				/* Check second */
-				for (key in second) {
-					if (!second.hasOwnProperty(key)) continue;
-					if (typeof first[key] === "undefined") return false;
-				}
-			} else if (first !== second) return false; // For simple types
-
-			/* All tests success */
-			return true;
-		},
-
-		/**
-   * Adds zero
-   * @param value
-   * @returns {Number}
-   */
-		addLeadingZero: function addLeadingZero(value) {
-
-			/* Parse */
-			value = parseInt(value);
-
-			/* Ad zero */
-			if (value < 10) value = "0" + value;
-
-			/* Val */
-			return value;
-		},
-
-		encode: function encode(rawStr) {
-			return rawStr.replace(/[\u00A0-\u9999<>&]/gim, function (i) {
-				return '&#' + i.charCodeAt(0) + ';';
-			});
-		},
-
-		/**
-   * Makes data to JSON past
-   * @param data
-   * @param [inputName]
-   * @returns {string}
-   */
-		jsonData: function jsonData(data, inputName) {
-			return '<script type="application/json"' + (inputName ? ' input-name="' + inputName + '"' : "") + '>' + sky.encode(JSON.stringify(data)) + '</script>';
-		},
-
-		prepareSelectData: function prepareSelectData(items, func, _ref) {
-			var _ref$columnSplitOn = _ref.columnSplitOn,
-			    columnSplitOn = _ref$columnSplitOn === undefined ? 6 : _ref$columnSplitOn,
-			    _ref$maxColumns = _ref.maxColumns,
-			    maxColumns = _ref$maxColumns === undefined ? 4 : _ref$maxColumns;
-
-
-			var index = 0,
-			    columns = [],
-			    columnsCount = items.length / columnSplitOn,
-			    groupHolder = void 0,
-			    compiled = void 0;
-
-			if (columnsCount < 1) columnsCount = 1;
-			if (columnsCount > maxColumns) columnsCount = maxColumns;
-
-			var perColumn = Math.ceil(items.length / columnsCount);
-
-			var _iteratorNormalCompletion = true;
-			var _didIteratorError = false;
-			var _iteratorError = undefined;
-
-			try {
-				for (var _iterator = items[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					var item = _step.value;
-
-					if (compiled = func({ item: item, index: index, column: columns.length })) {
-
-						if (index % perColumn === 0) {
-							groupHolder = [];
-							columns.push(groupHolder);
-						}
-
-						groupHolder.push(compiled);
-						index++;
-					}
-				}
-			} catch (err) {
-				_didIteratorError = true;
-				_iteratorError = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion && _iterator.return) {
-						_iterator.return();
-					}
-				} finally {
-					if (_didIteratorError) {
-						throw _iteratorError;
-					}
-				}
-			}
-
-			return index === 0 ? [] : { groups: columns };
-		}
-	};
 });
 "use strict";
 
@@ -4909,6 +4772,140 @@ sky.service("tips", ["stackList", "callbacks"], function (_ref) {
         }
 
     });
+});
+"use strict";
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+sky.service("utils", function () {
+	this.service = {
+
+		extend: function extend() {
+			return $.extend.apply($, arguments);
+		},
+
+		each: function each() {
+			return $.each.apply($, arguments);
+		},
+
+		/**
+   * Checks if object has same data
+   * @param first
+   * @param second
+   */
+		isObjectsEqual: function isObjectsEqual(first, second) {
+
+			/* Different types */
+			if ((typeof first === "undefined" ? "undefined" : _typeof(first)) !== (typeof second === "undefined" ? "undefined" : _typeof(second))) return false;
+
+			/* If object or array we will compare each element */
+			if (first instanceof Array || first instanceof Object) {
+				var key = void 0;
+				/* Check first */
+				for (key in first) {
+					if (!first.hasOwnProperty(key)) continue;
+					if (typeof second[key] === "undefined") return false;else if (!this.isObjectsEqual(first[key], second[key])) return false;
+				}
+
+				/* Check second */
+				for (key in second) {
+					if (!second.hasOwnProperty(key)) continue;
+					if (typeof first[key] === "undefined") return false;
+				}
+			} else if (first !== second) return false; // For simple types
+
+			/* All tests success */
+			return true;
+		},
+
+		/**
+   * Adds zero
+   * @param value
+   * @returns {Number}
+   */
+		addLeadingZero: function addLeadingZero(value) {
+
+			/* Parse */
+			value = parseInt(value);
+
+			/* Ad zero */
+			if (value < 10) value = "0" + value;
+
+			/* Val */
+			return value;
+		},
+
+		encode: function encode(rawStr) {
+			return rawStr.replace(/[\u00A0-\u9999<>&]/gim, function (i) {
+				return '&#' + i.charCodeAt(0) + ';';
+			});
+		},
+
+		/**
+   * Makes data to JSON past
+   * @param data
+   * @param [inputName]
+   * @returns {string}
+   */
+		jsonData: function jsonData(data, inputName) {
+			return '<script type="application/json"' + (inputName ? ' input-name="' + inputName + '"' : "") + '>' + sky.encode(JSON.stringify(data)) + '</script>';
+		},
+
+		prepareSelectData: function prepareSelectData(items, func, _ref) {
+			var _ref$columnSplitOn = _ref.columnSplitOn,
+			    columnSplitOn = _ref$columnSplitOn === undefined ? 6 : _ref$columnSplitOn,
+			    _ref$maxColumns = _ref.maxColumns,
+			    maxColumns = _ref$maxColumns === undefined ? 4 : _ref$maxColumns;
+
+
+			var index = 0,
+			    columns = [],
+			    columnsCount = items.length / columnSplitOn,
+			    groupHolder = void 0,
+			    compiled = void 0;
+
+			if (columnsCount < 1) columnsCount = 1;
+			if (columnsCount > maxColumns) columnsCount = maxColumns;
+
+			var perColumn = Math.ceil(items.length / columnsCount);
+
+			var _iteratorNormalCompletion = true;
+			var _didIteratorError = false;
+			var _iteratorError = undefined;
+
+			try {
+				for (var _iterator = items[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+					var item = _step.value;
+
+					if (compiled = func({ item: item, index: index, column: columns.length })) {
+
+						if (index % perColumn === 0) {
+							groupHolder = [];
+							columns.push(groupHolder);
+						}
+
+						groupHolder.push(compiled);
+						index++;
+					}
+				}
+			} catch (err) {
+				_didIteratorError = true;
+				_iteratorError = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion && _iterator.return) {
+						_iterator.return();
+					}
+				} finally {
+					if (_didIteratorError) {
+						throw _iteratorError;
+					}
+				}
+			}
+
+			return index === 0 ? [] : { groups: columns };
+		}
+	};
 });
 "use strict";
 
@@ -5705,44 +5702,6 @@ sky.service('windows', ["templates", "callbacks", "stackList"], function (_ref) 
 });
 "use strict";
 
-sky.directive("select", function (select, attrs) {
-	var options = attrs || {};
-	options.items = [];
-	options.selected = null;
-	select.find("option").each(function (_, option) {
-		options.items.push({ html: option.innerHTML, value: option.value, checked: !!option.selected });
-	});
-	var replace = sky.service("templates").renderByText("{% import forms as forms %}{{ forms.selectReplace(options, items) }}", { options: options, items: options.items });
-	replace.replaceElement(select);
-});
-sky.directive(".selectReplaceChoose", function (popup, attrs) {
-	var replace = popup.prev();
-	replace.data("defaults", {
-		defaultValue: replace.html() || '-',
-		defaultAllValue: replace.text() || "Все"
-	});
-
-	/* Trigger */
-	setTimeout(function () {
-		popup.find("input:radio, input:checkbox").first().trigger("change");
-	}, 1);
-});
-
-sky.onReady(function () {
-	$(document).on("click touchstart", function (event) {
-
-		/* Get element */
-		var element = $(event.target || event.srcElement);
-
-		/* If click in replace we should not hide it */
-		if (element.closest(".selectReplaceChoose").length || element.closest(".selectReplace").length) return;
-
-		/* Hide all */
-		$(".selectReplaceChoose").addClass('hidden');
-	});
-});
-"use strict";
-
 sky.action("selectReplace", function (_ref) {
     var visibleCalculator = _ref.visibleCalculator;
 
@@ -5905,11 +5864,6 @@ sky.action("selectReplace", function (_ref) {
 });
 "use strict";
 
-sky.directive("[data-suggests]", function (element, attributes) {
-	element.attr("data-event", "keyup: suggest." + attributes["data-suggests"]).attr("autocomplete", "off");
-});
-"use strict";
-
 sky.action("suggest", function (suggester) {
     return {
         adverts: function adverts(input, event) {
@@ -6010,6 +5964,49 @@ sky.action("suggest", function (suggester) {
             });
         }
     };
+});
+"use strict";
+
+sky.directive("select", function (select, attrs) {
+	var options = attrs || {};
+	options.items = [];
+	options.selected = null;
+	select.find("option").each(function (_, option) {
+		options.items.push({ html: option.innerHTML, value: option.value, checked: !!option.selected });
+	});
+	var replace = sky.service("templates").renderByText("{% import forms as forms %}{{ forms.selectReplace(options, items) }}", { options: options, items: options.items });
+	replace.replaceElement(select);
+});
+sky.directive(".selectReplaceChoose", function (popup, attrs) {
+	var replace = popup.prev();
+	replace.data("defaults", {
+		defaultValue: replace.html() || '-',
+		defaultAllValue: replace.text() || "Все"
+	});
+
+	/* Trigger */
+	setTimeout(function () {
+		popup.find("input:radio, input:checkbox").first().trigger("change");
+	}, 1);
+});
+
+sky.onReady(function () {
+	$(document).on("click touchstart", function (event) {
+
+		/* Get element */
+		var element = $(event.target || event.srcElement);
+
+		/* If click in replace we should not hide it */
+		if (element.closest(".selectReplaceChoose").length || element.closest(".selectReplace").length) return;
+
+		/* Hide all */
+		$(".selectReplaceChoose").addClass('hidden');
+	});
+});
+"use strict";
+
+sky.directive("[data-suggests]", function (element, attributes) {
+	element.attr("data-event", "keyup: suggest." + attributes["data-suggests"]).attr("autocomplete", "off");
 });
 "use strict";
 

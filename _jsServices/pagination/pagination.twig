@@ -1,7 +1,7 @@
 {% verbatim %}
 
 <!-- Base pagination -->
-<template id="pagination">
+<script type="text/template" id="pagination">
 	<div class="pagination">
 		<a class="arrow left disabled" href="#" data-event="click: pagination.previous"></a>
 		<div class="pages">
@@ -9,18 +9,18 @@
 		</div>
 		<a class="arrow right" href="#" data-event="click: pagination.next"></a>
 	</div>
-</template>
+</script>
 
 <!-- Pagination scroll -->
-<temlate id="pagination-scroll">
+<script type="text/template" id="pagination-scroll">
 	<div class="scrollLine" data-event="click: pagination.scrollTo" >
 		<div class="runner"  data-event="mousedown: pagination.grab"></div>
 	</div>
-</temlate>
+</script>
 
 <!-- Pagination page -->
-<template id="pagination-page">
-	<a href="#" data-event="click: pagination.setPage({{ page }})" data-page="{{ page }}" {% if page == current %}class="active"{% endif %}>{{ page }}</a>
-</template>
+<script type="text/template" id="pagination-page">
+	<a href="#" data-event="click: pagination.setPage({{ page }})" data-page="{{ page }}" {{ (page==current)|addClass('active') }}>{{ page }}</a>
+</script>
 
 {% endverbatim %}

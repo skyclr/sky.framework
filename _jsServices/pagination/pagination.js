@@ -12,7 +12,6 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 			this.pages 		= pages;
 			this.current 	= current;
 			this.pageWidth	= 50;
-			this.id 		= last;
 
 			/* No pages needed */
 			if(this.pages < 2)
@@ -263,7 +262,7 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 
 	/* Bind windows events */
 	$(window).on("resize", function() {
-		list.each(() => { this.redraw(); });
+		list.each((pages) => { pages.redraw(); });
 	});
 
 	/* Return */

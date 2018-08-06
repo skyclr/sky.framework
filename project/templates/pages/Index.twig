@@ -28,6 +28,15 @@
 			<input type="submit" class="button">
 		</fieldset>
 	</form>
+		<div id="pages"></div>
+		<script>
+			sky.onReady(({ pagination }) => {
+				pagination.add({
+					holder: "#pages",
+					pages: 256
+				});
+			});
+		</script>
 	{% endif %}
 	<a href="#" class="button" data-event="click: page.submit">Modal example</a>
 	<a href="/manage" class="button">Entity builder</a>
@@ -92,6 +101,7 @@
 						<input type="radio" name="rad" value="2">
 						<span class="desc">Second</span>
 					</label>
+				</div>
 			</fieldset>
 			<fieldset class="submit">
 				<input type="submit" class="button">
