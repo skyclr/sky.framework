@@ -121,7 +121,7 @@ sky.service("callback", function() {
 				return true;
 
 			/* Call function */
-			result =  func.apply(current.context || context, args) !== false;
+			result =  func.call(current.context || context, args) !== false;
 
 			/* If call once */
 			if(current.once) {

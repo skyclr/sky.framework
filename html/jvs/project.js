@@ -149,8 +149,9 @@ sky.service("actions", ["exceptions"], function (_ref) {
 });
 "use strict";
 
-sky.service("ajax", ["callbacks"], function (_ref) {
-	var callbacks = _ref.callbacks;
+sky.service("ajax", ["callbacks", "utils"], function (_ref) {
+	var callbacks = _ref.callbacks,
+	    utils = _ref.utils;
 
 
 	/**
@@ -163,14 +164,16 @@ sky.service("ajax", ["callbacks"], function (_ref) {
   * @param {object} [ajaxExtend]		Additional ajax options, see http://api.jquery.com/jQuery.ajaxSetup/
   * @param {object} [callbackData]	Additional params that passed to any callback
   */
-	this.service = function (url, data, _ref2) {
-		var _ref2$object = _ref2.object,
+	this.service = function (url) {
+		var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+		var _ref2 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
+		    _ref2$object = _ref2.object,
 		    object = _ref2$object === undefined ? null : _ref2$object,
 		    _ref2$callbackData = _ref2.callbackData,
 		    callbackData = _ref2$callbackData === undefined ? {} : _ref2$callbackData,
 		    _ref2$ajaxExtend = _ref2.ajaxExtend,
 		    ajaxExtend = _ref2$ajaxExtend === undefined ? {} : _ref2$ajaxExtend;
-
 
 		/* Lock button */
 		if (object) object = $(object).filter(":not(.disabled)").disable();
@@ -182,7 +185,7 @@ sky.service("ajax", ["callbacks"], function (_ref) {
 		};
 
 		/* Perform ajax request */
-		ajaxCallbacks.ajax = $.ajax($.extend(true, {
+		ajaxCallbacks.ajax = $.ajax(utils.extend(true, {
 
 			/* Set base options */
 			url: url,
@@ -193,7 +196,7 @@ sky.service("ajax", ["callbacks"], function (_ref) {
 			success: function (response, textStatus, jqXHR) {
 
 				/* Possible params list */
-				var params = $.extend({ jqXHR: jqXHR, textStatus: textStatus, object: object }, callbackData);
+				var params = utils.extend({ jqXHR: jqXHR, textStatus: textStatus, object: object }, callbackData);
 
 				/* If empty response */
 				if (response === null) {
@@ -203,7 +206,7 @@ sky.service("ajax", ["callbacks"], function (_ref) {
 
 				/* If response returned with error */
 				if (response.error) {
-					params.error = response.text;
+					params.error = 'Request error: ' + response.text;
 					params.type = "php";
 				}
 
@@ -241,8 +244,8 @@ sky.service("ajax", ["callbacks"], function (_ref) {
 				}
 
 				/* Possible params list */
-				var params = $.extend({
-					error: errorText,
+				var params = utils.extend({
+					error: 'Request error: ' + errorText,
 					type: type,
 					code: type,
 					jqXHR: jqXHR,
@@ -1028,8 +1031,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-sky.service("ajaxLoadingIndicator", ["stackList"], function (_ref) {
-	var stackList = _ref.stackList;
+sky.service("ajaxLoadingIndicator", ["stackList", "callbacks"], function (_ref) {
+	var stackList = _ref.stackList,
+	    callbacks = _ref.callbacks;
 
 
 	var loadings = stackList();
@@ -1039,10 +1043,13 @@ sky.service("ajaxLoadingIndicator", ["stackList"], function (_ref) {
   */
 
 	var Loading = function () {
-		function Loading(ajax) {
+		function Loading(_ref2) {
 			var _this = this;
 
-			var global = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+			var _ref2$ajax = _ref2.ajax,
+			    ajax = _ref2$ajax === undefined ? false : _ref2$ajax,
+			    _ref2$global = _ref2.global,
+			    global = _ref2$global === undefined ? true : _ref2$global;
 
 			_classCallCheck(this, Loading);
 
@@ -1184,9 +1191,10 @@ sky.service("ajaxLoadingIndicator", ["stackList"], function (_ref) {
 	}();
 
 	this.service = {
-		loading: function loading(ajax) {
+		loading: function loading() {
+			var ajax = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 			var global = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-			return new Loading(ajax, global);
+			return new Loading({ ajax: ajax, global: global });
 		}
 	};
 });
@@ -1779,7 +1787,7 @@ sky.service("callback", function () {
 			if (!func) return true;
 
 			/* Call function */
-			result = func.apply(current.context || context, args) !== false;
+			result = func.call(current.context || context, args) !== false;
 
 			/* If call once */
 			if (current.once) {
@@ -3567,7 +3575,7 @@ sky.service("notifications", ["templates", "windows", "tips"], function (_ref) {
 		return Message;
 	}();
 
-	return {
+	this.service = {
 		message: function message(_ref3) {
 			var text = _ref3.text,
 			    _ref3$type = _ref3.type,
@@ -3600,9 +3608,6 @@ sky.service("pagination", ["templates", "stackList"], function (_ref) {
 			    current = _ref2$current === undefined ? 1 : _ref2$current;
 
 			_classCallCheck(this, Pagination);
-
-			/* Self creation */
-			if (!(this instanceof Pagination)) return new Pagination({ pages: pages, holder: holder, current: current });
 
 			/* Save */
 			list.add(this);
@@ -3811,10 +3816,9 @@ sky.service("pagination", ["templates", "stackList"], function (_ref) {
 
 		}, {
 			key: "goToPage",
-			value: function goToPage(page) {
+			value: function goToPage() {
+				var page = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
 
-				/* If no pages */
-				if (this.pages < 2) return this;
 
 				/* Parse */
 				page = parseInt(page);
@@ -3832,13 +3836,13 @@ sky.service("pagination", ["templates", "stackList"], function (_ref) {
 				}
 
 				/* Make active */
-				this.dom.pages.children().removeClass("active").filter("[page=" + page + "]").addClass("active");
+				this.dom.pages.children().removeClass("active").filter("[data-page=" + page + "]").addClass("active");
 
 				/* Forward buttons disable */
-				if (page > 1) this.dom.back.enable();else this.dom.back.disable();
+				page > 1 ? this.dom.back.enable() : this.dom.back.disable();
 
 				/* Backward button disable */
-				if (page === this.pages) this.dom.forward.disable();else this.dom.forward.enable();
+				page === this.pages ? this.dom.forward.disable() : this.dom.forward.enable();
 
 				/* Callback */
 				if (this.current !== page) this.onPageChange(page);
@@ -5337,7 +5341,28 @@ sky.service('windows', ["templates", "callbacks", "stackList"], function (_ref) 
    */
 		modal: function modal(name, data) {
 			return new Modal(name, data);
+		},
+
+		modalAjax: function modalAjax(ajax) {
+			try {
+
+				var loading = sky.service("ajaxLoadingIndicator").loading(ajax, false),
+				    modal = new Modal(loading.render);
+
+				ajax.on("always", function () {
+					modal.unlock();
+				}).on("abort", function () {
+					modal.unlock().close();
+				}).on("error", function (_ref2) {
+					var error = _ref2.error;
+
+					sky.service("notifications").message({ text: error }).appendToModal(modal);
+				});
+
+				modal.lock();
+			} catch (e) {}
 		}
+
 	};
 
 	/**
@@ -5520,56 +5545,6 @@ sky.service('windows', ["templates", "callbacks", "stackList"], function (_ref) 
 });
 "use strict";
 
-sky.action("pagination", {
-
-	setPage: function setPage(button, _, page) {
-
-		/* Get pagination */
-		var pagination = button.parents(".pagination").data("pagination");
-
-		/* Correct page */
-		if (page === "next") page = pagination.current + 1;
-
-		/* Correct  */
-		if (page === "previous") page = pagination.current - 1;
-
-		/* Go to page */
-		pagination.goToPage(page);
-	},
-
-	scrollTo: function scrollTo(element, event) {
-
-		/* Get pagination */
-		var pagination = element.parents(".pagination").data("pagination");
-
-		/* Move */
-		pagination.scroll(event);
-	},
-
-	grab: function grab(runner) {
-
-		/* Get pagination */
-		var pagination = runner.parents(".pagination").data("pagination");
-
-		/* Binds */
-		$(window).on("mouseup.pagination", function () {
-			$(window).off("mouseup.pagination mousemove.pagination");
-		}).on("mousemove.pagination", function (event) {
-			pagination.scroll(event);
-		});
-	},
-
-	next: function next(button, _) {
-		this.setPage(button, _, "next");
-	},
-
-	previous: function previous(button, _) {
-		this.setPage(button, _, "previous");
-	}
-
-});
-"use strict";
-
 sky.action("selectReplace", function (_ref) {
     var visibleCalculator = _ref.visibleCalculator;
 
@@ -5729,6 +5704,56 @@ sky.action("selectReplace", function (_ref) {
         }
 
     };
+});
+"use strict";
+
+sky.action("pagination", {
+
+	setPage: function setPage(button, _, page) {
+
+		/* Get pagination */
+		var pagination = button.parents(".pagination").data("pagination");
+
+		/* Correct page */
+		if (page === "next") page = pagination.current + 1;
+
+		/* Correct  */
+		if (page === "previous") page = pagination.current - 1;
+
+		/* Go to page */
+		pagination.goToPage(page);
+	},
+
+	scrollTo: function scrollTo(element, event) {
+
+		/* Get pagination */
+		var pagination = element.parents(".pagination").data("pagination");
+
+		/* Move */
+		pagination.scroll(event);
+	},
+
+	grab: function grab(runner) {
+
+		/* Get pagination */
+		var pagination = runner.parents(".pagination").data("pagination");
+
+		/* Binds */
+		$(window).on("mouseup.pagination", function () {
+			$(window).off("mouseup.pagination mousemove.pagination");
+		}).on("mousemove.pagination", function (event) {
+			pagination.scroll(event);
+		});
+	},
+
+	next: function next(button, _) {
+		this.setPage(button, _, "next");
+	},
+
+	previous: function previous(button, _) {
+		this.setPage(button, _, "previous");
+	}
+
 });
 "use strict";
 

@@ -15,7 +15,25 @@ sky.service('windows', ["templates", "callbacks", "stackList"], function ({templ
 			 * Returns new modal window
 			 * @returns {Modal}
 			 */
-			modal: (name, data) => new Modal(name, data)
+			modal: (name, data) => new Modal(name, data),
+
+			modalAjax: (ajax) => {
+				try {
+
+					let loading = sky.service("ajaxLoadingIndicator").loading(ajax, false),
+						modal = (new Modal(loading.render));
+
+					ajax.on("always", () => { modal.unlock(); })
+						.on("abort", () => { modal.unlock().close(); })
+						.on("error", ({ error }) => {
+							sky.service("notifications").message({ text: error }).appendToModal(modal);
+						});
+
+					modal.lock();
+
+				} catch(e) {}
+			}
+
 		};
 
 

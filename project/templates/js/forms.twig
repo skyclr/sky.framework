@@ -2,3 +2,12 @@
 <script type="text/template" id="forms">
 	{{ "shared/forms.twig"|includeRaw }}
 </script>
+{% verbatim %}
+<!-- Message  -->
+<script type="text/template" id="forms-message">
+    <div class="notificationMessage {{ type ? type : "error" }} {{ subtext ? "" : "oneline" }}" {% if id %}id="{{ id }}"{% endif %}>
+        <b>{{ text|raw }}</b>
+        {{ subtext ? subtext|raw : "" }}
+    </div>
+</script>
+{% endverbatim %}

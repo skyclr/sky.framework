@@ -2,6 +2,11 @@ Modal windows service
 service name: windows
 methods:
 	getLast - return last modal windows or null
+	modal - creates new modal window
+		name - String or jQuery, if string then template with this name would be rendered, if jQuery - appended
+		data - Data that passed to template render
+    modalAjax - creates new modal window with ajax loading indicator, locks it and unlocks on ajax resolve
+    	ajax - Ajax call object from ajax service
 classes:
 	Modal - Creates new modal window
 	class methods:

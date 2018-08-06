@@ -1,4 +1,4 @@
-sky.service("ajaxLoadingIndicator", ["stackList"], function({ stackList }) {
+sky.service("ajaxLoadingIndicator", ["stackList", "callbacks"], function({ stackList, callbacks }) {
 
 	let loadings = stackList();
 
@@ -6,7 +6,7 @@ sky.service("ajaxLoadingIndicator", ["stackList"], function({ stackList }) {
 	 * Loading
 	 */
 	class Loading {
-		constructor(ajax, global = true) {
+		constructor({ ajax = false, global = true} ) {
 
 			/* List save */
 			loadings.add(this);
@@ -136,7 +136,7 @@ sky.service("ajaxLoadingIndicator", ["stackList"], function({ stackList }) {
 	}
 
 	this.service = {
-		loading: (ajax, global = true) => new Loading(ajax, global),
+		loading: (ajax = false, global = true) => new Loading({ ajax, global }),
 	}
 
 });

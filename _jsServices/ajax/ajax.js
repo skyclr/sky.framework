@@ -1,4 +1,4 @@
-sky.service("ajax", ["callbacks"], function({ callbacks }) {
+sky.service("ajax", ["callbacks", "utils"], function({ callbacks, utils }) {
 
 	/**
 	 * Advanced ajax execution
@@ -10,7 +10,7 @@ sky.service("ajax", ["callbacks"], function({ callbacks }) {
 	 * @param {object} [ajaxExtend]		Additional ajax options, see http://api.jquery.com/jQuery.ajaxSetup/
 	 * @param {object} [callbackData]	Additional params that passed to any callback
 	 */
-	this.service = function(url, data, { object = null, callbackData = {}, ajaxExtend = {} }) {
+	this.service = function(url, data = {}, { object = null, callbackData = {}, ajaxExtend = {} } = {}) {
 
 		/* Lock button */
 		if(object)
@@ -21,7 +21,7 @@ sky.service("ajax", ["callbacks"], function({ callbacks }) {
 		ajaxCallbacks.stop = function() { ajaxCallbacks.ajax.abort(); };
 
 		/* Perform ajax request */
-		ajaxCallbacks.ajax = $.ajax($.extend(true, {
+		ajaxCallbacks.ajax = $.ajax(utils.extend(true, {
 
 			/* Set base options */
 			url     	: url,
@@ -32,7 +32,7 @@ sky.service("ajax", ["callbacks"], function({ callbacks }) {
 			success: function(response, textStatus, jqXHR) {
 
 				/* Possible params list */
-				let params = $.extend({ jqXHR: jqXHR, textStatus: textStatus, object: object }, callbackData);
+				let params = utils.extend({ jqXHR: jqXHR, textStatus: textStatus, object: object }, callbackData);
 
 				/* If empty response */
 				if(response === null) {
@@ -42,7 +42,7 @@ sky.service("ajax", ["callbacks"], function({ callbacks }) {
 
 				/* If response returned with error */
 				if(response.error) {
-					params.error = response.text;
+					params.error = 'Request error: ' + response.text;
 					params.type = "php";
 				}
 
@@ -82,8 +82,8 @@ sky.service("ajax", ["callbacks"], function({ callbacks }) {
 				}
 
 				/* Possible params list */
-				let params = $.extend({
-					error      : errorText,
+				let params = utils.extend({
+					error      : 'Request error: ' + errorText,
 					type       : type,
 					code	   : type,
 					jqXHR      : jqXHR,

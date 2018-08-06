@@ -34,7 +34,7 @@ sky.service("notifications", ["templates", "windows", "tips"], function({templat
 		}
 	}
 
-	return {
+	this.service = {
 		message      : ({text, type = "error"}) => new Message({text, type}),
 		findInElement: element => element.find(".notificationMessage")
 	}
