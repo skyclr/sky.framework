@@ -1,0 +1,151 @@
+{% verbatim %}
+
+<!-- Calendar -->
+<template id="calendar">
+	<div class="calendar">
+	    <div class="pickedDate"></div>
+		<div class="header">
+			<div class="month">
+				<div class="prev"></div>
+				<div class="next"></div>
+				<div class="value">{{ monthsNames[date.month()] }} {{ date.year() }}</div>
+			</div>
+		</div>
+		<div class="names">
+			<div class="week">нед</div><div>пн</div><div>вт</div><div>ср</div><div>чт</div><div>пт</div><div class="weekend">сб</div><div class="weekend">вс</div>
+		</div>
+		<div class="dates"></div>
+		{% if useTime %}
+		<div class="time">
+			<a href="#">Время суток</a>
+			<input class="hour" type="text" maxlength="2" value="{{ this.hour }}"/>
+			{% if useTime != 'hour' %}
+			<span>:</span>
+			<input class="minute" type="text" maxlength="2" value="{{ this.minute }}"/>
+			{% endif %}
+		</div>
+		{% endif %}
+		<div class="fastLinks">
+		    <a href="#" class="apply">Применить</a>
+        </div>
+	</div>
+</template>
+
+<!-- Calendar days -->
+<template id="calendar-dates">
+	<div class="week">
+	{% for week in weeks %}
+		<div>{{ week.number }}</div>
+	{% endfor %}
+	</div>
+	<div class="separator"></div>
+	<div class="weeks">
+	{% for week in weeks %}<div>{% for i, day in week.days %}<div class="day{{ (day.day in [5,6]) ? ' weekend' : '' }}{% if period %}
+			        {% if day.dateStr in [since.format('YYYY.MM.DD'), till.format('YYYY.MM.DD')] %} selected{% elseif day.date.isAfter(since) and day.date.isBefore(till) %} subSelected{% endif %}
+			        {% elseif day.dateStr == dateStr %} selected{% endif %}">
+			    {{ day.date.date() }}
+			</div>{% endfor %}</div>{% endfor %}
+	</div>
+</template>
+
+{% endverbatim %}
+{% verbatim %}
+
+<!-- Base pagination -->
+<template id="pagination">
+	<div class="pagination">
+		<a class="arrow left disabled" href="#" data-event="click: pagination.previous"></a>
+		<div class="pages">
+			<div class="pagesSlider"></div>
+		</div>
+		<a class="arrow right" href="#" data-event="click: pagination.next"></a>
+	</div>
+</template>
+
+<!-- Pagination scroll -->
+<temlate id="pagination-scroll">
+	<div class="scrollLine" data-event="click: pagination.scrollTo" >
+		<div class="runner"  data-event="mousedown: pagination.grab"></div>
+	</div>
+</temlate>
+
+<!-- Pagination page -->
+<template id="pagination-page">
+	<a href="#" data-event="click: pagination.setPage({{ page }})" data-page="{{ page }}" {% if page == current %}class="active"{% endif %}>{{ page }}</a>
+</template>
+
+{% endverbatim %}
+<!-- Holds add files form -->
+<script type="text/template" id="sketches-add-window">
+    <form data-event="submit: sketches.addSubmit">
+        <input type="hidden" name="id" value="{{ albumId }}" />
+        <h1>Загрузить</h1>
+        <p>Изображения, 2Гб максимум, неск. файлов через shift, ctrl или cmd</p>
+        <fieldset style="min-width: 350px;">
+            <label>
+                <span class="name"></span>
+                <input name="photos" type="file" title="Выберите файл(ы)" multiple="multiple" data-validate="required">
+            </label>
+        </fieldset>
+        <fieldset class="submit">
+            <input type="submit" value="Загрузить" class="button">
+        </fieldset>
+    </form>
+</script>
+
+<!-- Single file form -->
+<script type="text/template" id="files-single-upload">
+    <div class="fileProgress" style="padding: 15px 0">
+        <h4>Загружается <b>{{ name }}</b></h4>
+        <div class="progressBar"><div></div></div>
+        Загружено
+        <span class="total">0%</span>
+        <a href="#" data-event="click: files.skipUpload">Пропустить</a>
+    </div>
+    <div class="grayLine" style="height: 1px; background: #eee"></div>
+</script>
+
+<!-- Holds upload files form -->
+<script type="text/template" id="files-upload">
+    <div style="padding: 25px;">
+        <h1>Файлы загружаются</h1>
+        <div class="uploadProgress">
+            <div class="filesProgress"></div>
+            <div class="progress">
+                <h4>Общий прогресс</h4>
+                <div class="progressBar"><div></div></div>
+                Осталось файлов <span class="toProceed">0</span>/<span class="total">0</span>
+            </div>
+        </div>
+    </div>
+</script>
+{% verbatim %}
+
+<!-- Suggester  -->
+<script type="text/template" id="suggester">
+	<div class="suggester">
+		{% for i, item in items %}
+			{% if item.html %}
+				<div data-index="{{i}}" class="item {{ item.cls }}">{{ item.html }}</div>
+			{% else %}
+				<div data-index="{{i}}" class="item">{{ item }}</div>
+			{% endif %}
+		{% endfor %}
+	</div>
+</script>
+
+{% endverbatim %}
+
+{% verbatim %}
+
+<!-- Holds folder template -->
+<script type="text/template" id="windows-modal">
+	<div class="windowShadow" data-event="click: shared.closeWindow">
+		<div class="windowHolder">
+			<div class="close" data-event="click: shared.closeWindow"></div>
+			<div class="windowData"></div>
+		</div>
+	</div>
+</script>
+
+{% endverbatim %}

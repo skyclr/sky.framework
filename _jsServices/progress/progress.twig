@@ -1,0 +1,44 @@
+<!-- Holds add files form -->
+<script type="text/template" id="sketches-add-window">
+    <form data-event="submit: sketches.addSubmit">
+        <input type="hidden" name="id" value="{{ albumId }}" />
+        <h1>Загрузить</h1>
+        <p>Изображения, 2Гб максимум, неск. файлов через shift, ctrl или cmd</p>
+        <fieldset style="min-width: 350px;">
+            <label>
+                <span class="name"></span>
+                <input name="photos" type="file" title="Выберите файл(ы)" multiple="multiple" data-validate="required">
+            </label>
+        </fieldset>
+        <fieldset class="submit">
+            <input type="submit" value="Загрузить" class="button">
+        </fieldset>
+    </form>
+</script>
+
+<!-- Single file form -->
+<script type="text/template" id="files-single-upload">
+    <div class="fileProgress" style="padding: 15px 0">
+        <h4>Загружается <b>{{ name }}</b></h4>
+        <div class="progressBar"><div></div></div>
+        Загружено
+        <span class="total">0%</span>
+        <a href="#" data-event="click: files.skipUpload">Пропустить</a>
+    </div>
+    <div class="grayLine" style="height: 1px; background: #eee"></div>
+</script>
+
+<!-- Holds upload files form -->
+<script type="text/template" id="files-upload">
+    <div style="padding: 25px;">
+        <h1>Файлы загружаются</h1>
+        <div class="uploadProgress">
+            <div class="filesProgress"></div>
+            <div class="progress">
+                <h4>Общий прогресс</h4>
+                <div class="progressBar"><div></div></div>
+                Осталось файлов <span class="toProceed">0</span>/<span class="total">0</span>
+            </div>
+        </div>
+    </div>
+</script>

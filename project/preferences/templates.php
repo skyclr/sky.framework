@@ -28,10 +28,7 @@ $preferences["templates"] = array(
 		 */
 		"default"   => array(
 			"forms",
-			"windows",
-			#"pagination",
-			#"suggester",
-			"calendar"
+			"modules",
 		),
 
 		/**

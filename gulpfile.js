@@ -26,6 +26,14 @@ gulp.task('less', function() {
 		.pipe(sourceMaps.write('.'))
 		.pipe(gulp.dest(paths.app.css));
 
+	gulp.src([paths.src.modules + '/**/*.less', paths.app.css + "styles.css"])
+		.pipe(sourceMaps.init())
+		.pipe(less({ ieCompat: false, relativeUrls: true }))
+		.pipe(cssmin({compatibility: 'ie8'}))
+		.pipe(concat('styles.css'))
+		.pipe(sourceMaps.write('.'))
+		.pipe(gulp.dest(paths.app.css));
+
 	gulp.src(paths.src.pages + '*/*.less')
 		.pipe(sourceMaps.init())
 		.pipe(less({ ieCompat: false, relativeUrls: true }))
@@ -97,4 +105,10 @@ gulp.task('image', function () {
 			interlaced: true
 		}))
 		.pipe(gulp.dest(paths.app.img));
+});
+
+gulp.task('twig', function () {
+	gulp.src([paths.src.modules + '/**/*.twig'])
+		.pipe(concat('modules.twig'))
+		.pipe(gulp.dest(paths.app.twig));
 });
