@@ -20,7 +20,6 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 			/* Counted params */
 			this.dimensions = {
 				startPage      : 1,
-				lastStartPage  : 0,
 				pagesVisible   : 0,
 				pagesInvisible : 0,
 				scrollAvailable: 0,
@@ -93,9 +92,6 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 
 			/* Count invisible */
 			this.dimensions.pagesInvisible = (this.pages - this.dimensions.pagesVisible) > 0 ? this.pages - this.dimensions.pagesVisible : 0;
-
-			/* Count last start */
-			this.dimensions.lastStartPage = this.dimensions.pagesInvisible + 1;
 
 			/* Get max pages */
 			let toShow = this.dimensions.pagesVisible > this.pages ? this.pages : this.dimensions.pagesVisible;
