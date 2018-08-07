@@ -1,5 +1,154 @@
 "use strict";
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+sky.service("actions", ["exceptions"], function (_ref) {
+	var exceptions = _ref.exceptions;
+
+
+	var list = {},
+	    actions = this.service = {
+
+		/**
+   * Performs action
+   * @param element
+   * @param event
+   * @param action
+   * @param {Array} [options]
+   */
+		perform: function perform(element, event, action, options) {
+
+			/* Get parameters */
+			var params = action.match(/(.+)\((.*)\)/);
+
+			/* Parse */
+			if (params) {
+
+				/* Get function */
+				action = params[1];
+
+				/* Parse params */
+				params = params[2].split(",");
+				$.each(params, function (i, val) {
+					params[i] = eval(val.trim());
+				});
+			}
+
+			/* Options */
+			if (options) params = $.extend(params || [], options);
+
+			/* Get */
+			var self = element ? $(element) : false,
+			    path = action.split("."),
+			    current = list,
+			    name = action;
+
+			/* If disabled */
+			if (self && self.isDisabled && self.isDisabled()) return;
+
+			$.each(path, function (i, elem) {
+
+				/* Search */
+				if (i + 1 < path.length && !current[elem]) throw new exceptions.system.Error("No action - " + action + ", because can't find '" + elem + "'");
+
+				/* Get new elem */
+				if (i + 1 < path.length) current = current[elem];
+
+				/* Save name */
+				name = elem;
+			});
+
+			/* If no */
+			if (!current[name]) throw new exceptions.system.Error("No action - " + action);
+
+			/* Call */
+			current[name].apply(current, [self, event].concat(params || []));
+		},
+
+		/**
+   * Adds actions to list
+   * @param name Group name
+   * @param events List
+   */
+		add: function add(name, events) {
+
+			if (typeof events === "function") events = events.safe(true)();
+
+			// Check
+			if (!events || (typeof events === "undefined" ? "undefined" : _typeof(events)) !== 'object') throw new exceptions.system.Error("No event object for events '" + name + "' provided");
+
+			// Save
+			list[name] = $.extend(list[name] || {}, events);
+		}
+
+	};
+
+	/**
+  * Adds special bind function
+  * @param {string} name Event name
+  * @param {*} selector Selector string
+  * @param {function} [action] Action function
+  * @returns {jQuery}
+  */
+	$.fn.action = function (name, selector, action) {
+
+		/* Parameters skip */
+		if (typeof action === "undefined") {
+			action = selector;selector = null;
+		}
+
+		/* Bind */
+		return this.on(name, selector, function (event, data) {
+			action.call(this, event, $(this), data);
+		}.safe());
+	};
+
+	/*
+  * Bind declarative events
+  */
+	$(document).action("click submit keyup keydown dblclick mouseover mouseout mouseleave mouseenter change mousedown mouseup touchstart", '[data-event]', function (event, self, data) {
+		var _this = this;
+
+		/* Get string */
+		var skyEvent = this.getAttribute("data-event");
+
+		/* If no such event in data-event attribute */
+		if (skyEvent.indexOf(event.type) === -1) return;
+
+		/* If disabled */
+		if (self.isDisabled && self.isDisabled()) {
+			event.preventDefault();
+			return;
+		}
+
+		skyEvent.split(";").map(function (eventString) {
+
+			/* Get elements */
+			var parts = eventString.match(/(\w+):(.*)/);
+
+			/* Wrong */
+			if (parts.length !== 3) throw new exceptions.system.Error("Wrong action format in data-event: " + eventString);
+
+			/* Get elements */
+			var name = parts[1].trim(),
+			    action = parts[2].trim();
+
+			/* Another event */
+			if (name !== event.type) return;
+
+			/* No default go */
+			if (event.target === self.get(0)) event.preventDefault();
+
+			/* Passed data */
+			event.data = data;
+
+			/* Perform action */
+			actions.perform(_this, event, action);
+		});
+	});
+});
+"use strict";
+
 sky.service("ajax", ["callbacks", "utils"], function (_ref) {
 	var callbacks = _ref.callbacks,
 	    utils = _ref.utils;
@@ -178,328 +327,6 @@ sky.service("ajax", ["callbacks", "utils"], function (_ref) {
 		510: "Не расширено",
 		511: "Требуется сетевая аутентификация"
 
-	};
-});
-"use strict";
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-sky.service("actions", ["exceptions"], function (_ref) {
-	var exceptions = _ref.exceptions;
-
-
-	var list = {},
-	    actions = this.service = {
-
-		/**
-   * Performs action
-   * @param element
-   * @param event
-   * @param action
-   * @param {Array} [options]
-   */
-		perform: function perform(element, event, action, options) {
-
-			/* Get parameters */
-			var params = action.match(/(.+)\((.*)\)/);
-
-			/* Parse */
-			if (params) {
-
-				/* Get function */
-				action = params[1];
-
-				/* Parse params */
-				params = params[2].split(",");
-				$.each(params, function (i, val) {
-					params[i] = eval(val.trim());
-				});
-			}
-
-			/* Options */
-			if (options) params = $.extend(params || [], options);
-
-			/* Get */
-			var self = element ? $(element) : false,
-			    path = action.split("."),
-			    current = list,
-			    name = action;
-
-			/* If disabled */
-			if (self && self.isDisabled && self.isDisabled()) return;
-
-			$.each(path, function (i, elem) {
-
-				/* Search */
-				if (i + 1 < path.length && !current[elem]) throw new exceptions.system.Error("No action - " + action + ", because can't find '" + elem + "'");
-
-				/* Get new elem */
-				if (i + 1 < path.length) current = current[elem];
-
-				/* Save name */
-				name = elem;
-			});
-
-			/* If no */
-			if (!current[name]) throw new exceptions.system.Error("No action - " + action);
-
-			/* Call */
-			current[name].apply(current, [self, event].concat(params || []));
-		},
-
-		/**
-   * Adds actions to list
-   * @param name Group name
-   * @param events List
-   */
-		add: function add(name, events) {
-
-			if (typeof events === "function") events = events.safe(true)();
-
-			// Check
-			if (!events || (typeof events === "undefined" ? "undefined" : _typeof(events)) !== 'object') throw new exceptions.system.Error("No event object for events '" + name + "' provided");
-
-			// Save
-			list[name] = $.extend(list[name] || {}, events);
-		}
-
-	};
-
-	/**
-  * Adds special bind function
-  * @param {string} name Event name
-  * @param {*} selector Selector string
-  * @param {function} [action] Action function
-  * @returns {jQuery}
-  */
-	$.fn.action = function (name, selector, action) {
-
-		/* Parameters skip */
-		if (typeof action === "undefined") {
-			action = selector;selector = null;
-		}
-
-		/* Bind */
-		return this.on(name, selector, function (event, data) {
-			action.call(this, event, $(this), data);
-		}.safe());
-	};
-
-	/*
-  * Bind declarative events
-  */
-	$(document).action("click submit keyup keydown dblclick mouseover mouseout mouseleave mouseenter change mousedown mouseup touchstart", '[data-event]', function (event, self, data) {
-		var _this = this;
-
-		/* Get string */
-		var skyEvent = this.getAttribute("data-event");
-
-		/* If no such event in data-event attribute */
-		if (skyEvent.indexOf(event.type) === -1) return;
-
-		/* If disabled */
-		if (self.isDisabled && self.isDisabled()) {
-			event.preventDefault();
-			return;
-		}
-
-		skyEvent.split(";").map(function (eventString) {
-
-			/* Get elements */
-			var parts = eventString.match(/(\w+):(.*)/);
-
-			/* Wrong */
-			if (parts.length !== 3) throw new exceptions.system.Error("Wrong action format in data-event: " + eventString);
-
-			/* Get elements */
-			var name = parts[1].trim(),
-			    action = parts[2].trim();
-
-			/* Another event */
-			if (name !== event.type) return;
-
-			/* No default go */
-			if (event.target === self.get(0)) event.preventDefault();
-
-			/* Passed data */
-			event.data = data;
-
-			/* Perform action */
-			actions.perform(_this, event, action);
-		});
-	});
-});
-"use strict";
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-sky.service("ajaxLoadingIndicator", ["stackList", "callbacks"], function (_ref) {
-	var stackList = _ref.stackList,
-	    callbacks = _ref.callbacks;
-
-
-	var loadings = stackList();
-
-	/**
-  * Loading
-  */
-
-	var Loading = function () {
-		function Loading(_ref2) {
-			var _this = this;
-
-			var _ref2$ajax = _ref2.ajax,
-			    ajax = _ref2$ajax === undefined ? false : _ref2$ajax,
-			    _ref2$global = _ref2.global,
-			    global = _ref2$global === undefined ? true : _ref2$global;
-
-			_classCallCheck(this, Loading);
-
-			/* List save */
-			loadings.add(this);
-
-			/* Back link */
-			this.global = global;
-
-			/* Render */
-			this.render = $('<div/>').html('<div></div>').addClass("ajaxLoading");
-
-			/* Global insert */
-			if (this.global) this.render.addClass("fixed").appendTo("body");
-
-			/* If stop possible */
-			if (ajax) {
-				$("<span/>").appendTo(this.render.addClass("cancelable")).click(function () {
-					ajax.stop();
-				});
-				ajax.on("always", function () {
-					return _this.hide();
-				});
-			}
-
-			/* Callbacks */
-			this.events = callbacks();
-		}
-
-		/**
-   * Loads loading in modal window
-   * @param {object} modal Window
-   */
-
-
-		_createClass(Loading, [{
-			key: "inModalWindow",
-			value: function inModalWindow(modal) {
-
-				/* Hide */
-				var content = modal.holder.children().hide();
-
-				/* Insert */
-				this.render.appendTo(modal.holder);
-
-				/* Restore on hide */
-				this.events.on("hide", function () {
-					return content.show();
-				});
-			}
-
-			/**
-    *
-    * @param contentHolder
-    */
-
-		}, {
-			key: "reloadContent",
-			value: function reloadContent(contentHolder) {
-				var _this2 = this;
-
-				this.setHolder(contentHolder);
-
-				/* If no holder */
-				if (!this.holder.length) return;
-
-				/* Get children */
-				var content = this.holder.children();
-
-				/* Different content disable */
-				if (this.global) {
-
-					/* Disable content */
-					content.disable();
-
-					/* Make sizes calculator */
-					this.calc = visibleCalculator(contentHolder, this.render.outerHeight(), "body");
-
-					/* Re enable */
-					this.events.on("hide", function () {
-						content.enable();
-						$(window).off("scroll.notification");
-					});
-
-					/* Bind scroll handler */
-					$(window).on("scroll.notification", function () {
-						var position = _this2.calc.calculate();
-						_this2.render.css({
-							left: position.left + position.width / 2,
-							top: position.top + position.height / 2
-						});
-					}).trigger("scroll");
-				} else {
-
-					/*  Hide */
-					content.hide();
-
-					/* Insert */
-					this.render.appendTo(this.holder);
-
-					/* Re enable */
-					this.events.on("hide", function () {
-						content.show();
-					});
-				}
-
-				return this;
-			}
-		}, {
-			key: "setHolder",
-			value: function setHolder(holder) {
-
-				/* Append and save */
-				this.holder = $(holder).addClass("withLoading").append(this.render);
-
-				/* Self return */
-				return this;
-			}
-
-			/**
-    * Hides current loading
-    */
-
-		}, {
-			key: "hide",
-			value: function hide() {
-
-				if (this.holder) this.holder.removeClass("withLoading");
-
-				this.render.remove();
-				this.events.fire("hide");
-
-				/* Remove from list */
-				loadings.remove(this);
-			}
-		}]);
-
-		return Loading;
-	}();
-
-	this.service = {
-		loading: function loading() {
-			var ajax = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-			var global = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-			return new Loading({ ajax: ajax, global: global });
-		}
 	};
 });
 "use strict";
@@ -1200,6 +1027,179 @@ sky.service("ajaxFilesXHR", ["supported", "ajax", "stackList"], function (_ref) 
 });
 "use strict";
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+sky.service("ajaxLoadingIndicator", ["stackList", "callbacks"], function (_ref) {
+	var stackList = _ref.stackList,
+	    callbacks = _ref.callbacks;
+
+
+	var loadings = stackList();
+
+	/**
+  * Loading
+  */
+
+	var Loading = function () {
+		function Loading(_ref2) {
+			var _this = this;
+
+			var _ref2$ajax = _ref2.ajax,
+			    ajax = _ref2$ajax === undefined ? false : _ref2$ajax,
+			    _ref2$global = _ref2.global,
+			    global = _ref2$global === undefined ? true : _ref2$global;
+
+			_classCallCheck(this, Loading);
+
+			/* List save */
+			loadings.add(this);
+
+			/* Back link */
+			this.global = global;
+
+			/* Render */
+			this.render = $('<div/>').html('<div></div>').addClass("ajaxLoading");
+
+			/* Global insert */
+			if (this.global) this.render.addClass("fixed").appendTo("body");
+
+			/* If stop possible */
+			if (ajax) {
+				$("<span/>").appendTo(this.render.addClass("cancelable")).click(function () {
+					ajax.stop();
+				});
+				ajax.on("always", function () {
+					return _this.hide();
+				});
+			}
+
+			/* Callbacks */
+			this.events = callbacks();
+		}
+
+		/**
+   * Loads loading in modal window
+   * @param {object} modal Window
+   */
+
+
+		_createClass(Loading, [{
+			key: "inModalWindow",
+			value: function inModalWindow(modal) {
+
+				/* Hide */
+				var content = modal.holder.children().hide();
+
+				/* Insert */
+				this.render.appendTo(modal.holder);
+
+				/* Restore on hide */
+				this.events.on("hide", function () {
+					return content.show();
+				});
+			}
+
+			/**
+    *
+    * @param contentHolder
+    */
+
+		}, {
+			key: "reloadContent",
+			value: function reloadContent(contentHolder) {
+				var _this2 = this;
+
+				this.setHolder(contentHolder);
+
+				/* If no holder */
+				if (!this.holder.length) return;
+
+				/* Get children */
+				var content = this.holder.children();
+
+				/* Different content disable */
+				if (this.global) {
+
+					/* Disable content */
+					content.disable();
+
+					/* Make sizes calculator */
+					this.calc = visibleCalculator(contentHolder, this.render.outerHeight(), "body");
+
+					/* Re enable */
+					this.events.on("hide", function () {
+						content.enable();
+						$(window).off("scroll.notification");
+					});
+
+					/* Bind scroll handler */
+					$(window).on("scroll.notification", function () {
+						var position = _this2.calc.calculate();
+						_this2.render.css({
+							left: position.left + position.width / 2,
+							top: position.top + position.height / 2
+						});
+					}).trigger("scroll");
+				} else {
+
+					/*  Hide */
+					content.hide();
+
+					/* Insert */
+					this.render.appendTo(this.holder);
+
+					/* Re enable */
+					this.events.on("hide", function () {
+						content.show();
+					});
+				}
+
+				return this;
+			}
+		}, {
+			key: "setHolder",
+			value: function setHolder(holder) {
+
+				/* Append and save */
+				this.holder = $(holder).addClass("withLoading").append(this.render);
+
+				/* Self return */
+				return this;
+			}
+
+			/**
+    * Hides current loading
+    */
+
+		}, {
+			key: "hide",
+			value: function hide() {
+
+				if (this.holder) this.holder.removeClass("withLoading");
+
+				this.render.remove();
+				this.events.fire("hide");
+
+				/* Remove from list */
+				loadings.remove(this);
+			}
+		}]);
+
+		return Loading;
+	}();
+
+	this.service = {
+		loading: function loading() {
+			var ajax = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+			var global = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+			return new Loading({ ajax: ajax, global: global });
+		}
+	};
+});
+"use strict";
+
 sky.service("calendar", ["templates", "visibleCalculator"], function (_ref) {
 	var templates = _ref.templates,
 	    visibleCalculator = _ref.visibleCalculator;
@@ -1650,6 +1650,316 @@ sky.onReady(function (_ref2) {
 			}
 		}
 	});
+});
+"use strict";
+
+sky.service("callback", function () {
+
+	/**
+  * Creates callback object that holds functions list
+  * @param {string} [flags]
+  * @returns {*}
+  * @constructor
+  */
+	var Callback = function Callback(flags) {
+
+		/* Self construct */
+		if (!(this instanceof Callback)) return new Callback(flags);
+
+		/**
+   * Functions list holder
+   * @type {Array}
+   */
+		this.functions = [];
+		this.toRun = 0;
+		this.context = this;
+
+		/* Self return for next usage */
+		return this;
+	};
+
+	/**
+  * Base
+  * @type {{functions: Array, toRun: number, context: *, add: add, removeByContext: removeByContext, fire: fire, fireNext: fireNext}}
+  */
+	Callback.prototype = {
+
+		/**
+   * Adds new function to stack
+   * @param {Function} func Function to add
+   * @param {Object} context Function context
+   * @param {Object} options Call options
+   */
+		add: function add(func, context, options) {
+			this.functions.push({
+				func: func,
+				context: context || false,
+				once: options && options.once
+			});
+			return this;
+		},
+
+		/**
+   * Removes function from list by context
+   * @param context
+   */
+		removeByContext: function removeByContext(context) {
+
+			/* Find listener */
+			var i = void 0;
+			for (i in this.functions) {
+				if (this.functions[i].context === context) this.functions.splice(i, 1);
+			} /* Self return */
+			return this;
+		},
+
+		/**
+   * Removes function from list by context
+   * @param func
+   */
+		removeByCallback: function removeByCallback(func) {
+
+			/* Find listener */
+			var i = void 0;
+			for (i in this.functions) {
+				if (this.functions[i].func === func) this.functions.splice(i, 1);
+			} /* Self return */
+			return this;
+		},
+
+		/**
+   * Fires all functions
+   * @param {Object} context Function context
+   * @param {Array} args Arguments
+   */
+		fire: function fire(context, args) {
+			var _iteratorNormalCompletion = true;
+			var _didIteratorError = false;
+			var _iteratorError = undefined;
+
+			try {
+				for (var _iterator = this.functions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+					var func = _step.value;
+
+					func.func.apply(func.context || context, args);
+				}
+			} catch (err) {
+				_didIteratorError = true;
+				_iteratorError = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion && _iterator.return) {
+						_iterator.return();
+					}
+				} finally {
+					if (_didIteratorError) {
+						throw _iteratorError;
+					}
+				}
+			}
+		},
+
+		/**
+   * Fires next function
+   * @param {Array|Object} args Arguments
+   * @param {Object} context Function context
+   */
+		fireNext: function fireNext(args, context) {
+
+			/* If no more to run */
+			if (this.functions.length <= this.toRun) return false;
+
+			/* Set next to run */
+			this.toRun++;
+
+			/* Function to run */
+			var current = this.functions[this.toRun - 1],
+			    result = void 0,
+			    func = current.func;
+
+			/* Set context */
+			context = current.context || context || window;
+
+			/* Get function in string */
+			if (typeof func === "string") func = context[func];
+
+			/* If no function found */
+			if (!func) return true;
+
+			/* Call function */
+			result = func.call(current.context || context, args) !== false;
+
+			/* If call once */
+			if (current.once) {
+				this.functions.splice(this.toRun - 2, 1);
+				this.toRun--;
+			}
+
+			/* Return function result */
+			return result;
+		}
+
+	};
+
+	this.service = Callback;
+});
+"use strict";
+
+sky.service("callbacks", ["callback"], function (_ref) {
+	var callback = _ref.callback;
+
+
+	/**
+  *
+  * Callbacks prepared object
+  * @param {*} [flags] Flags list for jQuery.Callbacks
+  * @constructor
+  */
+	var Callbacks = function Callbacks(flags) {
+
+		/* Self construction */
+		if (!(this instanceof Callbacks)) return new Callbacks(flags);
+
+		/* Add properties */
+		$.extend(true, this, Callbacks.extend);
+
+		/* Callbacks list */
+		this.advancedCallbacks = {};
+
+		/* Set default flags and self context */
+		return this.flags(flags);
+	};
+
+	/**
+  * Prototype
+  * @type {{on: on, fire: fire, off: off, flags: flags, setContext: setContext}}
+  */
+	Callbacks.prototype = {
+
+		/**
+   * Flags for sky.Callback
+   * @param {object} flags Flags list
+   * @returns {*}
+   */
+		flags: function flags(_flags) {
+			this.callbacksFlags = _flags;
+			return this;
+		},
+
+		/**
+   * Remove by listener
+   * @param {string} name Event name
+   * @param {string} listener Listener object
+   */
+		removeListener: function removeListener(name, listener) {
+			if (this.advancedCallbacks[name]) {
+				this.advancedCallbacks[name].removeByContext(listener);
+			}
+		},
+
+		/**
+   * Adds new event handler
+   * @param {string} 	 name 			Name of event
+   * @param {function|string} func 	Function be called on event fires
+   * @param {object}   [context]		Function options
+   * @param {object}   [options]		Function options
+   */
+		on: function on(name, func, context, options) {
+			var _this = this;
+
+			if (name instanceof Object) $.each(name, function (event, func) {
+				_this.on(event, func);
+			});else $.each(this.getEventsNames(name), function (_, name) {
+
+				/* Create callbacks */
+				if (!_this.advancedCallbacks[name]) _this.advancedCallbacks[name] = callback(_this.callbacksFlags);
+
+				/* Add function */
+				_this.advancedCallbacks[name].add(func, context ? context : self.context, options || {});
+			});
+
+			return this;
+		},
+
+		/**
+   * Fires callbacks for specified event
+   * @param {string} name Name of event
+   * @param {object} args Arguments to be passed
+   * @param {object} [options] Additional options
+   */
+		fire: function fire(name, args, options) {
+
+			/* Success last */
+			var events = this.getEventsNames(name),
+			    self = this,
+			    next = false;
+			options = options || {};
+
+			/* Remove global if need */
+			if (options["noGlobal"]) events = events.slice(1);
+
+			/* Fire events */
+			$.each(events, function (_, event) {
+
+				/* If no callback */
+				if (!self.advancedCallbacks[event]) return;
+
+				/* Run */
+				do {
+					next = self.advancedCallbacks[event].fireNext(jQuery.extend({ event: event }, args || []), self.context, options.possible);
+				} while (next);
+
+				/* Reset */
+				if (!options.once) self.advancedCallbacks[event].toRun = 0;
+			});
+		},
+
+		/**
+   * Get all event names from global name
+   * @param {String} name Global event name
+   * @returns {Array}
+   */
+		getEventsNames: function getEventsNames(name) {
+
+			/* Get events names */
+			var names = name.split(","),
+			    events = [];
+
+			/* Go through */
+			$.each(names, function (i, name) {
+
+				/* Remove spaces */
+				name = name.replace(" ", "");
+
+				/* Get elements */
+				var elements = name.split(".");
+				events.push(elements[0]);
+
+				/* Go through */
+				for (var j = 1; j < elements.length; j++) {
+					events.push(elements[0] + "." + elements[j]);
+				} /* Global event */
+				if (elements.length > 2) events.push(elements.join("."));
+			});
+
+			/* Return */
+			return events;
+		},
+
+		/**
+   * Removes event handlers and functions
+   * @param {string} name Event name
+   * @param func
+   */
+		off: function off(name) {
+			var func = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+			if (func && this.advancedCallbacks[name]) this.advancedCallbacks[name].removeByCallback(func);else delete this.advancedCallbacks[name];
+		}
+
+	};
+
+	this.service = Callbacks;
 });
 "use strict";
 
@@ -2284,96 +2594,59 @@ sky.service("searchField", ["utils", "inputsIO"], function (_ref) {
 });
 "use strict";
 
-sky.service("callback", function () {
+sky.service("directives", ["exceptions", "utils", "stackList"], function (_ref) {
+	var exceptions = _ref.exceptions,
+	    utils = _ref.utils,
+	    stackList = _ref.stackList;
 
-	/**
-  * Creates callback object that holds functions list
-  * @param {string} [flags]
-  * @returns {*}
-  * @constructor
-  */
-	var Callback = function Callback(flags) {
 
-		/* Self construct */
-		if (!(this instanceof Callback)) return new Callback(flags);
+	var list = stackList(),
+	    directives = this.service = {
 
 		/**
-   * Functions list holder
-   * @type {Array}
+   * Adds new directive
+   * @param {string} name Directive name
+   * @param {*} options Directive options
+   * @param {function} directive How to parse directive
    */
-		this.functions = [];
-		this.toRun = 0;
-		this.context = this;
+		add: function add(name, options, directive) {
 
-		/* Self return for next usage */
-		return this;
-	};
+			/* Reset */
+			if (!directive && typeof options === "function") {
+				directive = options;
+				options = {};
+			}
+			options.directive = directive;
+			options.selector = name;
 
-	/**
-  * Base
-  * @type {{functions: Array, toRun: number, context: *, add: add, removeByContext: removeByContext, fire: fire, fireNext: fireNext}}
-  */
-	Callback.prototype = {
+			/* Save */
+			list.add(options);
 
-		/**
-   * Adds new function to stack
-   * @param {Function} func Function to add
-   * @param {Object} context Function context
-   * @param {Object} options Call options
-   */
-		add: function add(func, context, options) {
-			this.functions.push({
-				func: func,
-				context: context || false,
-				once: options && options.once
-			});
+			/* Self return*/
 			return this;
 		},
 
 		/**
-   * Removes function from list by context
-   * @param context
+   * Get element attributes
+   * @param element
+   * @returns {{}}
    */
-		removeByContext: function removeByContext(context) {
+		getAttributes: function getAttributes(element) {
 
-			/* Find listener */
-			var i = void 0;
-			for (i in this.functions) {
-				if (this.functions[i].context === context) this.functions.splice(i, 1);
-			} /* Self return */
-			return this;
-		},
+			/* Holds attributes */
+			var attributes = {};
 
-		/**
-   * Removes function from list by context
-   * @param func
-   */
-		removeByCallback: function removeByCallback(func) {
-
-			/* Find listener */
-			var i = void 0;
-			for (i in this.functions) {
-				if (this.functions[i].func === func) this.functions.splice(i, 1);
-			} /* Self return */
-			return this;
-		},
-
-		/**
-   * Fires all functions
-   * @param {Object} context Function context
-   * @param {Array} args Arguments
-   */
-		fire: function fire(context, args) {
+			/* Copy them to list */
 			var _iteratorNormalCompletion = true;
 			var _didIteratorError = false;
 			var _iteratorError = undefined;
 
 			try {
-				for (var _iterator = this.functions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					var func = _step.value;
+				for (var _iterator = element.get(0).attributes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+					var attr = _step.value;
 
-					func.func.apply(func.context || context, args);
-				}
+					attributes[attr.nodeName] = attr.nodeValue;
+				} /* Return */
 			} catch (err) {
 				_didIteratorError = true;
 				_iteratorError = err;
@@ -2388,209 +2661,81 @@ sky.service("callback", function () {
 					}
 				}
 			}
+
+			return attributes;
 		},
 
 		/**
-   * Fires next function
-   * @param {Array|Object} args Arguments
-   * @param {Object} context Function context
+   * Applies directive convert to element
+   * @param element
+   * @param options
    */
-		fireNext: function fireNext(args, context) {
+		parseElement: function parseElement(element, options) {
 
-			/* If no more to run */
-			if (this.functions.length <= this.toRun) return false;
+			/* Get element */
+			element = $(element);
 
-			/* Set next to run */
-			this.toRun++;
+			/* Get element attributes */
+			var attributes = this.getAttributes(element);
 
-			/* Function to run */
-			var current = this.functions[this.toRun - 1],
-			    result = void 0,
-			    func = current.func;
+			/* Parse body for jason data */
+			if (options["json"] || options["jsonToData"]) {
 
-			/* Set context */
-			context = current.context || context || window;
+				/* Get child */
+				var jsonScript = element.children('script[type="application/json"]');
 
-			/* Get function in string */
-			if (typeof func === "string") func = context[func];
+				/* If we have json encoded data */
+				if (jsonScript.length) {
 
-			/* If no function found */
-			if (!func) return true;
+					try {
 
-			/* Call function */
-			result = func.call(current.context || context, args) !== false;
+						/* Parse json */
+						var json = JSON.parse(jsonScript.text());
 
-			/* If call once */
-			if (current.once) {
-				this.functions.splice(this.toRun - 2, 1);
-				this.toRun--;
+						/* Extend */
+						utils.extend(attributes, json);
+
+						/* Save to data */
+						if (options["jsonToData"]) element.data("json", json);
+					} catch (e) {
+						throw new exceptions.system.Error("Element " + options.selector + " should have json stored content, but error on parse appears");
+					}
+				}
 			}
 
-			/* Return function result */
-			return result;
+			/* Call parse function */
+			if (typeof options.directive === "function") options.directive(element, attributes);
+		},
+
+		/**
+   * Searches and replaces directives in element
+   * @param element
+   */
+		parse: function parse(element) {
+			list.each(function (directive) {
+				$(directive.selector, element).each(function () {
+					directives.parseElement(this, directive);
+				});
+				if ($(element).is(directive.selector)) directives.parseElement(element, directive);
+			});
 		}
 
 	};
 
-	this.service = Callback;
-});
-"use strict";
+	/* Add jQuery fn */
+	jQuery.fn.parseDirectives = function () {
 
-sky.service("callbacks", ["callback"], function (_ref) {
-	var callback = _ref.callback;
+		/* Parse */
+		directives.parse(this);
 
-
-	/**
-  *
-  * Callbacks prepared object
-  * @param {*} [flags] Flags list for jQuery.Callbacks
-  * @constructor
-  */
-	var Callbacks = function Callbacks(flags) {
-
-		/* Self construction */
-		if (!(this instanceof Callbacks)) return new Callbacks(flags);
-
-		/* Add properties */
-		$.extend(true, this, Callbacks.extend);
-
-		/* Callbacks list */
-		this.advancedCallbacks = {};
-
-		/* Set default flags and self context */
-		return this.flags(flags);
+		/* Return */
+		return this;
 	};
 
-	/**
-  * Prototype
-  * @type {{on: on, fire: fire, off: off, flags: flags, setContext: setContext}}
-  */
-	Callbacks.prototype = {
-
-		/**
-   * Flags for sky.Callback
-   * @param {object} flags Flags list
-   * @returns {*}
-   */
-		flags: function flags(_flags) {
-			this.callbacksFlags = _flags;
-			return this;
-		},
-
-		/**
-   * Remove by listener
-   * @param {string} name Event name
-   * @param {string} listener Listener object
-   */
-		removeListener: function removeListener(name, listener) {
-			if (this.advancedCallbacks[name]) {
-				this.advancedCallbacks[name].removeByContext(listener);
-			}
-		},
-
-		/**
-   * Adds new event handler
-   * @param {string} 	 name 			Name of event
-   * @param {function|string} func 	Function be called on event fires
-   * @param {object}   [context]		Function options
-   * @param {object}   [options]		Function options
-   */
-		on: function on(name, func, context, options) {
-			var _this = this;
-
-			if (name instanceof Object) $.each(name, function (event, func) {
-				_this.on(event, func);
-			});else $.each(this.getEventsNames(name), function (_, name) {
-
-				/* Create callbacks */
-				if (!_this.advancedCallbacks[name]) _this.advancedCallbacks[name] = callback(_this.callbacksFlags);
-
-				/* Add function */
-				_this.advancedCallbacks[name].add(func, context ? context : self.context, options || {});
-			});
-
-			return this;
-		},
-
-		/**
-   * Fires callbacks for specified event
-   * @param {string} name Name of event
-   * @param {object} args Arguments to be passed
-   * @param {object} [options] Additional options
-   */
-		fire: function fire(name, args, options) {
-
-			/* Success last */
-			var events = this.getEventsNames(name),
-			    self = this,
-			    next = false;
-			options = options || {};
-
-			/* Remove global if need */
-			if (options["noGlobal"]) events = events.slice(1);
-
-			/* Fire events */
-			$.each(events, function (_, event) {
-
-				/* If no callback */
-				if (!self.advancedCallbacks[event]) return;
-
-				/* Run */
-				do {
-					next = self.advancedCallbacks[event].fireNext(jQuery.extend({ event: event }, args || []), self.context, options.possible);
-				} while (next);
-
-				/* Reset */
-				if (!options.once) self.advancedCallbacks[event].toRun = 0;
-			});
-		},
-
-		/**
-   * Get all event names from global name
-   * @param {String} name Global event name
-   * @returns {Array}
-   */
-		getEventsNames: function getEventsNames(name) {
-
-			/* Get events names */
-			var names = name.split(","),
-			    events = [];
-
-			/* Go through */
-			$.each(names, function (i, name) {
-
-				/* Remove spaces */
-				name = name.replace(" ", "");
-
-				/* Get elements */
-				var elements = name.split(".");
-				events.push(elements[0]);
-
-				/* Go through */
-				for (var j = 1; j < elements.length; j++) {
-					events.push(elements[0] + "." + elements[j]);
-				} /* Global event */
-				if (elements.length > 2) events.push(elements.join("."));
-			});
-
-			/* Return */
-			return events;
-		},
-
-		/**
-   * Removes event handlers and functions
-   * @param {string} name Event name
-   * @param func
-   */
-		off: function off(name) {
-			var func = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
-
-			if (func && this.advancedCallbacks[name]) this.advancedCallbacks[name].removeByCallback(func);else delete this.advancedCallbacks[name];
-		}
-
-	};
-
-	this.service = Callbacks;
+	/* Parse body for directives when all ready */
+	sky.onReady(function () {
+		$("body").parseDirectives();
+	});
 });
 "use strict";
 
@@ -2648,6 +2793,419 @@ sky.service("drag", ["callbacks"], function (_ref) {
 		}
 	};
 	return self;
+});
+"use strict";
+
+sky.service("history", ["callbacks", "supported"], function (_ref) {
+  var callbacks = _ref.callbacks,
+      supported = _ref.supported;
+
+
+  /**
+   * Get difference fields in objects
+   * @param {object} first  Object to compare
+   * @param {object} second Object to compare
+   */
+  var getObjectsDifference = function getObjectsDifference(first, second) {
+
+    var difference = {},
+        localDiff = false;
+
+    /* If both arrays or objects */
+    if (first instanceof Array && second instanceof Array || first instanceof Object && second instanceof Object) {
+
+      /* Find what was changed or deleted in second */
+      $.each(first, function (key, value) {
+
+        /* If no such elements in second */
+        if (typeof second[key] === "undefined") difference[key] = null; // Set to null
+
+        /* Check if different */
+        else if (localDiff = getObjectsDifference(value, second[key])) {
+            difference[key] = localDiff;
+          }
+      });
+
+      /* If was added */
+      $.each(second, function (key, value) {
+        if (typeof first[key] === "undefined") difference[key] = value;
+      });
+
+      /* Convert object to array */
+      if (first instanceof Array) {
+        var returnArray = [];
+        $.each(difference, function (key) {
+          returnArray.push(difference[key]);
+        });
+        difference = returnArray;
+      }
+    } else {
+      if (first !== second) return second;else return false;
+    }
+
+    /* No array difference */
+    if (difference.length === 0) return false;else return difference;
+  };
+
+  /**
+   * History constructor
+   * @param [options]
+   * @returns {sky.History}
+   * @constructor
+   */
+  sky.History = function (options) {
+
+    /* Self creation */
+    if (!(this instanceof sky.History)) return new sky.History(options);
+
+    /* Reset */
+    this.options = options || {};
+
+    /* Set events */
+    this.events = this.options.events || new callbacks();
+    this.options.events = this.events;
+
+    /* Self return */
+    return this;
+  };
+
+  /**
+   * Extending
+   */
+  $.extend(sky.History.prototype, {
+
+    /**
+     * Stores last saved hash
+     */
+    hashString: "",
+
+    /**
+     * Stores last saved search
+     */
+    searchString: "",
+
+    /**
+     * Stores last saved path
+     */
+    pathString: "",
+
+    /**
+     * Stores object with hash params key/value pairs
+     */
+    hashObject: {},
+
+    /**
+     * Stores object with page search params key/value pairs
+     */
+    searchObject: {},
+
+    /**
+     * Stores events
+     */
+    events: undefined,
+
+    /**
+     * Holds hash check function interval id
+     */
+    intervalId: 0,
+
+    /**
+     * This page base url
+     */
+    base: "",
+
+    /**
+     * Changes current path to specified
+     * @param {string} path PAth to navigate
+     */
+    navigate: function navigate(path) {
+
+      // Get path
+      path = path.replace("~", this.base);
+
+      // Get current
+      var current = (window.location.pathname + window.location.search).substr(this.base.length);
+
+      // If changes
+      if (current !== path) {
+
+        // Set new state
+        history.pushState({ oldPath: this.pathString, newPath: path, search: this.searchObject }, path, path);
+
+        // Get new
+        this.pathString = window.location.pathname.substr(this.base.length);
+
+        // Get search string
+        this.searchString = this.getWindowSearch();
+
+        // Fire event
+        this.events.fire("navigate.path, always", { hash: this.hashObject, path: this.pathString, search: this.searchObject });
+      }
+    },
+
+    /**
+     * Fires on path change
+     */
+    change: function change() {
+
+      /* Hash difference holder */
+      var hashDifference = {},
+          searchDifference = {},
+          old = this.pathString,
+          hashChanged = false,
+          searchChanged = false;
+
+      /* If api supported */
+      if (this.supported) this.pathString = window.location.pathname.substr(this.base.length);
+
+      /* Check if hash changed */
+      if (this.hashString !== this.getWindowHash()) {
+
+        /* Get difference */
+        hashDifference = this.getDifference(this.getWindowHash(), this.hashObject);
+
+        /* Hash change flag */
+        hashChanged = true;
+      }
+
+      /* Check if params changed */
+      if (this.searchString !== this.getWindowSearch()) {
+
+        /* Get difference */
+        searchDifference = this.getDifference(this.getWindowSearch(), this.searchObject);
+
+        /* Hash change flag */
+        searchChanged = true;
+      }
+
+      /* If nothing changed */
+      if (this.pathString === old && !hashChanged && !searchChanged) return;
+
+      /* Rebuild hash object on new hash str */
+      this.rebuild();
+
+      /* Fire */
+      this.events.fire("change, always", {
+        hash: this.hashObject,
+        hashDifference: hashDifference,
+        searchDifference: searchDifference,
+        path: this.pathString,
+        oldPath: old,
+        searchChanged: searchChanged,
+        hashChanged: hashChanged,
+        pathChanged: old !== this.pathString
+      });
+    },
+
+    /**
+     * Navigates to specified path
+     * @param path
+     */
+    setHash: function setHash(path) {
+
+      /* To not jump top */
+      if (path === "" && window.location.hash !== "") path = "none";
+
+      /* Save */
+      this.hashString = path;
+
+      /* Set hash */
+      window.location.hash = encodeURI(path); //encodeURI(path);
+    },
+
+    /**
+     * Navigates to specified path
+     * @param path
+     */
+    setSearch: function setSearch(path) {
+
+      /* Set path */
+      this.navigate(window.location.pathname + encodeURI(path !== "" ? "?" + path : ""));
+    },
+
+    /**
+     * Sets hash letiable
+     * @param {object}    elements Fields to be set
+     * @param {boolean}    [force]     Replace all stored fields with elements object
+     */
+    set: function set(elements, force) {
+      var _this = this;
+
+      var changed = false;
+
+      /* Force rewrite */
+      if (force) this.hashObject = elements;
+
+      /* Go through elements and add or change them */
+      $.each(elements, function (key, value) {
+
+        /* If we need delete */
+        if (value === null) delete _this.hashObject[key];else _this.hashObject[key] = value;
+
+        /* Set as changed */
+        changed = true;
+      });
+
+      /* If any changes we rebuild hash */
+      if (changed || force) this.setHash(decodeURIComponent(jQuery.param(this.hashObject).replace(/\+/g, " ")));
+
+      /* Fire */
+      this.events.fire("set, always", { elements: elements, hash: this.hashObject, path: this.pathString });
+    },
+
+    /**
+     * Sets hash letiable
+     * @param {object}    elements Fields to be set
+     * @param {boolean}    [force]     Replace all stored fields with elements object
+     */
+    search: function search(elements, force) {
+
+      var changed = false;
+
+      /* Force rewrite */
+      if (force) this.searchObject = elements;
+
+      /* Go through elements and add or change them */
+      $.each(elements, $.proxy(function (key, value) {
+
+        /* If we need delete */
+        if (value === null) delete this.searchObject[key];else this.searchObject[key] = value;
+
+        /* Set as changed */
+        changed = true;
+      }, this));
+
+      /* If any changes we rebuild hash */
+      if (changed || force) this.setSearch(decodeURIComponent(jQuery.param(this.searchObject).replace(/\+/g, " ")));
+
+      /* Fire */
+      this.events.fire("set, always", { elements: elements, hash: this.hashObject, path: this.pathString });
+    },
+
+    /**
+     * Makes hash from object
+     * @param obj
+     * @returns {*|void|string|XML}
+     */
+    stringFromObject: function stringFromObject(obj) {
+      return jQuery.param(obj).replace(/\+/g, " ");
+    },
+
+    /**
+     * Get objects according to hash string
+     * @param {string} paramsString String which contains key=value pairs, would be parsed to object
+     */
+    getObjects: function getObjects(paramsString) {
+
+      var objects = {};
+
+      /* Remove sharp */
+      if (paramsString.substr(0, 1) === '#' || paramsString.substr(0, 1) === '?') paramsString = paramsString.slice(1, paramsString.length);
+
+      /* Split parameters */
+      var subStrings = paramsString.split("&");
+
+      /* Get params */
+      $.each(subStrings, function (i, str) {
+
+        var keyAndValue = str.split("=", 2);
+
+        /* If no assign */
+        if (keyAndValue.length < 2) return;
+
+        var name = keyAndValue[0];
+
+        /* Truncate brackets */
+        if (name.substr(-2) === "[]") name = name.substr(0, name.length - 2);
+
+        /* Special hash for "=" in value  */
+        keyAndValue[1] = str.substr(keyAndValue[0].length + 1);
+
+        /* If object repeats we create array */
+        if (typeof objects[name] === "undefined") objects[name] = keyAndValue[1];else {
+          if (!(objects[name] instanceof Array)) objects[name] = [objects[name]];
+          objects[name].push(keyAndValue[1]);
+        }
+      });
+
+      return objects;
+    },
+
+    /**
+     * Finds difference between current stored hash and parameter
+     * @returns {*}
+     */
+    getDifference: function getDifference(string, stored) {
+
+      /* Init */
+      var objects = this.getObjects(decodeURI(string));
+      return getObjectsDifference(stored, objects);
+    },
+
+    /**
+     * Rebuilds stored hash parameters according to current one
+     */
+    rebuild: function rebuild() {
+      this.hashString = this.getWindowHash();
+      this.hashObject = this.getObjects(this.hashString);
+      this.searchString = this.getWindowSearch();
+      this.searchObject = this.getObjects(this.searchString);
+      this.pathString = window.location.pathname;
+      return this;
+    },
+
+    /**
+     * Gets current window hash without "#"
+     * @returns {string}
+     */
+    getWindowHash: function getWindowHash() {
+
+      /* Get decoded hash */
+      var hash = decodeURI(window.location.hash);
+
+      /* Remove sharp */
+      if (hash.substr(0, 1) === '#') hash = hash.slice(1);
+
+      /* Return */
+      return hash;
+    },
+
+    /**
+     * Gets current window parameters without "?"
+     * @returns {string}
+     */
+    getWindowSearch: function getWindowSearch() {
+
+      /* Get decoded hash */
+      var search = decodeURI(window.location.search);
+
+      /* Remove question */
+      if (search.substr(0, 1) === '?') search = search.slice(1);
+
+      /* Return */
+      return search;
+    },
+
+    /**
+     * Set interval execution
+     */
+    start: function start() {
+
+      /* Set base if any */
+      if (this.options.base) this.base = this.options.base;
+
+      /* If supported history */
+      if (window.history) window.onpopstate = this.change.bind(this);
+
+      /* Timeout */
+      if (!this.intervalId) this.intervalId = setInterval(this.change.bind(this), this.options.time || 500);
+
+      /* Immediately event */
+      this.change();
+      return this;
+    }
+
+  });
 });
 "use strict";
 
@@ -3547,148 +4105,17 @@ sky.service("suggester", ["templates"], function (_ref2) {
 });
 "use strict";
 
-sky.service("directives", ["exceptions", "utils", "stackList"], function (_ref) {
-	var exceptions = _ref.exceptions,
-	    utils = _ref.utils,
-	    stackList = _ref.stackList;
-
-
-	var list = stackList(),
-	    directives = this.service = {
-
-		/**
-   * Adds new directive
-   * @param {string} name Directive name
-   * @param {*} options Directive options
-   * @param {function} directive How to parse directive
-   */
-		add: function add(name, options, directive) {
-
-			/* Reset */
-			if (!directive && typeof options === "function") {
-				directive = options;
-				options = {};
-			}
-			options.directive = directive;
-			options.selector = name;
-
-			/* Save */
-			list.add(options);
-
-			/* Self return*/
-			return this;
-		},
-
-		/**
-   * Get element attributes
-   * @param element
-   * @returns {{}}
-   */
-		getAttributes: function getAttributes(element) {
-
-			/* Holds attributes */
-			var attributes = {};
-
-			/* Copy them to list */
-			var _iteratorNormalCompletion = true;
-			var _didIteratorError = false;
-			var _iteratorError = undefined;
-
-			try {
-				for (var _iterator = element.get(0).attributes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					var attr = _step.value;
-
-					attributes[attr.nodeName] = attr.nodeValue;
-				} /* Return */
-			} catch (err) {
-				_didIteratorError = true;
-				_iteratorError = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion && _iterator.return) {
-						_iterator.return();
-					}
-				} finally {
-					if (_didIteratorError) {
-						throw _iteratorError;
-					}
-				}
-			}
-
-			return attributes;
-		},
-
-		/**
-   * Applies directive convert to element
-   * @param element
-   * @param options
-   */
-		parseElement: function parseElement(element, options) {
-
-			/* Get element */
-			element = $(element);
-
-			/* Get element attributes */
-			var attributes = this.getAttributes(element);
-
-			/* Parse body for jason data */
-			if (options["json"] || options["jsonToData"]) {
-
-				/* Get child */
-				var jsonScript = element.children('script[type="application/json"]');
-
-				/* If we have json encoded data */
-				if (jsonScript.length) {
-
-					try {
-
-						/* Parse json */
-						var json = JSON.parse(jsonScript.text());
-
-						/* Extend */
-						utils.extend(attributes, json);
-
-						/* Save to data */
-						if (options["jsonToData"]) element.data("json", json);
-					} catch (e) {
-						throw new exceptions.system.Error("Element " + options.selector + " should have json stored content, but error on parse appears");
-					}
-				}
-			}
-
-			/* Call parse function */
-			if (typeof options.directive === "function") options.directive(element, attributes);
-		},
-
-		/**
-   * Searches and replaces directives in element
-   * @param element
-   */
-		parse: function parse(element) {
-			list.each(function (directive) {
-				$(directive.selector, element).each(function () {
-					directives.parseElement(this, directive);
-				});
-				if ($(element).is(directive.selector)) directives.parseElement(element, directive);
-			});
-		}
-
-	};
-
-	/* Add jQuery fn */
-	jQuery.fn.parseDirectives = function () {
-
-		/* Parse */
-		directives.parse(this);
-
-		/* Return */
-		return this;
-	};
-
-	/* Parse body for directives when all ready */
-	sky.onReady(function () {
-		$("body").parseDirectives();
-	});
+/**
+ * Module to work with user services
+ */
+sky.service("supported", function () {
+	try {
+		this.service.fullScreen = typeof document["webkitIsFullScreen"] !== "undefined";
+		this.service.formData = window.FormData && true;
+		// this.service.XHRIsSupported = XHRIsSupported;
+		this.service.XHRUpload = typeof new XMLHttpRequest().upload !== "undefined";
+		this.service.localStorage = !!window.localStorage;
+	} catch (e) {}
 });
 "use strict";
 
@@ -3872,154 +4299,6 @@ sky.service("templates", ["localStorage", "supported", "directives", "exceptions
 			});
 		}
 	});
-});
-"use strict";
-
-/**
- * Module to work with user services
- */
-sky.service("supported", function () {
-	try {
-		this.service.fullScreen = typeof document["webkitIsFullScreen"] !== "undefined";
-		this.service.formData = window.FormData && true;
-		// this.service.XHRIsSupported = XHRIsSupported;
-		this.service.XHRUpload = typeof new XMLHttpRequest().upload !== "undefined";
-		this.service.localStorage = !!window.localStorage;
-	} catch (e) {}
-});
-"use strict";
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
-sky.service("utils", function () {
-	this.service = {
-
-		extend: function extend() {
-			return $.extend.apply($, arguments);
-		},
-
-		each: function each() {
-			return $.each.apply($, arguments);
-		},
-
-		/**
-   * Checks if object has same data
-   * @param first
-   * @param second
-   */
-		isObjectsEqual: function isObjectsEqual(first, second) {
-
-			/* Different types */
-			if ((typeof first === "undefined" ? "undefined" : _typeof(first)) !== (typeof second === "undefined" ? "undefined" : _typeof(second))) return false;
-
-			/* If object or array we will compare each element */
-			if (first instanceof Array || first instanceof Object) {
-				var key = void 0;
-				/* Check first */
-				for (key in first) {
-					if (!first.hasOwnProperty(key)) continue;
-					if (typeof second[key] === "undefined") return false;else if (!this.isObjectsEqual(first[key], second[key])) return false;
-				}
-
-				/* Check second */
-				for (key in second) {
-					if (!second.hasOwnProperty(key)) continue;
-					if (typeof first[key] === "undefined") return false;
-				}
-			} else if (first !== second) return false; // For simple types
-
-			/* All tests success */
-			return true;
-		},
-
-		/**
-   * Adds zero
-   * @param value
-   * @returns {Number}
-   */
-		addLeadingZero: function addLeadingZero(value) {
-
-			/* Parse */
-			value = parseInt(value);
-
-			/* Ad zero */
-			if (value < 10) value = "0" + value;
-
-			/* Val */
-			return value;
-		},
-
-		encode: function encode(rawStr) {
-			return rawStr.replace(/[\u00A0-\u9999<>&]/gim, function (i) {
-				return '&#' + i.charCodeAt(0) + ';';
-			});
-		},
-
-		/**
-   * Makes data to JSON past
-   * @param data
-   * @param [inputName]
-   * @returns {string}
-   */
-		jsonData: function jsonData(data, inputName) {
-			return '<script type="application/json"' + (inputName ? ' input-name="' + inputName + '"' : "") + '>' + sky.encode(JSON.stringify(data)) + '</script>';
-		},
-
-		prepareSelectData: function prepareSelectData(items, func, _ref) {
-			var _ref$columnSplitOn = _ref.columnSplitOn,
-			    columnSplitOn = _ref$columnSplitOn === undefined ? 6 : _ref$columnSplitOn,
-			    _ref$maxColumns = _ref.maxColumns,
-			    maxColumns = _ref$maxColumns === undefined ? 4 : _ref$maxColumns;
-
-
-			var index = 0,
-			    columns = [],
-			    columnsCount = items.length / columnSplitOn,
-			    groupHolder = void 0,
-			    compiled = void 0;
-
-			if (columnsCount < 1) columnsCount = 1;
-			if (columnsCount > maxColumns) columnsCount = maxColumns;
-
-			var perColumn = Math.ceil(items.length / columnsCount);
-
-			var _iteratorNormalCompletion = true;
-			var _didIteratorError = false;
-			var _iteratorError = undefined;
-
-			try {
-				for (var _iterator = items[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					var item = _step.value;
-
-					if (compiled = func({ item: item, index: index, column: columns.length })) {
-
-						if (index % perColumn === 0) {
-							groupHolder = [];
-							columns.push(groupHolder);
-						}
-
-						groupHolder.push(compiled);
-						index++;
-					}
-				}
-			} catch (err) {
-				_didIteratorError = true;
-				_iteratorError = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion && _iterator.return) {
-						_iterator.return();
-					}
-				} finally {
-					if (_didIteratorError) {
-						throw _iteratorError;
-					}
-				}
-			}
-
-			return index === 0 ? [] : { groups: columns };
-		}
-	};
 });
 "use strict";
 
@@ -4491,6 +4770,140 @@ sky.service("tips", ["stackList", "callbacks"], function (_ref) {
         }
 
     });
+});
+"use strict";
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+sky.service("utils", function () {
+	this.service = {
+
+		extend: function extend() {
+			return $.extend.apply($, arguments);
+		},
+
+		each: function each() {
+			return $.each.apply($, arguments);
+		},
+
+		/**
+   * Checks if object has same data
+   * @param first
+   * @param second
+   */
+		isObjectsEqual: function isObjectsEqual(first, second) {
+
+			/* Different types */
+			if ((typeof first === "undefined" ? "undefined" : _typeof(first)) !== (typeof second === "undefined" ? "undefined" : _typeof(second))) return false;
+
+			/* If object or array we will compare each element */
+			if (first instanceof Array || first instanceof Object) {
+				var key = void 0;
+				/* Check first */
+				for (key in first) {
+					if (!first.hasOwnProperty(key)) continue;
+					if (typeof second[key] === "undefined") return false;else if (!this.isObjectsEqual(first[key], second[key])) return false;
+				}
+
+				/* Check second */
+				for (key in second) {
+					if (!second.hasOwnProperty(key)) continue;
+					if (typeof first[key] === "undefined") return false;
+				}
+			} else if (first !== second) return false; // For simple types
+
+			/* All tests success */
+			return true;
+		},
+
+		/**
+   * Adds zero
+   * @param value
+   * @returns {Number}
+   */
+		addLeadingZero: function addLeadingZero(value) {
+
+			/* Parse */
+			value = parseInt(value);
+
+			/* Ad zero */
+			if (value < 10) value = "0" + value;
+
+			/* Val */
+			return value;
+		},
+
+		encode: function encode(rawStr) {
+			return rawStr.replace(/[\u00A0-\u9999<>&]/gim, function (i) {
+				return '&#' + i.charCodeAt(0) + ';';
+			});
+		},
+
+		/**
+   * Makes data to JSON past
+   * @param data
+   * @param [inputName]
+   * @returns {string}
+   */
+		jsonData: function jsonData(data, inputName) {
+			return '<script type="application/json"' + (inputName ? ' input-name="' + inputName + '"' : "") + '>' + sky.encode(JSON.stringify(data)) + '</script>';
+		},
+
+		prepareSelectData: function prepareSelectData(items, func, _ref) {
+			var _ref$columnSplitOn = _ref.columnSplitOn,
+			    columnSplitOn = _ref$columnSplitOn === undefined ? 6 : _ref$columnSplitOn,
+			    _ref$maxColumns = _ref.maxColumns,
+			    maxColumns = _ref$maxColumns === undefined ? 4 : _ref$maxColumns;
+
+
+			var index = 0,
+			    columns = [],
+			    columnsCount = items.length / columnSplitOn,
+			    groupHolder = void 0,
+			    compiled = void 0;
+
+			if (columnsCount < 1) columnsCount = 1;
+			if (columnsCount > maxColumns) columnsCount = maxColumns;
+
+			var perColumn = Math.ceil(items.length / columnsCount);
+
+			var _iteratorNormalCompletion = true;
+			var _didIteratorError = false;
+			var _iteratorError = undefined;
+
+			try {
+				for (var _iterator = items[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+					var item = _step.value;
+
+					if (compiled = func({ item: item, index: index, column: columns.length })) {
+
+						if (index % perColumn === 0) {
+							groupHolder = [];
+							columns.push(groupHolder);
+						}
+
+						groupHolder.push(compiled);
+						index++;
+					}
+				}
+			} catch (err) {
+				_didIteratorError = true;
+				_iteratorError = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion && _iterator.return) {
+						_iterator.return();
+					}
+				} finally {
+					if (_didIteratorError) {
+						throw _iteratorError;
+					}
+				}
+			}
+
+			return index === 0 ? [] : { groups: columns };
+		}
+	};
 });
 "use strict";
 
@@ -5051,419 +5464,6 @@ sky.service("visibleCalculator", function () {
 		return Calculator;
 	}();
 	this.service = Calculator;
-});
-"use strict";
-
-sky.service("history", ["callbacks", "supported"], function (_ref) {
-  var callbacks = _ref.callbacks,
-      supported = _ref.supported;
-
-
-  /**
-   * Get difference fields in objects
-   * @param {object} first  Object to compare
-   * @param {object} second Object to compare
-   */
-  var getObjectsDifference = function getObjectsDifference(first, second) {
-
-    var difference = {},
-        localDiff = false;
-
-    /* If both arrays or objects */
-    if (first instanceof Array && second instanceof Array || first instanceof Object && second instanceof Object) {
-
-      /* Find what was changed or deleted in second */
-      $.each(first, function (key, value) {
-
-        /* If no such elements in second */
-        if (typeof second[key] === "undefined") difference[key] = null; // Set to null
-
-        /* Check if different */
-        else if (localDiff = getObjectsDifference(value, second[key])) {
-            difference[key] = localDiff;
-          }
-      });
-
-      /* If was added */
-      $.each(second, function (key, value) {
-        if (typeof first[key] === "undefined") difference[key] = value;
-      });
-
-      /* Convert object to array */
-      if (first instanceof Array) {
-        var returnArray = [];
-        $.each(difference, function (key) {
-          returnArray.push(difference[key]);
-        });
-        difference = returnArray;
-      }
-    } else {
-      if (first !== second) return second;else return false;
-    }
-
-    /* No array difference */
-    if (difference.length === 0) return false;else return difference;
-  };
-
-  /**
-   * History constructor
-   * @param [options]
-   * @returns {sky.History}
-   * @constructor
-   */
-  sky.History = function (options) {
-
-    /* Self creation */
-    if (!(this instanceof sky.History)) return new sky.History(options);
-
-    /* Reset */
-    this.options = options || {};
-
-    /* Set events */
-    this.events = this.options.events || new callbacks();
-    this.options.events = this.events;
-
-    /* Self return */
-    return this;
-  };
-
-  /**
-   * Extending
-   */
-  $.extend(sky.History.prototype, {
-
-    /**
-     * Stores last saved hash
-     */
-    hashString: "",
-
-    /**
-     * Stores last saved search
-     */
-    searchString: "",
-
-    /**
-     * Stores last saved path
-     */
-    pathString: "",
-
-    /**
-     * Stores object with hash params key/value pairs
-     */
-    hashObject: {},
-
-    /**
-     * Stores object with page search params key/value pairs
-     */
-    searchObject: {},
-
-    /**
-     * Stores events
-     */
-    events: undefined,
-
-    /**
-     * Holds hash check function interval id
-     */
-    intervalId: 0,
-
-    /**
-     * This page base url
-     */
-    base: "",
-
-    /**
-     * Changes current path to specified
-     * @param {string} path PAth to navigate
-     */
-    navigate: function navigate(path) {
-
-      // Get path
-      path = path.replace("~", this.base);
-
-      // Get current
-      var current = (window.location.pathname + window.location.search).substr(this.base.length);
-
-      // If changes
-      if (current !== path) {
-
-        // Set new state
-        history.pushState({ oldPath: this.pathString, newPath: path, search: this.searchObject }, path, path);
-
-        // Get new
-        this.pathString = window.location.pathname.substr(this.base.length);
-
-        // Get search string
-        this.searchString = this.getWindowSearch();
-
-        // Fire event
-        this.events.fire("navigate.path, always", { hash: this.hashObject, path: this.pathString, search: this.searchObject });
-      }
-    },
-
-    /**
-     * Fires on path change
-     */
-    change: function change() {
-
-      /* Hash difference holder */
-      var hashDifference = {},
-          searchDifference = {},
-          old = this.pathString,
-          hashChanged = false,
-          searchChanged = false;
-
-      /* If api supported */
-      if (this.supported) this.pathString = window.location.pathname.substr(this.base.length);
-
-      /* Check if hash changed */
-      if (this.hashString !== this.getWindowHash()) {
-
-        /* Get difference */
-        hashDifference = this.getDifference(this.getWindowHash(), this.hashObject);
-
-        /* Hash change flag */
-        hashChanged = true;
-      }
-
-      /* Check if params changed */
-      if (this.searchString !== this.getWindowSearch()) {
-
-        /* Get difference */
-        searchDifference = this.getDifference(this.getWindowSearch(), this.searchObject);
-
-        /* Hash change flag */
-        searchChanged = true;
-      }
-
-      /* If nothing changed */
-      if (this.pathString === old && !hashChanged && !searchChanged) return;
-
-      /* Rebuild hash object on new hash str */
-      this.rebuild();
-
-      /* Fire */
-      this.events.fire("change, always", {
-        hash: this.hashObject,
-        hashDifference: hashDifference,
-        searchDifference: searchDifference,
-        path: this.pathString,
-        oldPath: old,
-        searchChanged: searchChanged,
-        hashChanged: hashChanged,
-        pathChanged: old !== this.pathString
-      });
-    },
-
-    /**
-     * Navigates to specified path
-     * @param path
-     */
-    setHash: function setHash(path) {
-
-      /* To not jump top */
-      if (path === "" && window.location.hash !== "") path = "none";
-
-      /* Save */
-      this.hashString = path;
-
-      /* Set hash */
-      window.location.hash = encodeURI(path); //encodeURI(path);
-    },
-
-    /**
-     * Navigates to specified path
-     * @param path
-     */
-    setSearch: function setSearch(path) {
-
-      /* Set path */
-      this.navigate(window.location.pathname + encodeURI(path !== "" ? "?" + path : ""));
-    },
-
-    /**
-     * Sets hash letiable
-     * @param {object}    elements Fields to be set
-     * @param {boolean}    [force]     Replace all stored fields with elements object
-     */
-    set: function set(elements, force) {
-      var _this = this;
-
-      var changed = false;
-
-      /* Force rewrite */
-      if (force) this.hashObject = elements;
-
-      /* Go through elements and add or change them */
-      $.each(elements, function (key, value) {
-
-        /* If we need delete */
-        if (value === null) delete _this.hashObject[key];else _this.hashObject[key] = value;
-
-        /* Set as changed */
-        changed = true;
-      });
-
-      /* If any changes we rebuild hash */
-      if (changed || force) this.setHash(decodeURIComponent(jQuery.param(this.hashObject).replace(/\+/g, " ")));
-
-      /* Fire */
-      this.events.fire("set, always", { elements: elements, hash: this.hashObject, path: this.pathString });
-    },
-
-    /**
-     * Sets hash letiable
-     * @param {object}    elements Fields to be set
-     * @param {boolean}    [force]     Replace all stored fields with elements object
-     */
-    search: function search(elements, force) {
-
-      var changed = false;
-
-      /* Force rewrite */
-      if (force) this.searchObject = elements;
-
-      /* Go through elements and add or change them */
-      $.each(elements, $.proxy(function (key, value) {
-
-        /* If we need delete */
-        if (value === null) delete this.searchObject[key];else this.searchObject[key] = value;
-
-        /* Set as changed */
-        changed = true;
-      }, this));
-
-      /* If any changes we rebuild hash */
-      if (changed || force) this.setSearch(decodeURIComponent(jQuery.param(this.searchObject).replace(/\+/g, " ")));
-
-      /* Fire */
-      this.events.fire("set, always", { elements: elements, hash: this.hashObject, path: this.pathString });
-    },
-
-    /**
-     * Makes hash from object
-     * @param obj
-     * @returns {*|void|string|XML}
-     */
-    stringFromObject: function stringFromObject(obj) {
-      return jQuery.param(obj).replace(/\+/g, " ");
-    },
-
-    /**
-     * Get objects according to hash string
-     * @param {string} paramsString String which contains key=value pairs, would be parsed to object
-     */
-    getObjects: function getObjects(paramsString) {
-
-      var objects = {};
-
-      /* Remove sharp */
-      if (paramsString.substr(0, 1) === '#' || paramsString.substr(0, 1) === '?') paramsString = paramsString.slice(1, paramsString.length);
-
-      /* Split parameters */
-      var subStrings = paramsString.split("&");
-
-      /* Get params */
-      $.each(subStrings, function (i, str) {
-
-        var keyAndValue = str.split("=", 2);
-
-        /* If no assign */
-        if (keyAndValue.length < 2) return;
-
-        var name = keyAndValue[0];
-
-        /* Truncate brackets */
-        if (name.substr(-2) === "[]") name = name.substr(0, name.length - 2);
-
-        /* Special hash for "=" in value  */
-        keyAndValue[1] = str.substr(keyAndValue[0].length + 1);
-
-        /* If object repeats we create array */
-        if (typeof objects[name] === "undefined") objects[name] = keyAndValue[1];else {
-          if (!(objects[name] instanceof Array)) objects[name] = [objects[name]];
-          objects[name].push(keyAndValue[1]);
-        }
-      });
-
-      return objects;
-    },
-
-    /**
-     * Finds difference between current stored hash and parameter
-     * @returns {*}
-     */
-    getDifference: function getDifference(string, stored) {
-
-      /* Init */
-      var objects = this.getObjects(decodeURI(string));
-      return getObjectsDifference(stored, objects);
-    },
-
-    /**
-     * Rebuilds stored hash parameters according to current one
-     */
-    rebuild: function rebuild() {
-      this.hashString = this.getWindowHash();
-      this.hashObject = this.getObjects(this.hashString);
-      this.searchString = this.getWindowSearch();
-      this.searchObject = this.getObjects(this.searchString);
-      this.pathString = window.location.pathname;
-      return this;
-    },
-
-    /**
-     * Gets current window hash without "#"
-     * @returns {string}
-     */
-    getWindowHash: function getWindowHash() {
-
-      /* Get decoded hash */
-      var hash = decodeURI(window.location.hash);
-
-      /* Remove sharp */
-      if (hash.substr(0, 1) === '#') hash = hash.slice(1);
-
-      /* Return */
-      return hash;
-    },
-
-    /**
-     * Gets current window parameters without "?"
-     * @returns {string}
-     */
-    getWindowSearch: function getWindowSearch() {
-
-      /* Get decoded hash */
-      var search = decodeURI(window.location.search);
-
-      /* Remove question */
-      if (search.substr(0, 1) === '?') search = search.slice(1);
-
-      /* Return */
-      return search;
-    },
-
-    /**
-     * Set interval execution
-     */
-    start: function start() {
-
-      /* Set base if any */
-      if (this.options.base) this.base = this.options.base;
-
-      /* If supported history */
-      if (window.history) window.onpopstate = this.change.bind(this);
-
-      /* Timeout */
-      if (!this.intervalId) this.intervalId = setInterval(this.change.bind(this), this.options.time || 500);
-
-      /* Immediately event */
-      this.change();
-      return this;
-    }
-
-  });
 });
 "use strict";
 

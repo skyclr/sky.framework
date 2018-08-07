@@ -74,13 +74,12 @@ gulp.task('js:library', function() {
 gulp.task('js:project', function() {
 
 	gulp.src([
-		'services/**/*.js',
-		'../../_jsServices/**/*.js',
-		'library/servicesInit.js',
-		'actions/*.js',
-		'directives/*.js',
-		'library/projectInit.js'
-	], {cwd: paths.src.jvs})
+		paths.src.jvs + 'services/**/*.js',
+		paths.src.modules + '**/*.js',
+		paths.src.jvs + 'library/servicesInit.js',
+		paths.src.jvs + 'actions/*.js',
+		paths.src.jvs + 'directives/*.js',
+		paths.src.jvs +  'library/projectInit.js'])
 		.pipe(sourceMaps.init())
 		.pipe(babel({presets: ['env']}))
 		.pipe(concat('project.js'))
