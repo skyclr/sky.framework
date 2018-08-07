@@ -54,11 +54,15 @@
 <!-- Base pagination -->
 <script type="text/template" id="pagination">
 	<div class="pagination">
+	    {% if arrows %}
 		<a class="arrow left disabled" href="#" data-event="click: pagination.previous"></a>
+		{% endif %}
 		<div class="pages">
 			<div class="pagesSlider"></div>
 		</div>
+	    {% if arrows %}
 		<a class="arrow right" href="#" data-event="click: pagination.next"></a>
+		{% endif %}
 	</div>
 </script>
 
@@ -72,6 +76,36 @@
 <!-- Pagination page -->
 <script type="text/template" id="pagination-page">
 	<a href="#" data-event="click: pagination.setPage({{ page }})" data-page="{{ page }}" {{ (page==current)|addClass('active') }}>{{ page }}</a>
+</script>
+
+{% endverbatim %}
+{% verbatim %}
+
+<!-- Suggester  -->
+<script type="text/template" id="suggester">
+	<div class="suggester">
+		{% for i, item in items %}
+			{% if item.html %}
+				<div data-index="{{i}}" class="item {{ item.cls }}">{{ item.html }}</div>
+			{% else %}
+				<div data-index="{{i}}" class="item">{{ item }}</div>
+			{% endif %}
+		{% endfor %}
+	</div>
+</script>
+
+{% endverbatim %}
+
+{% verbatim %}
+
+<!-- Holds folder template -->
+<script type="text/template" id="windows-modal">
+	<div class="windowShadow" data-event="click: shared.closeWindow">
+		<div class="windowHolder">
+			<div class="close" data-event="click: shared.closeWindow"></div>
+			<div class="windowData"></div>
+		</div>
+	</div>
 </script>
 
 {% endverbatim %}
@@ -119,33 +153,3 @@
         </div>
     </div>
 </script>
-{% verbatim %}
-
-<!-- Suggester  -->
-<script type="text/template" id="suggester">
-	<div class="suggester">
-		{% for i, item in items %}
-			{% if item.html %}
-				<div data-index="{{i}}" class="item {{ item.cls }}">{{ item.html }}</div>
-			{% else %}
-				<div data-index="{{i}}" class="item">{{ item }}</div>
-			{% endif %}
-		{% endfor %}
-	</div>
-</script>
-
-{% endverbatim %}
-
-{% verbatim %}
-
-<!-- Holds folder template -->
-<script type="text/template" id="windows-modal">
-	<div class="windowShadow" data-event="click: shared.closeWindow">
-		<div class="windowHolder">
-			<div class="close" data-event="click: shared.closeWindow"></div>
-			<div class="windowData"></div>
-		</div>
-	</div>
-</script>
-
-{% endverbatim %}

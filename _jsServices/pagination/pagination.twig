@@ -3,11 +3,15 @@
 <!-- Base pagination -->
 <script type="text/template" id="pagination">
 	<div class="pagination">
+	    {% if arrows %}
 		<a class="arrow left disabled" href="#" data-event="click: pagination.previous"></a>
+		{% endif %}
 		<div class="pages">
 			<div class="pagesSlider"></div>
 		</div>
+	    {% if arrows %}
 		<a class="arrow right" href="#" data-event="click: pagination.next"></a>
+		{% endif %}
 	</div>
 </script>
 

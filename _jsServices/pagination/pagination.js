@@ -3,7 +3,7 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 	let list = stackList();
 
 	class Pagination {
-		constructor({ pages, holder, current = 1, }) {
+		constructor({ pages, holder, current = 1, arrows = true }) {
 
 			/* Save */
 			list.add(this);
@@ -11,7 +11,7 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 			/* Set total pages */
 			this.pages 		= pages;
 			this.current 	= current;
-			this.pageWidth	= 50;
+			this.pageWidth	= 45;
 
 			/* No pages needed */
 			if(this.pages < 2)
@@ -29,7 +29,7 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 
 			/* Render */
 			this.dom = {};
-			this.dom.holder  = templates.render("pagination", {}).data("pagination", this);
+			this.dom.holder  = templates.render("pagination", { arrows: arrows }).data("pagination", this);
 			this.dom.slider  = this.dom.holder.find(".pages");
 			this.dom.pages   = this.dom.slider.children();
 			this.dom.back 	 = this.dom.holder.children(".left");
