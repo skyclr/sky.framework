@@ -17,6 +17,8 @@ class index extends BasePage {
 	 */
 	function main() {
 		\sky\Info::success("Sky framework works, good job!");
+		if(\sky\Sky::$config["authenticate"]["use"] && !\sky\Auth::isLoggedIn())
+		\sky\Info::notice("You'r not logged in");
 		$this->renderContent();
 	}
 }

@@ -1,12 +1,14 @@
 @import "../../_lessElements/fontAwesome/variables";
 
 .notificationMessage {
-  background    : #ffdfdf;
-  color         : #661f1f;
-  font-size     : 14px;
-  border-left   : 56px solid #ebb2b2;
-  overflow      : visible;
-  & + & { margin-top : 1px; }
+  background  : #ffdfdf;
+  color       : #661f1f;
+  font-size   : 14px;
+  border-left : 56px solid #ebb2b2;
+  overflow    : visible;
+  & + & {
+    margin-top : 1px;
+  }
   b {
     text-align  : left;
     font-weight : normal;
@@ -16,23 +18,24 @@
   &::before {
     font-family : "FontAwesome", sans-serif;
     content     : @fa-var-times-circle;
-    font-size: 37px;
-    line-height: 40px;
-    width: 56px;
-    margin-left: -56px;
-    text-align: center;
-    display: block;
-    position: absolute;
-    padding: 8px 0 0;
-    color: #faecec;
+    font-size   : 37px;
+    line-height : 40px;
+    width       : 56px;
+    margin-left : -56px;
+    text-align  : center;
+    display     : block;
+    position    : absolute;
+    padding     : 8px 0 0;
+    color       : #faecec;
   }
   &.notice {
     border-color : #dec17b;
     background   : #f8e9ce;
-    color        : #b18a2d;
+    color        : #ab5f0b;
     &::before {
-      content : @fa-var-warning;
-      color   : #f8e9ce;
+      content   : @fa-var-warning;
+      color     : #f8e9ce;
+      font-size : 32px;
     }
   }
   &.good, &.success {

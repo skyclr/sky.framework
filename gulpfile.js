@@ -26,7 +26,7 @@ gulp.task('less', function() {
 		.pipe(sourceMaps.write('.'))
 		.pipe(gulp.dest(paths.app.css));
 
-	gulp.src([paths.src.modules + '/**/*.less', paths.app.css + "styles.css"])
+	gulp.src([paths.src.modules + '/**/*.less', paths.src.less + "styles.less"])
 		.pipe(sourceMaps.init())
 		.pipe(less({ ieCompat: false, relativeUrls: true }))
 		.pipe(cssmin({compatibility: 'ie8'}))
