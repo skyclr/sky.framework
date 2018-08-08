@@ -76,7 +76,6 @@ gulp.task('js:project', function() {
 	gulp.src([
 		paths.src.jvs + 'services/**/*.js',
 		paths.src.modules + '**/*.js',
-		paths.src.jvs + 'library/servicesInit.js',
 		paths.src.jvs + 'actions/*.js',
 		paths.src.jvs + 'directives/*.js',
 		paths.src.jvs +  'library/projectInit.js'])

@@ -8,17 +8,13 @@
 		{% endif %}
 		<div class="pages">
 			<div class="pagesSlider"></div>
+			<div class="scrollLine" data-event="click: pagination.scrollTo" >
+				<div class="runner"  data-event="mousedown: pagination.grab"></div>
+			</div>
 		</div>
 	    {% if arrows %}
 		<a class="arrow right" href="#" data-event="click: pagination.next"></a>
 		{% endif %}
-	</div>
-</script>
-
-<!-- Pagination scroll -->
-<script type="text/template" id="pagination-scroll">
-	<div class="scrollLine" data-event="click: pagination.scrollTo" >
-		<div class="runner"  data-event="mousedown: pagination.grab"></div>
 	</div>
 </script>
 

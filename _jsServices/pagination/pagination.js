@@ -1,17 +1,17 @@
-sky.service("pagination", ["templates", "stackList"], function({ templates, stackList }) {
+sky.service("pagination", ["templates", "stackList"], function({templates, stackList}) {
 
 	let list = stackList();
 
 	class Pagination {
-		constructor({ pages, holder, current = 1, arrows = true }) {
+		constructor({pages, holder, current = 1, arrows = true}) {
 
 			/* Save */
 			list.add(this);
 
 			/* Set total pages */
-			this.pages 		= pages;
-			this.current 	= current;
-			this.pageWidth	= 45;
+			this.pages = pages;
+			this.current = current;
+			this.pageWidth = 45;
 
 			/* No pages needed */
 			if(this.pages < 2)
@@ -23,37 +23,33 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 				pagesVisible   : 0,
 				pagesInvisible : 0,
 				scrollAvailable: 0,
-				scrollStart	   : 0,
-				tumbler		   : 10
+				scrollStart    : 0,
+				tumbler        : 10
 			};
 
 			/* Render */
 			this.dom = {};
-			this.dom.holder  = templates.render("pagination", { arrows: arrows }).data("pagination", this);
-			this.dom.slider  = this.dom.holder.find(".pages");
-			this.dom.pages   = this.dom.slider.children();
-			this.dom.back 	 = this.dom.holder.children(".left");
+			this.dom.holder = templates.render("pagination", {arrows: arrows}).data("pagination", this);
+			this.dom.slider = this.dom.holder.find(".pages");
+			this.dom.pages = this.dom.slider.children(".pagesSlider");
+			this.dom.back = this.dom.holder.children(".left");
 			this.dom.forward = this.dom.holder.children(".right");
+			this.dom.scrollLine = this.dom.holder.find(".scrollLine");
+			this.dom.runner = this.dom.scrollLine.children();
 
 			/* Insert */
 			if(holder)
 				this.dom.holder.appendTo(holder);
 
 			/* If bigger than 10000 */
-			if(this.pages > 9999) {
+			if(this.pages > 9999)
 				this.dom.slider.addClass("tenthousand");
-				this.pageWidth = 80;
-			}
 			/* If bigger than 1000 */
-			else if(this.pages > 999) {
+			else if(this.pages > 999)
 				this.dom.slider.addClass("thousand");
-				this.pageWidth = 70;
-			}
 			/* If bigger 100 */
-			else if(this.pages > 99 ) {
+			else if(this.pages > 99)
 				this.dom.slider.addClass("hundred");
-				this.pageWidth = 60;
-			}
 
 			/* Make all */
 			this.redraw();
@@ -67,7 +63,8 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 		}
 
 		/** */
-		onPageChange(newPage) {}
+		onPageChange(newPage) {
+		}
 
 		/** Removes navigator */
 		remove() {
@@ -80,62 +77,36 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 		 */
 		redraw() {
 
-            /* No action on invisible */
-            if(!this.dom.holder.is(":visible"))
-                return;
+			/* No action on invisible */
+			if(!this.dom.holder.is(":visible"))
+				return;
 
-			/* Reset width */
-			this.dom.slider.css("width", "auto");
+			/* Remove old pages */
+			this.dom.pages.html("");
 
+			/* Draw first page */
+			let firstPage = templates.render("pagination-page", {page: this.current, current: this.current}).appendTo(this.dom.pages),
+				pageWidth = firstPage.outerWidth(true),
+				maxWidth = this.dom.holder.width() - this.dom.back.outerWidth(true) - this.dom.forward.outerWidth(true);
+			
 			/* Count visible sizes */
-			this.dimensions.pagesVisible = Math.floor((this.dom.holder.innerWidth() - 100) / this.pageWidth);
+			this.dimensions.pagesVisible = Math.floor(maxWidth / pageWidth);
 
 			/* Count invisible */
 			this.dimensions.pagesInvisible = (this.pages - this.dimensions.pagesVisible) > 0 ? this.pages - this.dimensions.pagesVisible : 0;
 
-			/* Get max pages */
-			let toShow = this.dimensions.pagesVisible > this.pages ? this.pages : this.dimensions.pagesVisible;
-
-			/* Crop */
-			this.dom.slider.css("width", toShow * this.pageWidth);
-
 			/* Redraw pages */
 			this.drawPages(this.dimensions.startPage);
-
-			/* Try to create scroll */
-			this.createScroll();
-
-			/* Set scroll position */
-			if(this.dom.scrollLine)
-				this.dom.runner.css("left", this.calculate().scroll);
-
-		}
-
-		/**
-		 * Create scroll line if needed
-		 */
-		createScroll() {
-
-			/* If no scroll needed */
-			if(this.pages <= this.dimensions.pagesVisible) {
-				if(this.dom.scrollLine) {
-					this.dom.scrollLine.remove();
-					this.dom.scrollLine = false;
-				}
-				return;
-			} else if(!this.dom.scrollLine) {
-
-				/* Create scroll */
-				this.dom.scrollLine = templates.render("pagination-scroll", {}).appendTo(this.dom.slider);
-				this.dom.runner = this.dom.scrollLine.children();
-			}
 
 			/* Count left */
 			this.dimensions.scrollStart = this.dom.scrollLine.position().left + 2;
 
 			/* Count scroll line width */
 			this.dimensions.scrollAvailable = this.dom.scrollLine.outerWidth() - this.dom.scrollLine.children().outerWidth() - 4;
-		
+
+			/* Set scroll position */
+			this.dom.runner.css("left", this.calculate().scroll);
+
 		}
 
 		/**
@@ -145,7 +116,7 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 
 			/* Get position */
 			if(position === undefined)
-				position = this.dom.runner.offset().left  - this.dimensions.scrollStart;
+				position = this.dom.runner.offset().left - this.dimensions.scrollStart;
 
 			/* Remove start */
 			position = position - this.dimensions.scrollStart;
@@ -156,7 +127,7 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 			/* Count pages */
 			return {
 				pages : Math.floor(this.dimensions.pagesInvisible * (position / this.dimensions.scrollAvailable)) + 1,
-				scroll: Math.floor(this.dimensions.scrollAvailable * (this.dimensions.startPage - 1)/ this.dimensions.pagesInvisible + this.dimensions.scrollStart)
+				scroll: Math.floor(this.dimensions.scrollAvailable * (this.dimensions.startPage - 1) / this.dimensions.pagesInvisible + this.dimensions.scrollStart)
 			}
 
 		}
@@ -169,7 +140,7 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 
 			/* Remove old pages */
 			this.dom.pages.html("");
-
+			
 			/* Correct */
 			if(start > this.dimensions.pagesInvisible)
 				start = this.dimensions.pagesInvisible + 1;
@@ -183,7 +154,7 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 
 			/* Draw pages */
 			while(i <= this.pages && i < start + this.dimensions.pagesVisible) {
-				templates.render("pagination-page", { page: i, current: this.current }).appendTo(this.dom.pages);
+				templates.render("pagination-page", {page: i, current: this.current}).appendTo(this.dom.pages);
 				i++;
 			}
 
@@ -220,7 +191,7 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 			}
 
 			/* Make active */
-			this.dom.pages.children().removeClass("active").filter("[data-page=" + page +"]").addClass("active");
+			this.dom.pages.children().removeClass("active").filter("[data-page=" + page + "]").addClass("active");
 
 			/* Forward buttons disable */
 			page > 1 ? this.dom.back.enable() : this.dom.back.disable();
@@ -258,7 +229,9 @@ sky.service("pagination", ["templates", "stackList"], function({ templates, stac
 
 	/* Bind windows events */
 	$(window).on("resize", function() {
-		list.each((pages) => { pages.redraw(); });
+		list.each((pages) => {
+			pages.redraw();
+		});
 	});
 
 	/* Return */

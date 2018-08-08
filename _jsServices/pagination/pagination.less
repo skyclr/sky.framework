@@ -16,19 +16,19 @@
     font-size       : 14px;
     text-decoration : none;
     padding         : 12px 0;
+    &.right { margin-left : 5px; }
     &.right:before {
       content : "\27f6";
     }
+    &.left { margin-right : 5px; }
     &.left:before {
       content : "\27f5";
     }
   }
   > * {
     float        : left;
-    margin-right : 5px;
   }
   .pages {
-    width    : 290px;
     overflow : hidden;
     &.hundred a {
       width : 35px !important;
@@ -41,6 +41,7 @@
     }
     .pagesSlider {
       overflow : hidden;
+      display  : flex;
       a {
         font-size       : 18px;
         text-decoration : none;
@@ -49,7 +50,6 @@
         margin          : 1px 2px;
         text-align      : center;
         display         : block;
-        float           : left;
         color           : #888888;
         cursor          : pointer;
         border-radius   : 5px;
@@ -59,15 +59,6 @@
         &.active {
           background : @library_colors_highlight;
           color      : white;
-        }
-      }
-      .page {
-        float   : left;
-        padding : 2px 2px;
-        input {
-          padding : 3px 5px;
-          height  : 15px;
-          width   : 20px;
         }
       }
     }
