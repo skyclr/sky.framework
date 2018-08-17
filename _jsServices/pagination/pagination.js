@@ -87,7 +87,7 @@ sky.service("pagination", ["templates", "stackList"], function({templates, stack
 			/* Draw first page */
 			let firstPage = templates.render("pagination-page", {page: this.current, current: this.current}).appendTo(this.dom.pages),
 				pageWidth = firstPage.outerWidth(true),
-				maxWidth = this.dom.holder.width() - this.dom.back.outerWidth(true) - this.dom.forward.outerWidth(true);
+				maxWidth = this.dom.holder.width() - (this.dom.back.outerWidth(true) || 0) - (this.dom.forward.outerWidth(true) || 0);
 			
 			/* Count visible sizes */
 			this.dimensions.pagesVisible = Math.floor(maxWidth / pageWidth);
@@ -98,11 +98,17 @@ sky.service("pagination", ["templates", "stackList"], function({templates, stack
 			/* Redraw pages */
 			this.drawPages(this.dimensions.startPage);
 
+			/* Show\hide scroll line */
+			if(this.dimensions.pagesInvisible < 1) {
+				this.dom.scrollLine.hide();
+				return;
+			} else this.dom.scrollLine.show();
+
 			/* Count left */
-			this.dimensions.scrollStart = this.dom.scrollLine.position().left + 2;
+			this.dimensions.scrollStart = this.dom.scrollLine.position().left + 4;
 
 			/* Count scroll line width */
-			this.dimensions.scrollAvailable = this.dom.scrollLine.outerWidth() - this.dom.scrollLine.children().outerWidth() - 4;
+			this.dimensions.scrollAvailable = this.dom.scrollLine.outerWidth() - this.dom.scrollLine.children().outerWidth() - 8;
 
 			/* Set scroll position */
 			this.dom.runner.css("left", this.calculate().scroll);

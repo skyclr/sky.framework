@@ -2594,6 +2594,151 @@ sky.service("searchField", ["utils", "inputsIO"], function (_ref) {
 });
 "use strict";
 
+sky.service("directives", ["exceptions", "utils", "stackList"], function (_ref) {
+	var exceptions = _ref.exceptions,
+	    utils = _ref.utils,
+	    stackList = _ref.stackList;
+
+
+	var list = stackList(),
+	    directives = this.service = {
+
+		/**
+   * Adds new directive
+   * @param {string} name Directive name
+   * @param {*} options Directive options
+   * @param {function} directive How to parse directive
+   */
+		add: function add(name, options, directive) {
+
+			/* Reset */
+			if (!directive && typeof options === "function") {
+				directive = options;
+				options = {};
+			}
+			options.directive = directive;
+			options.selector = name;
+
+			/* Save */
+			list.add(options);
+
+			/* Self return*/
+			return this;
+		},
+
+		/**
+   * Get element attributes
+   * @param element
+   * @returns {{}}
+   */
+		getAttributes: function getAttributes(element) {
+
+			/* Holds attributes */
+			var attributes = {};
+
+			/* Copy them to list */
+			var _iteratorNormalCompletion = true;
+			var _didIteratorError = false;
+			var _iteratorError = undefined;
+
+			try {
+				for (var _iterator = element.get(0).attributes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+					var attr = _step.value;
+
+					attributes[attr.nodeName] = attr.nodeValue;
+				} /* Return */
+			} catch (err) {
+				_didIteratorError = true;
+				_iteratorError = err;
+			} finally {
+				try {
+					if (!_iteratorNormalCompletion && _iterator.return) {
+						_iterator.return();
+					}
+				} finally {
+					if (_didIteratorError) {
+						throw _iteratorError;
+					}
+				}
+			}
+
+			return attributes;
+		},
+
+		/**
+   * Applies directive convert to element
+   * @param element
+   * @param options
+   */
+		parseElement: function parseElement(element, options) {
+
+			/* Get element */
+			element = $(element);
+
+			/* Get element attributes */
+			var attributes = this.getAttributes(element);
+
+			/* Parse body for jason data */
+			if (options["json"] || options["jsonToData"]) {
+
+				/* Get child */
+				var jsonScript = element.children('script[type="application/json"]');
+
+				/* If we have json encoded data */
+				if (jsonScript.length) {
+
+					try {
+
+						/* Parse json */
+						var json = JSON.parse(jsonScript.text());
+
+						/* Extend */
+						utils.extend(attributes, json);
+
+						/* Save to data */
+						if (options["jsonToData"]) element.data("json", json);
+					} catch (e) {
+						throw new exceptions.system.Error("Element " + options.selector + " should have json stored content, but error on parse appears");
+					}
+				}
+			}
+
+			/* Call parse function */
+			if (typeof options.directive === "function") options.directive(element, attributes);
+		},
+
+		/**
+   * Searches and replaces directives in element
+   * @param element
+   */
+		parse: function parse(element) {
+			list.each(function (directive) {
+				$(directive.selector, element).each(function () {
+					directives.parseElement(this, directive);
+				});
+				if ($(element).is(directive.selector)) directives.parseElement(element, directive);
+			});
+		}
+
+	};
+
+	/* Add jQuery fn */
+	jQuery.fn.parseDirectives = function () {
+
+		/* Parse */
+		directives.parse(this);
+
+		/* Return */
+		return this;
+	};
+
+	/* Parse body for directives when all ready */
+	sky.onReady(function () {
+		$("body").parseDirectives();
+	});
+});
+"use strict";
+
 sky.service("drag", ["callbacks"], function (_ref) {
 	var callbacks = _ref.callbacks;
 
@@ -3600,7 +3745,7 @@ sky.service("pagination", ["templates", "stackList"], function (_ref) {
 				/* Draw first page */
 				var firstPage = templates.render("pagination-page", { page: this.current, current: this.current }).appendTo(this.dom.pages),
 				    pageWidth = firstPage.outerWidth(true),
-				    maxWidth = this.dom.holder.width() - this.dom.back.outerWidth(true) - this.dom.forward.outerWidth(true);
+				    maxWidth = this.dom.holder.width() - (this.dom.back.outerWidth(true) || 0) - (this.dom.forward.outerWidth(true) || 0);
 
 				/* Count visible sizes */
 				this.dimensions.pagesVisible = Math.floor(maxWidth / pageWidth);
@@ -3608,20 +3753,20 @@ sky.service("pagination", ["templates", "stackList"], function (_ref) {
 				/* Count invisible */
 				this.dimensions.pagesInvisible = this.pages - this.dimensions.pagesVisible > 0 ? this.pages - this.dimensions.pagesVisible : 0;
 
-				/* Get max pages */
-				//let toShow = this.dimensions.pagesVisible > this.pages ? this.pages : this.dimensions.pagesVisible;
-
-				/* Crop */
-				// this.dom.slider.css("width", toShow * pageWidth);
-
 				/* Redraw pages */
 				this.drawPages(this.dimensions.startPage);
 
+				/* Show\hide scroll line */
+				if (this.dimensions.pagesInvisible < 1) {
+					this.dom.scrollLine.hide();
+					return;
+				} else this.dom.scrollLine.show();
+
 				/* Count left */
-				this.dimensions.scrollStart = this.dom.scrollLine.position().left + 2;
+				this.dimensions.scrollStart = this.dom.scrollLine.position().left + 4;
 
 				/* Count scroll line width */
-				this.dimensions.scrollAvailable = this.dom.scrollLine.outerWidth() - this.dom.scrollLine.children().outerWidth() - 4;
+				this.dimensions.scrollAvailable = this.dom.scrollLine.outerWidth() - this.dom.scrollLine.children().outerWidth() - 8;
 
 				/* Set scroll position */
 				this.dom.runner.css("left", this.calculate().scroll);
@@ -3761,151 +3906,6 @@ sky.service("pagination", ["templates", "stackList"], function (_ref) {
 			return new Pagination(options);
 		}
 	};
-});
-"use strict";
-
-sky.service("directives", ["exceptions", "utils", "stackList"], function (_ref) {
-	var exceptions = _ref.exceptions,
-	    utils = _ref.utils,
-	    stackList = _ref.stackList;
-
-
-	var list = stackList(),
-	    directives = this.service = {
-
-		/**
-   * Adds new directive
-   * @param {string} name Directive name
-   * @param {*} options Directive options
-   * @param {function} directive How to parse directive
-   */
-		add: function add(name, options, directive) {
-
-			/* Reset */
-			if (!directive && typeof options === "function") {
-				directive = options;
-				options = {};
-			}
-			options.directive = directive;
-			options.selector = name;
-
-			/* Save */
-			list.add(options);
-
-			/* Self return*/
-			return this;
-		},
-
-		/**
-   * Get element attributes
-   * @param element
-   * @returns {{}}
-   */
-		getAttributes: function getAttributes(element) {
-
-			/* Holds attributes */
-			var attributes = {};
-
-			/* Copy them to list */
-			var _iteratorNormalCompletion = true;
-			var _didIteratorError = false;
-			var _iteratorError = undefined;
-
-			try {
-				for (var _iterator = element.get(0).attributes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-					var attr = _step.value;
-
-					attributes[attr.nodeName] = attr.nodeValue;
-				} /* Return */
-			} catch (err) {
-				_didIteratorError = true;
-				_iteratorError = err;
-			} finally {
-				try {
-					if (!_iteratorNormalCompletion && _iterator.return) {
-						_iterator.return();
-					}
-				} finally {
-					if (_didIteratorError) {
-						throw _iteratorError;
-					}
-				}
-			}
-
-			return attributes;
-		},
-
-		/**
-   * Applies directive convert to element
-   * @param element
-   * @param options
-   */
-		parseElement: function parseElement(element, options) {
-
-			/* Get element */
-			element = $(element);
-
-			/* Get element attributes */
-			var attributes = this.getAttributes(element);
-
-			/* Parse body for jason data */
-			if (options["json"] || options["jsonToData"]) {
-
-				/* Get child */
-				var jsonScript = element.children('script[type="application/json"]');
-
-				/* If we have json encoded data */
-				if (jsonScript.length) {
-
-					try {
-
-						/* Parse json */
-						var json = JSON.parse(jsonScript.text());
-
-						/* Extend */
-						utils.extend(attributes, json);
-
-						/* Save to data */
-						if (options["jsonToData"]) element.data("json", json);
-					} catch (e) {
-						throw new exceptions.system.Error("Element " + options.selector + " should have json stored content, but error on parse appears");
-					}
-				}
-			}
-
-			/* Call parse function */
-			if (typeof options.directive === "function") options.directive(element, attributes);
-		},
-
-		/**
-   * Searches and replaces directives in element
-   * @param element
-   */
-		parse: function parse(element) {
-			list.each(function (directive) {
-				$(directive.selector, element).each(function () {
-					directives.parseElement(this, directive);
-				});
-				if ($(element).is(directive.selector)) directives.parseElement(element, directive);
-			});
-		}
-
-	};
-
-	/* Add jQuery fn */
-	jQuery.fn.parseDirectives = function () {
-
-		/* Parse */
-		directives.parse(this);
-
-		/* Return */
-		return this;
-	};
-
-	/* Parse body for directives when all ready */
-	sky.onReady(function () {
-		$("body").parseDirectives();
-	});
 });
 "use strict";
 

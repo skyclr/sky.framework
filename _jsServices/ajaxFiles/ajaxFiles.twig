@@ -1,0 +1,29 @@
+{% verbatim %}
+
+<!-- Single file form -->
+<script type="text/template" id="files-single-upload">
+	<div class="fileProgress" style="padding: 15px 0">
+		<h4>Загружается <b>{{ name }}</b></h4>
+		<div class="progressBar"><div></div></div>
+		Загружено
+		<span class="total">0%</span>
+		<a href="#" data-event="click: files.skipUpload">Пропустить</a>
+	</div>
+	<div class="grayLine" style="height: 1px; background: #eee"></div>
+</script>
+
+<!-- Holds upload files form -->
+<script type="text/template" id="files-upload">
+	<div style="padding: 25px;">
+		<h1>Файлы загружаются</h1>
+		<div class="uploadProgress">
+			<div class="filesProgress"></div>
+			<div class="progress">
+				<h4>Общий прогресс</h4>
+				<div class="progressBar"><div></div></div>
+				Осталось файлов <span class="toProceed">0</span>/<span class="total">0</span>
+			</div>
+		</div>
+	</div>
+</script>
+{% endverbatim %}

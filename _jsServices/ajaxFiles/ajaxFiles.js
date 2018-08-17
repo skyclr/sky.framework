@@ -140,7 +140,7 @@ sky.service("ajaxFiles", ["supported", "callbacks", "ajaxFilesXHR", "ajaxFilesIF
 
 		/*  Bind events */
 		filesAjax.callbacks
-			.on("begin", function (file) {
+			.on("begin", function ({ file }) {
 				if(modal) {
 					modal.holder.find(".preview").remove();
 					modal.lock();
@@ -152,13 +152,13 @@ sky.service("ajaxFiles", ["supported", "callbacks", "ajaxFilesXHR", "ajaxFilesIF
 				if(modal)
 					modal.unlock();
 			})
-			.on("notSuccess", function (error) {
+			.on("notSuccess", function ({ error }) {
 				modal.clearExceptTemplate();
 				notifications.message({text: error}).appendToModal(modal);
 			})
-			.on("progress", function (totalPercent, percent) {
+			.on("progress", function ({ totalPercent = 0, percent = 0 }) {
 				currentFile.find(".total").html(percent + "%");
-				currentFile.find(".progressBar div").css("width", percent + "%");
+				currentFile.find(".progressBar div").css("width", totalPercent + "%");
 
 				// If loaded
 				if (percent === 100)

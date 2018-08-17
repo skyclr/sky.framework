@@ -1,4 +1,4 @@
-sky.service("actions", ["exceptions"], function ({exceptions}) {
+sky.service("actions", ["exceptions", 'utils'], function ({exceptions, utils}) {
 
 	let list = {},
 		actions = this.service = {
@@ -23,14 +23,14 @@ sky.service("actions", ["exceptions"], function ({exceptions}) {
 
 					/* Parse params */
 					params = params[2].split(",");
-					$.each(params, function (i, val) {
+					utils.each(params, function (i, val) {
 						params[i] = eval(val.trim());
 					})
 				}
 
 				/* Options */
 				if (options)
-					params = $.extend(params || [], options);
+					params = utils.extend(params || [], options);
 
 				/* Get */
 				let self = element ? $(element) : false,
@@ -42,7 +42,7 @@ sky.service("actions", ["exceptions"], function ({exceptions}) {
 				if (self && self.isDisabled && self.isDisabled())
 					return;
 
-				$.each(path, function (i, elem) {
+				utils.each(path, function (i, elem) {
 
 					/* Search */
 					if (i + 1 < path.length && !current[elem])
@@ -81,7 +81,7 @@ sky.service("actions", ["exceptions"], function ({exceptions}) {
 					throw new exceptions.system.Error("No event object for events '" + name + "' provided");
 
 				// Save
-				list[name] = $.extend(list[name] || {}, events);
+				list[name] = utils.extend(list[name] || {}, events);
 
 			}
 
