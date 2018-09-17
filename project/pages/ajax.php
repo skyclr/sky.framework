@@ -33,7 +33,8 @@ function jError($params, $name = false) {
 /**
  * Sends success back data
  * @param   array|string $params What to send backs
- * @param string|bool    $name   Name of return element to set params to
+ * @param string|bool $name      Name of return element to set params to
+ * @throws userErrorException
  */
 function jSend($params, $name = false) {
 
@@ -48,8 +49,12 @@ function jSend($params, $name = false) {
     if($name)
         $params = array($name => $params);
 
+	# Sending
+	if(!$result = json_encode(array_merge(array("error" => false), $params)))
+		throw new userErrorException("Can't convert final data to JSON: " . json_last_error_msg());
+
     # Sending
-    die(json_encode(array_merge(array("error" => false), $params)));
+    die($params);
 
 }
 
@@ -63,8 +68,6 @@ try {
     # Set section
     if(sizeof($realPathParts = Request::getOriginalPathParts()) > 1)
         $section = $realPathParts[1];
-    else
-        $section = ud::$get->key("json")->typeFilter(\sky\FilterRule::TYPE_EMPTY_STRING)->valueOr(false);
 
     # Operation subtype
     if(sizeof($realPathParts) > 2)
@@ -73,11 +76,7 @@ try {
         $action = vars::action();
 
     # Check
-    if(!$action)
-		jError("No action provided");
-
-    # Check
-    if(!preg_match('^/\w+/$', $action))
+    if(!$action || !preg_match('^/\w+/$', $action))
 		jError("Wrong action provided");
 
     # Require

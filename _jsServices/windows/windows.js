@@ -45,6 +45,9 @@ sky.service('windows', ["templates", "callbacks", "stackList"], function ({templ
 	class Modal {
 		constructor (name, data) {
 
+			/* Add to list */
+			list.add(this);
+
 			/* Create window */
 			this.locked 		= false;
 			this.background 	= templates.render("windows-modal", {}).appendTo("#pageContentHolder").data("modalWindow", this);
@@ -100,6 +103,7 @@ sky.service('windows', ["templates", "callbacks", "stackList"], function ({templ
 		clearExceptTemplate() {
 			this.holder.children().detach();
 			this.holder.append(this.template);
+			return this;
 		}
 
 		/**

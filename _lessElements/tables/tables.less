@@ -1,7 +1,7 @@
 @import "../fontAwesome/variables";
 @import "../library/library";
+
 .listTable {
-  font-size       : 12px;
   width           : 100%;
   border-collapse : collapse;
   th {
@@ -9,7 +9,8 @@
     border-bottom : 1px solid #e5e5e5;
     border-left   : 1px solid #e5e5e5;
     padding       : 5px 5px 5px 15px;
-    color         : #666;
+    color         : #666666;
+    text-align    : left;
     &:first-of-type {
       border-left : none;
     }
@@ -21,7 +22,7 @@
     a.desc::after {
       font-family     : "FontAwesome", sans-serif;
       content         : @fa-var-long-arrow-down;
-      color           : #999;
+      color           : #999999;
       padding-left    : 5px;
       text-decoration : none !important;
       display         : inline-block;
@@ -29,15 +30,14 @@
     a.asc::after {
       font-family     : "FontAwesome", sans-serif;
       content         : @fa-var-long-arrow-up;
-      color           : #999;
+      color           : #999999;
       padding-left    : 5px;
       text-decoration : none !important;
       display         : inline-block;
     }
   }
   td {
-    font-size : 12px;
-    color     : #333;
+    color     : #333333;
     padding   : 10px 5px 10px 15px;
     &.noPadding {
       padding : 0;
@@ -48,7 +48,7 @@
     }
     &.highlight {
       background  : #00b050 !important;
-      text-shadow : 0 1px 0 #06793A;
+      text-shadow : 0 1px 0 #06793a;
       color       : white;
     }
     &.center {
@@ -66,11 +66,11 @@
         font-size   : 18px;
       }
       &.active:before {
-        color   : #6DB569;
+        color   : #6db569;
         content : @fa-var-check;
       }
       &.block:before {
-        color   : #FF453F;
+        color   : #ff453f;
         content : @fa-var-lock;
       }
       &.new:before {
@@ -145,13 +145,13 @@
       background : #a8dea5 !important;
     }
     &.statusRed td {
-      background : #FFC6C6 !important;
+      background : #ffc6c6 !important;
     }
     &.statusRed:nth-child(2+2n) td {
       background : #ffaea9 !important;
     }
     &.statusBlue td {
-      background : #C6F1FF !important;
+      background : #c6f1ff !important;
     }
     &.statusBlue:nth-child(2+2n) td {
       background : #b6e2ff !important;
@@ -186,7 +186,7 @@
       color      : #3b692a;
     }
     &.bordered td {
-      border-color : #C6E6BB !important;
+      border-color : #c6e6bb !important;
     }
   }
   &.lined {

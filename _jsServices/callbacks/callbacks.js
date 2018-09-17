@@ -1,4 +1,4 @@
-sky.service("callbacks", ["callback"], function({ callback }) {
+sky.service("callbacks", ["callback", "utils"], function({ callback, utils }) {
 
 	/**
 	 *
@@ -13,7 +13,7 @@ sky.service("callbacks", ["callback"], function({ callback }) {
 			return new Callbacks(flags);
 
 		/* Add properties */
-		$.extend(true, this, Callbacks.extend);
+		utils.extend(true, this, Callbacks.extend);
 
 		/* Callbacks list */
 		this.advancedCallbacks = {};
@@ -59,11 +59,11 @@ sky.service("callbacks", ["callback"], function({ callback }) {
 			 */
 			on:  function(name, func, context, options) {
 
-
+				// If list of events passed
 				if(name instanceof Object)
-					$.each(name, (event, func) => { this.on(event, func) });
+					utils.each(name, (event, func) => { this.on(event, func) });
 
-				else $.each(this.getEventsNames(name), (_, name) => {
+				else utils.each(this.getEventsNames(name), (_, name) => {
 
 					/* Create callbacks */
 					if(!this.advancedCallbacks[name])
@@ -96,7 +96,7 @@ sky.service("callbacks", ["callback"], function({ callback }) {
 					events = events.slice(1);
 
 				/* Fire events */
-				$.each(events, function(_, event) {
+				utils.each(events, function(_, event) {
 
 					/* If no callback */
 					if(!self.advancedCallbacks[event])
@@ -126,7 +126,7 @@ sky.service("callbacks", ["callback"], function({ callback }) {
 				let names = name.split(","), events = [];
 
 				/* Go through */
-				$.each(names, function(i, name) {
+				utils.each(names, function(i, name) {
 
 					/* Remove spaces */
 					name = name.replace(" ", "");

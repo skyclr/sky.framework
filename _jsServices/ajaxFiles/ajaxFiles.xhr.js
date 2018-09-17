@@ -1,5 +1,5 @@
 /** Sends file data via HttpRequest */
-sky.service("ajaxFilesXHR", ["supported", "ajax", "stackList"], function({supported, ajax, stackList}) {
+sky.service("ajaxFilesXHR", ["supported", "ajax", "stackList", "utils"], function({supported, ajax, stackList, utils}) {
 	this.service = class {
 		constructor(options) {
 
@@ -20,8 +20,7 @@ sky.service("ajaxFilesXHR", ["supported", "ajax", "stackList"], function({suppor
 			this.fileRequests 	= stackList();
 
 			/* Go through */
-			for(file of options.files)
-				this.totalSize += file.size;
+			utils.each(options.files, (i, file) => { this.totalSize += file.file.size;	});
 
 		}
 
@@ -30,7 +29,7 @@ sky.service("ajaxFilesXHR", ["supported", "ajax", "stackList"], function({suppor
 		 * @param {*} file File
 		 * @returns {string}
 		 */
-		static getName(file) {
+		getName(file) {
 			return file.name.replace(/.*(\/|\\)/, "");
 		}
 
@@ -41,7 +40,7 @@ sky.service("ajaxFilesXHR", ["supported", "ajax", "stackList"], function({suppor
 		send(file) {
 
 			/* This obj will store data associated with XHR */
-			$.extend(file, {
+			utils.extend(file, {
 				id     : Math.random(),
 				name   : this.getName(file.file),
 				size   : file.file.size,
@@ -61,7 +60,7 @@ sky.service("ajaxFilesXHR", ["supported", "ajax", "stackList"], function({suppor
 			 * @returns {*}
 			 */
 			this.extend = function(args) {
-				return jQuery.extend(args, {
+				return utils.extend(args, {
 					totalLoaded : self.totalLoaded,
 					totalSize   : self.totalSize,
 					totalPercent: self.totalPercent,
@@ -95,13 +94,13 @@ sky.service("ajaxFilesXHR", ["supported", "ajax", "stackList"], function({suppor
 
 								/* Set special upload api handlers */
 								xhr.upload["onloadstart"] = function() {
-									this.inProgress++;
-									this.callbacks.fire("begin", this.extend({}));
+									self.inProgress++;
+									self.callbacks.fire("begin", self.extend({}));
 								};
 								xhr.upload["onprogress"] = function(event) {
-									this.totalLoaded += event.loaded - file.loaded;
-									this.totalPercent = (this.totalLoaded / this.totalSize * 100).toFixed(0);
-									this.onProgress(event, file);
+									self.totalLoaded += event.loaded - file.loaded;
+									self.totalPercent = (self.totalLoaded / self.totalSize * 100).toFixed(0);
+									self.onProgress(event, file);
 								};
 
 								/* Return create XHR */
@@ -121,33 +120,33 @@ sky.service("ajaxFilesXHR", ["supported", "ajax", "stackList"], function({suppor
 					processData: false,
 					contentType: false,
 					type       : "POST",
-					beforeSend : sky.func(function(jqXHR) {
+					beforeSend : function(jqXHR) {
 						jqXHR.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 						jqXHR.setRequestHeader("X-File-Name", encodeURI(file.name));
 						jqXHR.setRequestHeader("Content-Type", "multipart/form-data");
 						jqXHR.setRequestHeader("Content-Disposition", 'attachment; filename="' + encodeURI(file.name) + '"');
 						jqXHR.setRequestHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9");
-					})
+					}
 				});
 
 			}
 
 			/* Set ajax callbacks */
 			file.ajax.on({
-				success:	(all) => { this.callbacks.fire("success", this.extend(all)); },
-				error: 		(all) => { this.callbacks.fire("error", this.extend(all)); },
-				notSuccess: (all) => { this.callbacks.fire("notSuccess", this.extend(all)); },
+				success:	(all) => { self.callbacks.fire("success", self.extend(all)); },
+				error: 		(all) => { self.callbacks.fire("error", self.extend(all)); },
+				notSuccess: (all) => { self.callbacks.fire("notSuccess", self.extend(all)); },
 				always: 	(all) => {
 
 					/* Counters */
-					this.inProgress--;
-					this.toProceed--;
+					self.inProgress--;
+					self.toProceed--;
 
 					/* Call always method */
-					this.callbacks.fire("always", this.extend(all));
+					self.callbacks.fire("always", this.extend(all));
 
 					/* Delete connection */
-					this.fileRequests.delete(file);
+					self.fileRequests.remove(file);
 
 				}
 			});

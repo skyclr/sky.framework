@@ -4,7 +4,7 @@
 namespace sky\images;
 
 # Class if IM supported
-require_once "imageImagick.php";
+require_once "ImageImagick.php";
 
 # Uses
 use sky\DateTime;

@@ -3,7 +3,7 @@
   /* Button colors set */
   .colors(@background; @text; @hover: transparent) {
     background : @background;
-    color      : @text;
+    color      : @text !important;
     &:hover {
       background : @hover;
     }
@@ -28,7 +28,7 @@
     float              : left;
     border             : none;
     outline            : none;
-    text-decoration    : none;
+    text-decoration    : none !important;
     animation          : none;
     -webkit-animation  : none;
     -webkit-appearance : none;

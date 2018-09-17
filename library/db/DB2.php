@@ -7,13 +7,13 @@ namespace sky\db;
 use sky\DatabaseException;
 
 # Core
-require_once("core.php");
-require_once("ret.php");
-require_once("join.php");
-require_once("condition.php");
+require_once "Core.php";
+require_once "Ret.php";
+require_once "Join.php";
+require_once "Condition.php";
 
 # Exceptions required
-require_once("databaseQuery.php");
+require_once "DatabaseQuery.php";
 
 
 /**

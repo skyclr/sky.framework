@@ -1,7 +1,8 @@
 /**
  * Module to work with ajax file upload
  */
-sky.service("ajaxFiles", ["supported", "callbacks", "ajaxFilesXHR", "ajaxFilesIFrame"], function({ callbacks, supported, ajaxFilesXHR, ajaxFilesIFrame }) {
+sky.service("ajaxFiles", ["supported", "callbacks", "ajaxFilesXHR", "ajaxFilesIFrame", "utils", "exceptions", "windows", "notifications" ,"templates"],
+				function({ supported,   callbacks,   ajaxFilesXHR,   ajaxFilesIFrame,   utils,   exceptions,   windows,   notifications, templates }) {
 
 	/**
 	 * Class to work with dynamic file upload
@@ -34,8 +35,9 @@ sky.service("ajaxFiles", ["supported", "callbacks", "ajaxFilesXHR", "ajaxFilesIF
 				let files = input.get(0).files;
 
 				/* Save them to this */
-				for(let file of files)
-					this.files.push({ file: file, input: input, inputName: input.attr("name") });
+				utils.each(files, (i, file) => {
+					this.files.push({file: file, input: input, inputName: input.attr("name")});
+				});
 
 			} else this.files.push(input.get(0));
 
@@ -65,6 +67,9 @@ sky.service("ajaxFiles", ["supported", "callbacks", "ajaxFilesXHR", "ajaxFilesIF
 			else
 				handler = new ajaxFilesIFrame(this);
 
+			/* Start callback */
+			this.callbacks.fire("start", {});
+
 			/* Send files */
 			if(parallel)
 				this.sendParallel(handler);
@@ -93,7 +98,7 @@ sky.service("ajaxFiles", ["supported", "callbacks", "ajaxFilesXHR", "ajaxFilesIF
 			});
 
 			/* Send first */
-			handler.send(self.files[id]);
+			handler.send(this.files[id]);
 
 		};
 
@@ -123,11 +128,7 @@ sky.service("ajaxFiles", ["supported", "callbacks", "ajaxFilesXHR", "ajaxFilesIF
 	AjaxFiles.defaultSend = function(url, element, data) {
 
 		// Get input
-		let input = element.is("input[type=file]") ? element : element.closest("label, .label").find("input[type=file]"),
-			exceptions = sky.service("exceptions"),
-			templates = sky.service("templates"),
-			notifications = sky.service("notifications"),
-			windows = sky.service.windows("windows");
+		let input = element.is("input[type=file]") ? element : element.closest("label, .label").find("input[type=file]");
 
 		// Check
 		if(!input.length)
@@ -136,37 +137,34 @@ sky.service("ajaxFiles", ["supported", "callbacks", "ajaxFilesXHR", "ajaxFilesIF
 		// Init
 		let filesAjax = AjaxFiles(input, url, data),
 			modal = windows.getLast(),
-			currentFile;
+			uploadedFiles = [],
+			progressForm = new AjaxFiles.ProgressForm();
+
+		/* Associate with AjaxFiles */
+		progressForm.bindAjaxFiles(filesAjax);
 
 		/*  Bind events */
 		filesAjax.callbacks
-			.on("begin", function ({ file }) {
-				if(modal) {
-					modal.holder.find(".preview").remove();
-					modal.lock();
-				}
-				currentFile = templates.render("files-single-upload", file).insertAfter(element.parent());
+			.on("success", function({file}) {
+				uploadedFiles.push(file);
 			})
-			.on("always", function () {
-				currentFile.remove();
-				if(modal)
+			.on("always", function({toProceed}) {
+				if(modal && !toProceed)
 					modal.unlock();
 			})
-			.on("notSuccess", function ({ error }) {
-				modal.clearExceptTemplate();
-				notifications.message({text: error}).appendToModal(modal);
+			.on("notSuccess", function({error}) {
+				if(modal) {
+					modal.clearExceptTemplate();
+					notifications.message({text: error}).appendToModal(modal);
+				} else  alert(error);
 			})
-			.on("progress", function ({ totalPercent = 0, percent = 0 }) {
-				currentFile.find(".total").html(percent + "%");
-				currentFile.find(".progressBar div").css("width", totalPercent + "%");
+			.on("start", function() {
 
-				// If loaded
-				if (percent === 100)
-					currentFile.find(".total").html("100%, обработка");
-
-
-			})
-			.on("start", function () {
+				/* Append new form */
+				if(modal)
+					modal.lock().holder.html('').append(progressForm.getForm());
+				else
+					modal = windows.Modal(progressForm.getForm()).lock();
 
 			});
 
@@ -175,5 +173,49 @@ sky.service("ajaxFiles", ["supported", "callbacks", "ajaxFilesXHR", "ajaxFilesIF
 		return filesAjax;
 
 	};
+
+	AjaxFiles.ProgressForm = function(holder) {
+
+		let currentFile,
+			form,
+			self = this;
+
+		this.setFilesLeft = function(total, toProceed) {
+			if(form) {
+				form.find(".toProceed").html(toProceed);
+				form.find(".progress .total").html(total);
+			}
+		};
+		this.fileUploadStart = function(file) {
+			currentFile = templates.render("files-single-upload", file).appendTo(form.find(".filesProgress")).data("file", file);
+		};
+		this.fileUploadDone = function(filesLeft) {
+			if(currentFile) currentFile.remove();
+		};
+		this.setProgressPercent = function(totalPercent, percent) {
+
+			currentFile.find(".total").html(percent + "%");
+			currentFile.find(".progressBar div").css("width", percent + "%");
+			form.find(".progress .progressBar div").css("width", totalPercent + "%");
+
+			// If loaded
+			if(percent === 100) {
+				currentFile.find(".total").html("100%, обработка");
+				currentFile.find("a").hide();
+			}
+
+		};
+		this.getForm = function() {
+			return form = form || templates.render("files-upload", {});
+		};
+		this.bindAjaxFiles = function(filesAjax) {
+			filesAjax.callbacks
+				.on("begin", function({file}) { self.fileUploadStart(file) })
+				.on("always, begin", function({toProceed, total}) { self.setFilesLeft(total, toProceed) })
+				.on("always", function({toProceed}) { self.fileUploadDone(toProceed) })
+				.on("progress", function({totalPercent, percent}) { self.setProgressPercent(totalPercent, percent);});
+		}
+
+	}
 
 });

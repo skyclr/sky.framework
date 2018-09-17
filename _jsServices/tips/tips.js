@@ -346,7 +346,7 @@ sky.service("tips", ["stackList", "callbacks"], function({ stackList, callbacks 
          * @param {string|jQuery} text What to insert to tip body
          */
         set: function(text) {
-            this.tip.children(".tipContent").html(text);
+            this.tip.children(".tipContent").html('').append(text);
             return this;
         },
 
