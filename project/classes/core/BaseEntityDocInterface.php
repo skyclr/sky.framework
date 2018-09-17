@@ -10,7 +10,7 @@ abstract class BaseEntityDocInterface {
 
 	public static $ENTITY_COMPILED_FIELDS = [];
 
-	protected function filedHavePermission($field, $action) {
+	protected function fieldHavePermission($field, $action) {
 		if($action == "meta" && (empty($field['permission']) || in_array($action, $field['permission'])))
 			return true;
 		if($action == "data" && !empty($field['permission']) && in_array($action, $field['permission']))
@@ -22,6 +22,11 @@ abstract class BaseEntityDocInterface {
 		return false;
 	}
 
+	/**
+	 * Sets script based fields
+	 * @param \sky\ArrayFilter $meta
+	 * @return $this
+	 */
 	protected function setMeta(\sky\ArrayFilter $meta) {
 
 		# Get class name
@@ -29,7 +34,7 @@ abstract class BaseEntityDocInterface {
 
 		# Go through
 		foreach(static::$ENTITY_COMPILED_FIELDS[$className] as $field)
-			if($this->filedHavePermission($field, "meta")) {
+			if($this->fieldHavePermission($field, "meta")) {
 				$this->{$field['name']} = $this->GET_ENTITY_FIELD_VALUE($field, $meta);
 			}
 
@@ -38,6 +43,11 @@ abstract class BaseEntityDocInterface {
 
 	}
 
+	/**
+	 * Sets fields from user data
+	 * @param \sky\ArrayFilter $meta
+	 * @return $this
+	 */
 	protected function setData(\sky\ArrayFilter $meta) {
 
 		# Get class name
@@ -45,7 +55,7 @@ abstract class BaseEntityDocInterface {
 
 		# Go through
 		foreach(static::$ENTITY_COMPILED_FIELDS[$className] as $field)
-			if($this->filedHavePermission($field, "data"))
+			if($this->fieldHavePermission($field, "data"))
 				$this->{$field['name']} = $this->GET_ENTITY_FIELD_VALUE($field, $meta);
 
 		# Self return
@@ -135,7 +145,7 @@ abstract class BaseEntityDocInterface {
 		}
 
 		if(is_array($fields)) {
-			if($this->filedHavePermission($field, "save"))
+			if($this->fieldHavePermission($field, "save"))
 				$fields[$field['name']] = $result;
 		}
 
@@ -173,6 +183,10 @@ abstract class BaseEntityDocInterface {
 
 	}
 
+	/**
+	 * Makes array representation
+	 * @return array
+	 */
 	protected function toArray() {
 
 		# Get class name
@@ -182,7 +196,7 @@ abstract class BaseEntityDocInterface {
 
 		# Go through
 		foreach(static::$ENTITY_COMPILED_FIELDS[$className] as $field)
-			if($this->filedHavePermission($field, "array"))
+			if($this->fieldHavePermission($field, "array"))
 				$data[$field['name']] = $this->GET_ENTITY_VALUE_FOR_ARRAY($field);
 
 		# Return
@@ -213,8 +227,10 @@ abstract class BaseEntityDocInterface {
 		/** @var ReflectionProperty $property */
 		foreach($properties as $property) {
 
+			# Get PHPDoc comment
 			$docComment = $property->getDocComment();
 
+			# If type
 			if($type = self::getDocOptions($docComment, "@entityType", ['(\w*)(\(.*\))?'])) {
 
 				# Make entity
@@ -245,6 +261,13 @@ abstract class BaseEntityDocInterface {
 
 	}
 
+	/**
+	 * Parse options from comment string
+	 * @param $docComment
+	 * @param $name
+	 * @param array $optionsPreg
+	 * @return bool
+	 */
 	private static function getDocOptions($docComment, $name, $optionsPreg = []) {
 
 		# Get entity default

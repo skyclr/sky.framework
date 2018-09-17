@@ -91,7 +91,7 @@ class Sky {
 	 * @param bool|string $type Type of preformed actions on init
 	 * @global     $libraryPreferences
 	 */
-	public function __construct($type = false) {
+	public function __construct($type = self::INIT_TYPE_WEB) {
 
 		# Preferences
 		global $preferences;
