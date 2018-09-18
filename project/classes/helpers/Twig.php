@@ -34,25 +34,25 @@ class Twig extends Twig_Extension {
 		Sky::$twig->getExtension('Twig_Extension_Core')->setNumberFormat(0, '.', " ");
 
 		# Add filter
-		Sky::$twig->addFilter(new Twig_Filter("addClass", 			["twig", "filterClass"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("selected", 			["twig", "filterSelected"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("checked", 				["twig", "filterChecked"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("disabled", 			["twig", "filterDisabled"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("else", 				["twig", "filterElse"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("onTrue", 				["twig", "filterOnTrue"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("isString", 			["twig", "filterIsString"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("url", 					["twig", "filterUrl"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("json", 				["twig", "filterJson"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("includeRaw", 			["twig", "includeRaw"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("addClass", 			["twig", "filterClass"], 		['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("selected", 			["twig", "filterSelected"], 	['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("checked", 				["twig", "filterChecked"], 		['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("disabled", 			["twig", "filterDisabled"], 	['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("else", 				["twig", "filterElse"], 		['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("onTrue", 				["twig", "filterOnTrue"], 		['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("isString", 			["twig", "filterIsString"], 	['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("url", 					["twig", "filterUrl"],		 	['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("json", 				["twig", "filterJson"], 		['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("includeRaw", 			["twig", "includeRaw"], 		['is_safe' => ['html']]));
 		Sky::$twig->addFilter(new Twig_Filter("includeRawFullPath", 	["twig", "includeRawFullPath"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("makeSelectColumns", 	["twig", "makeSelectColumns"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("fileExists", 			["twig", "fileExists"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("ptPath", 				["twig", "ptPath"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("anyIn", 				["twig", "anyIn"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("allIn", 				["twig", "allIn"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("countIn", 				["twig", "countIn"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("truncate", 			["twig", "truncate"], ['is_safe' => ['html']]));
-		Sky::$twig->addFilter(new Twig_Filter("richText", 			["twig", "richText"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("makeSelectColumns", 	["twig", "makeSelectColumns"], 	['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("fileExists", 			["twig", "fileExists"], 		['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("ptPath", 				["twig", "ptPath"], 			['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("anyIn", 				["twig", "anyIn"], 				['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("allIn", 				["twig", "allIn"], 				['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("countIn", 				["twig", "countIn"], 			['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("truncate", 			["twig", "truncate"], 			['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("richText", 			["twig", "richText"], 			['is_safe' => ['html']]));
 
 
 		# Current page checker
