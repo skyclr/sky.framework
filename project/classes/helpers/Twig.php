@@ -34,30 +34,30 @@ class Twig extends Twig_Extension {
 		Sky::$twig->getExtension('Twig_Extension_Core')->setNumberFormat(0, '.', " ");
 
 		# Add filter
-		Sky::$twig->addFilter(new Twig_Filter("addClass", array("twig", "filterClass"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("selected", array("twig", "filterSelected"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("checked", array("twig", "filterChecked"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("disabled", array("twig", "filterDisabled"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("else", array("twig", "filterElse"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("onTrue", array("twig", "filterOnTrue"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("isString", array("twig", "filterIsString"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("url", array("twig", "filterUrl"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("json", array("twig", "filterJson"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("includeRaw", array("twig", "includeRaw"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("includeRawFullPath", array("twig", "includeRawFullPath"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("makeSelectColumns", array("twig", "makeSelectColumns"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("fileExists", array("twig", "fileExists"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("ptPath", array("twig", "ptPath"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("anyIn", array("twig", "anyIn"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("allIn", array("twig", "allIn"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("countIn", array("twig", "countIn"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("truncate", array("twig", "truncate"), array('is_safe' => array('html'))));
-		Sky::$twig->addFilter(new Twig_Filter("richText", array("twig", "richText"), array('is_safe' => array('html'))));
+		Sky::$twig->addFilter(new Twig_Filter("addClass", 			["twig", "filterClass"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("selected", 			["twig", "filterSelected"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("checked", 				["twig", "filterChecked"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("disabled", 			["twig", "filterDisabled"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("else", 				["twig", "filterElse"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("onTrue", 				["twig", "filterOnTrue"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("isString", 			["twig", "filterIsString"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("url", 					["twig", "filterUrl"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("json", 				["twig", "filterJson"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("includeRaw", 			["twig", "includeRaw"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("includeRawFullPath", 	["twig", "includeRawFullPath"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("makeSelectColumns", 	["twig", "makeSelectColumns"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("fileExists", 			["twig", "fileExists"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("ptPath", 				["twig", "ptPath"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("anyIn", 				["twig", "anyIn"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("allIn", 				["twig", "allIn"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("countIn", 				["twig", "countIn"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("truncate", 			["twig", "truncate"], ['is_safe' => ['html']]));
+		Sky::$twig->addFilter(new Twig_Filter("richText", 			["twig", "richText"], ['is_safe' => ['html']]));
 
 
 		# Current page checker
-		Sky::$twig->addFunction(new Twig_Function("pageIs", array("twig", "pageIs")));
-		Sky::$twig->addFunction(new Twig_Function("sectionIs", array("twig", "sectionIs")));
+		Sky::$twig->addFunction(new Twig_Function("pageIs", ["twig", "pageIs"]));
+		Sky::$twig->addFunction(new Twig_Function("sectionIs", ["twig", "sectionIs"]));
 
 
 		# Make globals
@@ -114,6 +114,12 @@ class Twig extends Twig_Extension {
 		return $expression;
 	}
 
+	/**
+	 * Check any entrances in array
+	 * @param $expression
+	 * @param $haystack
+	 * @return bool
+	 */
 	public static function anyIn($expression, $haystack) {
 		foreach($expression as $item)
 			if(in_array($item, $haystack))
@@ -121,13 +127,25 @@ class Twig extends Twig_Extension {
 		return false;
 	}
 
+	/**
+	 * Check that all entrances in array
+	 * @param $expression
+	 * @param $haystack
+	 * @return bool
+	 */
 	public static function allIn($expression, $haystack) {
 		foreach($expression as $item)
-			if(!in_array($item, $haystack))
+			if(in_array($item, $haystack))
 				return false;
 		return true;
 	}
 
+	/**
+	 * Entrances count
+	 * @param $expression
+	 * @param $haystack
+	 * @return int
+	 */
 	public static function countIn($expression, $haystack) {
 		$count = 0 ;
 		foreach($expression as $item)
@@ -150,8 +168,13 @@ class Twig extends Twig_Extension {
 		return Sky::$config['site']['base'] . $expression;
 	}
 
-	public static function filterJson($expression) {
 
+	/**
+	 * Adds json script
+	 * @param $expression
+	 * @return string
+	 */
+	public static function filterJson($expression) {
 		return '<script type="application/json">' . json_encode($expression) . '</script>';
 	}
 
@@ -231,7 +254,7 @@ class Twig extends Twig_Extension {
 
 		}
 
-		return array("groups" => $columns);
+		return ["groups" => $columns];
 
 	}
 }
