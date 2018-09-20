@@ -27,7 +27,7 @@ class entityBuilder {
 		$definition = $this->getTableDefinition($tableName, $parameters);
 
 		# Make code
-		return [\sky\Sky::$twig->render("subEntityTemplateNew.twig", [
+		return [\sky\Sky::$twig->render("subEntityTemplate.twig", [
 			"table_name"         => $definition["table_name"],
 			"entity_name"        => $definition["entity_name"],
 			"fields_definitions" => implode("\n", $definition["fields_definitions"]),
